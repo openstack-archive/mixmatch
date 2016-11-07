@@ -27,15 +27,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'volume_id': "1232123212321",
-            'tenant_id': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'volume.node4',
-          'event_type': 'volume.create.start',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'volume_id': "1232123212321",
+                'tenant_id': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'volume.node4',
+            'event_type': 'volume.create.start',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)
@@ -52,15 +52,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'volume_id': "1232123212321",
-            'tenant_id': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'volume.node4',
-          'event_type': 'volume.delete.end',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'volume_id': "1232123212321",
+                'tenant_id': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'volume.node4',
+            'event_type': 'volume.delete.end',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)
@@ -73,15 +73,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'snapshot_id': "1232123212321",
-            'tenant_id': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'snapshot.node4',
-          'event_type': 'snapshot.create.start',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'snapshot_id': "1232123212321",
+                'tenant_id': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'snapshot.node4',
+            'event_type': 'snapshot.create.start',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)
@@ -98,15 +98,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'snapshot_id': "1232123212321",
-            'tenant_id': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'snapshot.node4',
-          'event_type': 'snapshot.delete.end',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'snapshot_id': "1232123212321",
+                'tenant_id': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'snapshot.node4',
+            'event_type': 'snapshot.delete.end',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)
@@ -119,15 +119,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'id': "1232123212321",
-            'owner': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'image.node4',
-          'event_type': 'image.create',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'id': "1232123212321",
+                'owner': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'image.node4',
+            'event_type': 'image.create',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)
@@ -144,15 +144,15 @@ class TestListener(testcase.TestCase):
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
-          'payload': {
-            'id': "1232123212321",
-            'owner': "abdbabdbabdba"
-          },
-          'priority': 'info',
-          'publisher_id': 'image.node4',
-          'event_type': 'image.delete',
-          'timestamp': '2014-03-03 18:21:04.369234',
-          'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
+            'payload': {
+                'id': "1232123212321",
+                'owner': "abdbabdbabdba"
+            },
+            'priority': 'info',
+            'publisher_id': 'image.node4',
+            'event_type': 'image.delete',
+            'timestamp': '2014-03-03 18:21:04.369234',
+            'message_id': '99863dda-97f0-443a-a0c1-6ed317b7fd45'
         }
         incoming = mock.Mock(ctxt={}, message=MESSAGE)
         dispatcher.dispatch(incoming)

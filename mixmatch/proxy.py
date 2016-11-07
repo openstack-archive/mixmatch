@@ -41,7 +41,7 @@ def is_valid_uuid(value):
         return False
 
 
-class RequestHandler:
+class RequestHandler(object):
     def __init__(self, method, path, headers):
         self.method = method
         self.path = path

@@ -25,7 +25,7 @@ from mixmatch.proxy import app
 from mixmatch.model import BASE, enginefacade, insert, ResourceMapping
 
 
-class FakeSession():
+class FakeSession(object):
     """A replacement for keystoneauth1.session.Session."""
     def __init__(self, token, project):
         self.token = token

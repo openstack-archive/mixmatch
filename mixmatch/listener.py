@@ -33,27 +33,29 @@ class VolumeCreateEndpoint(object):
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Creating volume mapping %s -> %s at %s' % (
-                 payload['volume_id'],
-                 payload['tenant_id'],
-                 self.sp_name))
+            payload['volume_id'],
+            payload['tenant_id'],
+            self.sp_name)
+        )
         insert(ResourceMapping("volumes",
-               payload['volume_id'],
-               payload['tenant_id'],
-               self.sp_name))
+                               payload['volume_id'],
+                               payload['tenant_id'],
+                               self.sp_name))
 
 
 class VolumeDeleteEndpoint(object):
     def __init__(self, sp_name):
         self.sp_name = sp_name
     filter_rule = oslo_messaging.NotificationFilter(
-            publisher_id='^volume.*',
-            event_type='^volume.delete.end$')
+        publisher_id='^volume.*',
+        event_type='^volume.delete.end$')
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Deleting volume mapping %s -> %s at %s' % (
-                 payload['volume_id'],
-                 payload['tenant_id'],
-                 self.sp_name))
+            payload['volume_id'],
+            payload['tenant_id'],
+            self.sp_name)
+        )
         delete(ResourceMapping.find("volumes", payload['volume_id']))
 
 
@@ -67,9 +69,10 @@ class VolumeTransferEndpoint(object):
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Moving volume mapping %s -> %s at %s' % (
-                 payload['volume_id'],
-                 payload['tenant_id'],
-                 self.sp_name))
+            payload['volume_id'],
+            payload['tenant_id'],
+            self.sp_name)
+        )
         mapping = ResourceMapping.find("volumes", payload['volume_id'])
         # Since we're manually updating a field, we have to sanitize the UUID
         # ourselves.
@@ -78,21 +81,22 @@ class VolumeTransferEndpoint(object):
 
 class SnapshotCreateEndpoint(object):
     filter_rule = oslo_messaging.NotificationFilter(
-            publisher_id='^snapshot.*',
-            event_type='^snapshot.create.start$')
+        publisher_id='^snapshot.*',
+        event_type='^snapshot.create.start$')
 
     def __init__(self, sp_name):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Creating snapshot mapping %s -> %s at %s' % (
-                 payload['snapshot_id'],
-                 payload['tenant_id'],
-                 self.sp_name))
+            payload['snapshot_id'],
+            payload['tenant_id'],
+            self.sp_name)
+        )
         insert(ResourceMapping("snapshots",
-               payload['snapshot_id'],
-               payload['tenant_id'],
-               self.sp_name))
+                               payload['snapshot_id'],
+                               payload['tenant_id'],
+                               self.sp_name))
 
 
 class SnapshotDeleteEndpoint(object):
@@ -105,9 +109,10 @@ class SnapshotDeleteEndpoint(object):
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Deleting snapshot mapping %s -> %s at %s' % (
-                 payload['snapshot_id'],
-                 payload['tenant_id'],
-                 self.sp_name))
+            payload['snapshot_id'],
+            payload['tenant_id'],
+            self.sp_name)
+        )
         delete(ResourceMapping.find("snapshots", payload['snapshot_id']))
 
 
@@ -121,13 +126,14 @@ class ImageCreateEndpoint(object):
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Creating image mapping %s -> %s at %s' % (
-                 payload['id'],
-                 payload['owner'],
-                 self.sp_name))
+            payload['id'],
+            payload['owner'],
+            self.sp_name)
+        )
         insert(ResourceMapping("images",
-               payload['id'],
-               payload['owner'],
-               self.sp_name))
+                               payload['id'],
+                               payload['owner'],
+                               self.sp_name))
 
 
 class ImageDeleteEndpoint(object):
@@ -140,21 +146,22 @@ class ImageDeleteEndpoint(object):
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
         LOG.info('Deleting image mapping %s -> %s at %s' % (
-                 payload['id'],
-                 payload['owner'],
-                 self.sp_name))
+            payload['id'],
+            payload['owner'],
+            self.sp_name)
+        )
         delete(ResourceMapping.find("images", payload['id']))
 
 
 def get_endpoints_for_sp(sp_name):
     return [
-            VolumeCreateEndpoint(sp_name),
-            VolumeDeleteEndpoint(sp_name),
-            VolumeTransferEndpoint(sp_name),
-            SnapshotCreateEndpoint(sp_name),
-            SnapshotDeleteEndpoint(sp_name),
-            ImageCreateEndpoint(sp_name),
-            ImageDeleteEndpoint(sp_name)
+        VolumeCreateEndpoint(sp_name),
+        VolumeDeleteEndpoint(sp_name),
+        VolumeTransferEndpoint(sp_name),
+        SnapshotCreateEndpoint(sp_name),
+        SnapshotDeleteEndpoint(sp_name),
+        ImageCreateEndpoint(sp_name),
+        ImageDeleteEndpoint(sp_name)
     ]
 
 
@@ -167,10 +174,11 @@ def get_server_for_sp(sp):
     transport = oslo_messaging.get_notification_transport(CONF, cfg.messagebus)
     targets = [oslo_messaging.Target(topic='notifications')]
     return oslo_messaging.get_notification_listener(
-            transport,
-            targets,
-            get_endpoints_for_sp(cfg.sp_name),
-            executor='eventlet')
+        transport,
+        targets,
+        get_endpoints_for_sp(cfg.sp_name),
+        executor='eventlet'
+    )
 
 
 if __name__ == "__main__":

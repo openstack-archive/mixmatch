@@ -93,8 +93,7 @@ def aggregate(responses, key, params=None, path=None, detailed=True):
     # because we need sorting information. Here we
     # remove the extra values /volumes/detail provides
     if key == 'volumes' and not detailed:
-        resource_list[start:end] = \
-                _remove_details(resource_list[start:end])
+        resource_list[start:end] = _remove_details(resource_list[start:end])
 
     response = {key: resource_list[start:end]}
 
@@ -122,14 +121,9 @@ def list_api_versions(service_type, url):
             else:
                 info.update({'status': 'SUPPORTED'})
 
-            info.update({
-               'id':  version,
-               'links': [
-                   {'href': '%s/%s/' % (url,
-                                        version[:-2]),
-                    'rel': 'self'}
-               ]
-            })
+            info.update({'id': version,
+                         'links': [{'href': '%s/%s/' % (url, version[:-2]),
+                                    'rel': 'self'}]})
             api_versions.append(info)
         return json.dumps({'versions': api_versions})
 

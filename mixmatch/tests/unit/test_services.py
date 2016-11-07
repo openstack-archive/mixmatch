@@ -23,16 +23,18 @@ from mixmatch import services
 from mixmatch.tests.unit import samples
 
 
-class Response:
+class Response(object):
     def __init__(self, text):
         self.text = text
 
 
 # Source: http://stackoverflow.com/a/9468284
 class Url(object):
-    """A url object that can be compared with other url orbjects
-    without regard to the vagaries of encoding, escaping, and ordering
-    of parameters in query strings."""
+    """Url object that can be compared with other url objects
+
+    This comparison is done without regard to the vagaries of encoding,
+    escaping, and ordering of parameters in query strings.
+    """
 
     def __init__(self, url):
         parts = parse.urlparse(url)

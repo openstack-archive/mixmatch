@@ -36,5 +36,5 @@ def chunked_reader():
         try:
             while True:
                 yield stream.next()
-        except:
+        except Exception:
             return
