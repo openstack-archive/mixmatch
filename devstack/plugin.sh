@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+source $MIXMATCH_PLUGIN/mixmatch.sh
+
 # For more information on Devstack plugins, including a more detailed
 # explanation on when the different steps are executed please see:
 # http://docs.openstack.org/developer/devstack/plugins.html
@@ -19,16 +21,22 @@
 if [[ "$1" == "stack" && "$2" == "install" ]]; then
     # This phase is executed after the projects have been installed
     echo "Mix & match plugin - Install phase"
+    if is_service_enabled mixmatch; then
+        install_mixmatch
+    fi
 
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     # This phase is executed after the projects have been configured and
     # before they are started
     echo "Mix & match plugin - Post-config phase"
+    if is_service_enabled mixmatch; then
+        configure_mixmatch
+    fi
 
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     # This phase is executed after the projects have been started
     echo "Mix & match plugin - Extra phase"
-
+    :
 fi
 
 if [[ "$1" == "unstack" ]]; then
