@@ -1,0 +1,8 @@
+enable_service mixmatch
+
+MIXMATCH_DIR=$DEST/mixmatch
+MIXMATCH_PLUGIN=$DEST/mixmatch/devstack
+MIXMATCH_CONF=/etc/mixmatch/mixmatch.conf
+
+MIXMATCH_SERVICE_PORT=${MIXMATCH_SERVICE_PORT:-5001}
+MIXMATCH_SERVICE_PROTOCOL=${MIXMATCH_SERVICE_PROTOCOL:-http}
