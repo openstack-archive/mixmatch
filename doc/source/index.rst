@@ -12,8 +12,8 @@ Contents:
    :maxdepth: 2
 
    readme
+   architecture
    installation
-   usage
    contributing
 
 Indices and tables
