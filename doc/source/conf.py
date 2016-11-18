@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     #'sphinx.ext.intersphinx',
-    'oslosphinx'
+    #'oslosphinx'
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -38,7 +38,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'mixmatch'
-copyright = u'2016, OpenStack Foundation'
+copyright = u'2016, Massachusetts Open Cloud'
+author = u'Massachusetts Open Cloud'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -55,8 +56,9 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
 # html_theme_path = ["."]
-# html_theme = '_theme'
+html_theme = 'alabaster'
 # html_static_path = ['static']
+html_logo = 'images/moc.png'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
@@ -68,7 +70,7 @@ latex_documents = [
     ('index',
      '%s.tex' % project,
      u'%s Documentation' % project,
-     u'OpenStack Foundation', 'manual'),
+     u'Massachusetts Open Cloud', 'manual'),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
