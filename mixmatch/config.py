@@ -113,9 +113,9 @@ MEMOIZE_SESSION = cache.get_memoization_decorator(
 
 def load_config():
     """Load parameters from the proxy's config file."""
-    conf_files = [f for f in ['k2k-proxy.conf',
-                              'etc/k2k-proxy.conf',
-                              '/etc/k2k-proxy.conf'] if path.isfile(f)]
+    conf_files = [f for f in ['mixmatch.conf',
+                              'etc/mixmatch/mixmatch.conf',
+                              '/etc/mixmatch/mixmatch.conf'] if path.isfile(f)]
     if conf_files is not []:
         CONF(default_config_files=conf_files)
 
