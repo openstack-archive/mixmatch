@@ -13,6 +13,6 @@ provided by other federated OpenStack deployments, ex. Nova attach a remote
 volume.
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/mixmatch
+* Documentation: https://mixmatch.readthedocs.io
 * Source: http://git.openstack.org/cgit/openstack/mixmatch
 * Bugs: http://bugs.launchpad.net/mixmatch
