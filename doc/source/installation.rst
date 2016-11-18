@@ -32,14 +32,14 @@ To run the proxy with Apache in Ubuntu: ::
 
     $ apt-get install libapache2-mod-wsgi
     $ cp httpd/apache.conf /etc/apache2/sites-available/proxy.conf
-    $ cp etc/k2k-proxy.conf /etc/
+    $ cp etc/mixmatch/mixmatch.conf /etc/
     $ a2ensite proxy
     $ service apache2 reload
 
 
 Configuration
 =============
-The proxy searches for the configuration file ``k2k-proxy.conf`` in the
+The proxy searches for the configuration file ``mixmatch.conf`` in the
 current directory, the ``etc/`` directory relative to the current directory or
 ``/etc/``
 
@@ -49,7 +49,7 @@ source code.
 The proxy will substitute the endpoint of the service it is proxying.
 Only Cinder and Glance are supported for now.
 
-For each SP, you must have a section in ``k2k-proxy.conf`` which contains the
+For each SP, you must have a section in ``mixmatch.conf`` which contains the
 service provider name (as it is listed in Keystone's service catalog), and the
 URI for connecting to the notification messagebus in that OpenStack
 installation.  For instance::
