@@ -166,7 +166,7 @@ class RequestHandler(object):
                 flask.stream_with_context(stream_response(response)),
                 response.status_code,
                 content_type=response.headers['content-type']
-            )
+            )AAA
         return final_response
 
     def _local_forward(self):
@@ -177,10 +177,10 @@ class RequestHandler(object):
             self._do_request_on(self.service_provider, self.project_id))
 
     def _search_forward(self):
-        if not CONF.proxy.search_by_broadcast:
+        if not CONF.search_by_broadcast:
             return self._local_forward()
 
-        for sp in CONF.proxy.service_providers:
+        for sp in CONF.service_providers:
             if sp == 'default':
                 response = self._do_request_on('default')
                 if 200 <= response.status_code < 300:
@@ -197,12 +197,12 @@ class RequestHandler(object):
         )
 
     def _aggregate_forward(self):
-        if not CONF.proxy.aggregation:
+        if not CONF.aggregation:
             return self._local_forward()
 
         responses = {}
 
-        for sp in CONF.proxy.service_providers:
+        for sp in CONF.service_providers:
             if sp == 'default':
                 responses['default'] = self._do_request_on('default')
             else:
