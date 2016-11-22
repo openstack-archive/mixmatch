@@ -112,7 +112,7 @@ def list_api_versions(service_type, url):
     api_versions = list()
 
     if service_type == 'image':
-        supported_versions = CONF.proxy.image_api_versions
+        supported_versions = CONF.image_api_versions
 
         for version in supported_versions:
             info = dict()
@@ -128,7 +128,7 @@ def list_api_versions(service_type, url):
         return json.dumps({'versions': api_versions})
 
     elif service_type == 'volume':
-        supported_versions = CONF.proxy.volume_api_versions
+        supported_versions = CONF.volume_api_versions
 
         for version in supported_versions:
             info = dict()

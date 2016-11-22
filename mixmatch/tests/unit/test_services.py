@@ -250,7 +250,7 @@ class TestServices(testcase.TestCase):
 
     def test_list_api_versions(self):
 
-        self.config_fixture.load_raw_values(group='proxy',
+        self.config_fixture.load_raw_values(group='DEFAULT',
                                             image_api_versions=API_VERSIONS,
                                             volume_api_versions=API_VERSIONS)
 

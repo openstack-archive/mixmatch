@@ -104,7 +104,7 @@ class TestMock(testcase.TestCase):
 
         # set config values
         self.config_fixture.load_raw_values(
-            group='proxy',
+            group='DEFAULT',
             service_providers='default, remote1',
             aggregation=True)
         self.config_fixture.load_raw_values(
@@ -175,7 +175,7 @@ class TestMock(testcase.TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_image_search_local(self):
-        self.config_fixture.load_raw_values(group='proxy',
+        self.config_fixture.load_raw_values(group='DEFAULT',
                                             search_by_broadcast=True)
         self.session_fixture.add_local_auth('wewef', 'my_project_id')
 
@@ -200,7 +200,7 @@ class TestMock(testcase.TestCase):
 
     def test_get_image_search_remote(self):
         REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.config_fixture.load_raw_values(group='proxy',
+        self.config_fixture.load_raw_values(group='DEFAULT',
                                             search_by_broadcast=True)
         self.session_fixture.add_local_auth('local-tok', 'my_project_id')
         self.session_fixture.add_sp_auth('remote1', 'local-tok',
@@ -233,7 +233,7 @@ class TestMock(testcase.TestCase):
 
     def test_get_image_search_nexists(self):
         REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.config_fixture.load_raw_values(group='proxy',
+        self.config_fixture.load_raw_values(group='DEFAULT',
                                             search_by_broadcast=True)
         self.session_fixture.add_local_auth('local-tok', 'my_project_id')
         self.session_fixture.add_sp_auth('remote1', 'local-tok',

@@ -187,7 +187,7 @@ if __name__ == "__main__":
     model.create_tables()
 
     LOG.info("Now listening for changes")
-    for sp in CONF.proxy.service_providers:
+    for sp in CONF.service_providers:
         get_server_for_sp(sp).start()
     while True:
         eventlet.sleep(5)
