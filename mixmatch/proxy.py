@@ -103,7 +103,7 @@ class RequestHandler(object):
                 aggregate = True
 
         self.local_token = headers['X-AUTH-TOKEN']
-        LOG.info('Local Token: %s ' % self.local_token)
+        LOG.debug('Local Token: %s ' % self.local_token)
 
         if 'MM-SERVICE-PROVIDER' in headers and 'MM-PROJECT-ID' in headers:
             # The user wants a specific service provider, use that SP.

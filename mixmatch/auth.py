@@ -44,7 +44,7 @@ def get_client():
 @config.MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
-    LOG.info("Getting session for %s" % user_token)
+    LOG.debug("Getting session for %s" % user_token)
     client = get_client()
     token = v3.tokens.TokenManager(client)
 
@@ -67,7 +67,7 @@ def get_unscoped_sp_auth(service_provider, user_token):
     """Perform K2K auth, and return an unscoped session."""
     conf = get_conf_for_sp(service_provider)
     local_auth = get_local_auth(user_token).auth
-    LOG.info("Getting unscoped session for (%s, %s)" % (service_provider,
+    LOG.debug("Getting unscoped session for (%s, %s)" % (service_provider,
                                                         user_token))
     remote_auth = identity.v3.Keystone2Keystone(
         local_auth,
@@ -91,7 +91,7 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     conf = get_conf_for_sp(service_provider)
     local_auth = get_local_auth(user_token).auth
 
-    LOG.info("Getting session for (%s, %s, %s)" % (service_provider,
+    LOG.debug("Getting session for (%s, %s, %s)" % (service_provider,
                                                    user_token,
                                                    remote_project_id))
 
