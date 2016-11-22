@@ -24,7 +24,7 @@ CONF = cfg.CONF
 
 
 # Proxy
-proxy_group = cfg.OptGroup(name='proxy',
+proxy_group = cfg.OptGroup(name='DEFAULT',
                            title='Proxy Config Group')
 
 proxy_opts = [
@@ -108,7 +108,7 @@ MEMOIZE_SESSION = None
 session_cache_region = cache.create_region()
 
 MEMOIZE_SESSION = cache.get_memoization_decorator(
-    CONF, session_cache_region, group="proxy")
+    CONF, session_cache_region, group="DEFAULT")
 
 
 def load_config():
@@ -129,7 +129,7 @@ def more_config():
     """
     cache.configure_cache_region(CONF, session_cache_region)
 
-    for service_provider in CONF.proxy.service_providers:
+    for service_provider in CONF.DEFAULT.service_providers:
 
         sp_group = cfg.OptGroup(name='sp_%s' % service_provider,
                                 title=service_provider)
