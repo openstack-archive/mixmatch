@@ -1,22 +1,21 @@
 [DEFAULT]
 aggregation=True
-token_caching=False
 search_by_broadcast=True
-service_providers=default, coffee-sp
-caching=True
+service_providers=default, cornmeal-sp
 image_api_versions = v2.3, v2.2, v2.1, v2.0, v1.1, v1.0
 volume_api_versions = v3.0, v2.0, v1.0
 
 [database]
 connection="sqlite:////home/ubuntu/proxy.db"
 
-[keystone]
+[auth_opts]
 auth_url="http://127.0.0.1:5000/v3"
 username="admin"
 user_domain_id="default"
 password="nomoresecrete"
 project_name="admin"
 project_domain_id="default"
+caching=True
 
 [cache]
 enabled=True
@@ -29,12 +28,12 @@ auth_url="http://127.0.0.1:5000/v3"
 image_endpoint="http://localhost:9292"
 volume_endpoint="http://localhost:8776"
 
-[sp_coffee-sp]
-sp_name=coffee-sp
-messagebus="rabbit://stackrabbit:stackqueue@192.168.0.106"
-auth_url="http://192.168.0.106:5000/v3"
-image_endpoint="http://192.168.0.106:9292"
-volume_endpoint="http://192.168.0.106:8776"
+[sp_cornmeal-sp]
+sp_name=cornmeal-sp
+messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
+auth_url="http://192.168.0.141:5000/v3"
+image_endpoint="http://192.168.0.141:9292"
+volume_endpoint="http://192.168.0.141:8776"
 
 # Logging
 [loggers]
