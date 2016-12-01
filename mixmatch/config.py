@@ -60,7 +60,7 @@ proxy_opts = [
 ]
 
 # Keystone
-keystone_group = cfg.OptGroup(name='keystone',
+keystone_group = cfg.OptGroup(name='auth',
                               title='Keystone Config Group')
 
 keystone_opts = [
@@ -105,7 +105,7 @@ MEMOIZE_SESSION = None
 session_cache_region = cache.create_region()
 
 MEMOIZE_SESSION = cache.get_memoization_decorator(
-    CONF, session_cache_region, group=None)
+    CONF, session_cache_region, group='auth')
 
 
 def load_config():
