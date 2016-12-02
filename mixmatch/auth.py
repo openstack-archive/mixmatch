@@ -30,12 +30,12 @@ def get_client():
     """Return a Keystone client capable of validating tokens."""
     LOG.info("Getting Admin Client")
     service_auth = identity.Password(
-        auth_url=CONF.keystone.auth_url,
-        username=CONF.keystone.username,
-        password=CONF.keystone.password,
-        project_name=CONF.keystone.project_name,
-        project_domain_id=CONF.keystone.project_domain_id,
-        user_domain_id=CONF.keystone.user_domain_id
+        auth_url=CONF.auth.auth_url,
+        username=CONF.auth.username,
+        password=CONF.auth.password,
+        project_name=CONF.auth.project_name,
+        project_domain_id=CONF.auth.project_domain_id,
+        user_domain_id=CONF.auth.user_domain_id
     )
     local_session = session.Session(auth=service_auth)
     return v3.client.Client(session=local_session)
@@ -55,7 +55,7 @@ def get_local_auth(user_token):
 
     project_id = token_data['project']['id']
 
-    local_auth = identity.v3.Token(auth_url=CONF.keystone.auth_url,
+    local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
                                    token=user_token,
                                    project_id=project_id)
 
