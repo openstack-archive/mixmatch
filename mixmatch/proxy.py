@@ -212,8 +212,9 @@ class RequestHandler(object):
         return flask.Response(
             services.aggregate(responses,
                                self.action[0],
-                               request.args.to_dict(),
-                               request.base_url,
+                               self.service_type,
+                               params=request.args.to_dict(),
+                               path=request.base_url,
                                detailed=self.detailed),
             200,
             content_type=responses['default'].headers['content-type']

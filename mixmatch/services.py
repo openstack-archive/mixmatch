@@ -46,7 +46,8 @@ def construct_url(service_provider, service_type,
         }
 
 
-def aggregate(responses, key, params=None, path=None, detailed=True):
+def aggregate(responses, key, service_type,
+              params=None, path=None, detailed=True):
     """Combine responses from several clusters into one response."""
     if params:
         limit = int(params.get('limit', 0))
@@ -103,7 +104,13 @@ def aggregate(responses, key, params=None, path=None, detailed=True):
         response['start'] = '%s?%s' % (path, parse.urlencode(params))
     if end < last:
         params['marker'] = response[key][-1]['id']
-        response['next'] = '%s?%s' % (path, parse.urlencode(params))
+        if service_type == 'image':
+            response['next'] = '%s?%s' % (path, parse.urlencode(params))
+        elif service_type == 'volume':
+            response['volumes_links'] = [
+                {"href": '%s?%s' % (path, parse.urlencode(params)),
+                 "rel": "next"}
+            ]
 
     return json.dumps(response)
 
