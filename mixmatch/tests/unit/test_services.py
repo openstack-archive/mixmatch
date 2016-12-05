@@ -79,18 +79,18 @@ class TestServices(testcase.TestCase):
 
     def test_aggregate_key(self):
         # Aggregate 'images'
-        response = json.loads(services.aggregate(IMAGES, 'images'))
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image'))
         self.assertEqual(IMAGES_IN_SAMPLE, len(response['images']))
 
         # Aggregate 'volumes'
-        response = json.loads(services.aggregate(VOLUMES, 'volumes'))
+        response = json.loads(services.aggregate(VOLUMES, 'volumes', 'volume'))
         self.assertEqual(VOLUMES_IN_SAMPLE, len(response['volumes']))
 
     def test_aggregate_limit(self):
         params = {
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
         self.assertEqual(1, len(response['images']))
 
@@ -99,7 +99,7 @@ class TestServices(testcase.TestCase):
         params = {
             'sort': 'size:asc'
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
         self.assertEqual(response['images'][0]['id'], SMALLEST_IMAGE)
 
@@ -110,7 +110,7 @@ class TestServices(testcase.TestCase):
             'sort_dir': 'asc',
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Ensure the smallest is first and there is only 1 entry.
@@ -132,7 +132,7 @@ class TestServices(testcase.TestCase):
             'sort': 'updated_at:asc',
             'limit': 2
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Check the first and second are the correct ids.
@@ -155,7 +155,7 @@ class TestServices(testcase.TestCase):
             'sort': 'updated_at:desc',
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Check the id and size
@@ -178,7 +178,7 @@ class TestServices(testcase.TestCase):
             'limit': 1,
             'marker': EARLIEST_IMAGE
         }
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Ensure we skipped the first one
@@ -210,7 +210,7 @@ class TestServices(testcase.TestCase):
             'marker': EARLIEST_IMAGE
         }
 
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Ensure we skipped the first one
@@ -233,7 +233,7 @@ class TestServices(testcase.TestCase):
             'marker': LATEST_IMAGE
         }
 
-        response = json.loads(services.aggregate(IMAGES, 'images',
+        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
 
         # Ensure we skipped the first one
