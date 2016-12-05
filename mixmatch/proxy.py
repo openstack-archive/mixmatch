@@ -105,10 +105,13 @@ class RequestHandler(object):
         self.local_token = headers['X-AUTH-TOKEN']
         LOG.debug('Local Token: %s ' % self.local_token)
 
-        if 'MM-SERVICE-PROVIDER' in headers and 'MM-PROJECT-ID' in headers:
+        if 'MM-SERVICE-PROVIDER' in headers in headers:
             # The user wants a specific service provider, use that SP.
             self.service_provider = headers['MM-SERVICE-PROVIDER']
-            self.project_id = headers['MM-PROJECT-ID']
+            self.project_id = headers.get('MM-PROJECT-ID', None)
+            if not self.project_id:
+                auth.get_projects_at_sp(self.service_provider,
+                                        self.local_token)[0]
             self._forward = self._targeted_forward
         elif aggregate:
             self._forward = self._aggregate_forward
