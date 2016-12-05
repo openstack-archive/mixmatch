@@ -1,0 +1,18 @@
+{
+  "volumes": [
+    {
+      "id": "9edc1bfc-3ffe-4842-8fea-a1a09ed5b7df",
+      "links": [
+        {
+          "href": "http://localhost:8776/v3/cf7406045f844b7daf59f8bc1cc87dd6/volumes/9edc1bfc-3ffe-4842-8fea-a1a09ed5b7df",
+          "rel": "self"
+        },
+        {
+          "href": "http://localhost:8776/cf7406045f844b7daf59f8bc1cc87dd6/volumes/9edc1bfc-3ffe-4842-8fea-a1a09ed5b7df",
+          "rel": "bookmark"
+        }
+      ],
+      "name": "vol1"
+    }
+  ]
+}
