@@ -20,7 +20,7 @@ from mixmatch.config import CONF
 from testtools import testcase
 
 from mixmatch import services
-from mixmatch.tests.unit import samples
+from mixmatch.tests.unit import json_samples
 
 
 class Response(object):
@@ -49,22 +49,7 @@ class Url(object):
     def __hash__(self):
         return hash(self.parts)
 
-
-VOLUMES = {'default': Response(json.dumps(samples.VOLUME_LIST_V2)),
-           'sp1': Response(json.dumps(samples.VOLUME_LIST_V2))}
-
-IMAGES = {'default': Response(json.dumps(samples.IMAGE_LIST_V2)),
-          'sp1': Response(json.dumps(samples.IMAGE_LIST_V2_2))}
-
-SMALLEST_IMAGE = '941882c5-b992-4fa9-bcba-9d25d2f4e3b8'
-EARLIEST_IMAGE = '781b3762-9469-4cec-b58d-3349e5de4e9c'
-SECOND_EARLIEST_IMAGE = '1bea47ed-f6a9-463b-b423-14b9cca9ad27'
-LATEST_IMAGE = '61f655c0-4511-4307-a257-4162c87a5130'
-
 IMAGE_PATH = 'http://localhost/image/images'
-
-IMAGES_IN_SAMPLE = 5
-VOLUMES_IN_SAMPLE = 2
 
 API_VERSIONS = 'v3.2, v2.0, v1'
 NUM_OF_VERSIONS = 3
@@ -79,19 +64,35 @@ class TestServices(testcase.TestCase):
 
     def test_aggregate_key(self):
         # Aggregate 'images'
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image'))
-        self.assertEqual(IMAGES_IN_SAMPLE, len(response['images']))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images'
+        ))
+        self.assertEqual(
+            len(json_samples.responses['image']['v2']['unpaged']['images']),
+            len(response['images'])
+        )
 
         # Aggregate 'volumes'
-        response = json.loads(services.aggregate(VOLUMES, 'volumes', 'volume'))
-        self.assertEqual(VOLUMES_IN_SAMPLE, len(response['volumes']))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['volume']['v2']['unpaged'],
+            'volumes'
+        ))
+        self.assertEqual(
+            len(json_samples.responses['volume']['v2']['unpaged']['volumes']),
+            len(response['volumes'])
+        )
 
     def test_aggregate_limit(self):
         params = {
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH
+        ))
         self.assertEqual(1, len(response['images']))
 
     def test_aggregate_sort_images_ascending(self):
@@ -99,9 +100,20 @@ class TestServices(testcase.TestCase):
         params = {
             'sort': 'size:asc'
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
-        self.assertEqual(response['images'][0]['id'], SMALLEST_IMAGE)
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH
+        ))
+        smallest_img = min(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['size']
+        )
+        self.assertEqual(
+            response['images'][0]['id'],
+            smallest_img['id']
+        )
 
     def test_aggregate_sort_images_limit(self):
         """Sort images by smallest size, ascending, limit to 1, alt format."""
@@ -110,11 +122,22 @@ class TestServices(testcase.TestCase):
             'sort_dir': 'asc',
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH
+        ))
 
         # Ensure the smallest is first and there is only 1 entry.
-        self.assertEqual(response['images'][0]['id'], SMALLEST_IMAGE)
+        smallest_img = min(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['size']
+        )
+        self.assertEqual(
+            response['images'][0]['id'],
+            smallest_img['id']
+        )
         self.assertEqual(1, len(response['images']))
 
         # Ensure the 'next' url is correct.
@@ -122,7 +145,10 @@ class TestServices(testcase.TestCase):
             Url(response['next']),
             Url(self._prepare_url(
                 IMAGE_PATH,
-                self._prepare_params(params, marker=SMALLEST_IMAGE)
+                self._prepare_params(
+                    params,
+                    marker=smallest_img['id']
+                )
             ))
         )
 
@@ -132,12 +158,20 @@ class TestServices(testcase.TestCase):
             'sort': 'updated_at:asc',
             'limit': 2
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH)
+        )
 
+        sorted_imgs = sorted(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['updated_at']
+        )
         # Check the first and second are the correct ids.
-        self.assertEqual(response['images'][0]['id'], EARLIEST_IMAGE)
-        self.assertEqual(response['images'][1]['id'], SECOND_EARLIEST_IMAGE)
+        self.assertEqual(response['images'][0]['id'], sorted_imgs[0]['id'])
+        self.assertEqual(response['images'][1]['id'], sorted_imgs[1]['id'])
         self.assertEqual(2, len(response['images']))
 
         # Check the next link
@@ -145,7 +179,7 @@ class TestServices(testcase.TestCase):
             Url(response['next']),
             Url(self._prepare_url(
                 IMAGE_PATH,
-                self._prepare_params(params, marker=SECOND_EARLIEST_IMAGE)
+                self._prepare_params(params, marker=sorted_imgs[1]['id'])
             ))
         )
 
@@ -155,11 +189,19 @@ class TestServices(testcase.TestCase):
             'sort': 'updated_at:desc',
             'limit': 1
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
-
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH)
+        )
+        sorted_imgs = sorted(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['updated_at'],
+            reverse=True
+        )
         # Check the id and size
-        self.assertEqual(response['images'][0]['id'], LATEST_IMAGE)
+        self.assertEqual(response['images'][0]['id'], sorted_imgs[0]['id'])
         self.assertEqual(1, len(response['images']))
 
         # Check the next link
@@ -167,22 +209,33 @@ class TestServices(testcase.TestCase):
             Url(response['next']),
             Url(self._prepare_url(
                 IMAGE_PATH,
-                self._prepare_params(params, marker=LATEST_IMAGE)
+                self._prepare_params(params, marker=sorted_imgs[0]['id'])
             ))
         )
 
     def test_sort_images_date_ascending_pagination(self):
         """Sort images by last update, ascending, skip the first one."""
+        sorted_imgs = sorted(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['updated_at']
+        )
         params = {
             'sort': 'updated_at:asc',
             'limit': 1,
-            'marker': EARLIEST_IMAGE
+            'marker': sorted_imgs[0]['id']
         }
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH)
+        )
 
         # Ensure we skipped the first one
-        self.assertEqual(response['images'][0]['id'], SECOND_EARLIEST_IMAGE)
+        self.assertEqual(
+            response['images'][0]['id'],
+            sorted_imgs[1]['id']
+        )
         self.assertEqual(1, len(response['images']))
 
         # Next link
@@ -190,7 +243,7 @@ class TestServices(testcase.TestCase):
             Url(response['next']),
             Url(self._prepare_url(
                 IMAGE_PATH,
-                self._prepare_params(params, marker=SECOND_EARLIEST_IMAGE)
+                self._prepare_params(params, marker=sorted_imgs[1]['id'])
             ))
         )
 
@@ -205,17 +258,25 @@ class TestServices(testcase.TestCase):
 
     def test_marker_without_limit(self):
         """Test marker without limit."""
+        sorted_imgs = sorted(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['updated_at']
+        )
         params = {
             'sort': 'updated_at:asc',
-            'marker': EARLIEST_IMAGE
+            'marker': sorted_imgs[0]['id']
         }
 
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH
+        ))
 
         # Ensure we skipped the first one
-        self.assertEqual(response['images'][0]['id'], SECOND_EARLIEST_IMAGE)
-        self.assertEqual(IMAGES_IN_SAMPLE - 1, len(response['images']))
+        self.assertEqual(response['images'][0]['id'], sorted_imgs[1]['id'])
+        self.assertEqual(len(sorted_imgs) - 1, len(response['images']))
 
         # Start link
         self.assertEqual(
@@ -228,13 +289,21 @@ class TestServices(testcase.TestCase):
 
     def test_marker_last(self):
         """Test marker without limit, nothing to return."""
+        sorted_imgs = sorted(
+            json_samples.responses['image']['v2']['unpaged']['images'],
+            key=lambda img: img['updated_at']
+        )
         params = {
             'sort': 'updated_at:asc',
-            'marker': LATEST_IMAGE
+            'marker': sorted_imgs[-1]['id']
         }
 
-        response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+        response = json.loads(services.aggregate(
+            json_samples.unaggregated['image']['v2']['unpaged'],
+            'images',
+            params,
+            IMAGE_PATH
+        ))
 
         # Ensure we skipped the first one
         self.assertEqual(0, len(response['images']))
@@ -263,9 +332,8 @@ class TestServices(testcase.TestCase):
         self.assertEqual(NUM_OF_VERSIONS, len(response['versions']))
         self.assertEqual(current_version, 'v3.2')
         self.assertEqual(current_version_status, 'CURRENT')
-        self.assertEqual(
-            Url(current_version_url),
-            Url(IMAGE_VERSIONED))
+        self.assertEqual(Url(current_version_url),
+                         Url(IMAGE_VERSIONED))
 
     @staticmethod
     def _prepare_params(user_params, marker=None):
