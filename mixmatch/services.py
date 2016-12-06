@@ -46,8 +46,8 @@ def construct_url(service_provider, service_type,
         }
 
 
-def aggregate(responses, key, service_type,
-              params=None, path=None, detailed=True):
+def aggregate(responses, key, service_type, params=None,
+              path=None, detailed=True, version=None):
     """Combine responses from several clusters into one response."""
     if params:
         limit = int(params.get('limit', 0))
@@ -93,8 +93,9 @@ def aggregate(responses, key, service_type,
     # we automatically make the call to /volumes/detail
     # because we need sorting information. Here we
     # remove the extra values /volumes/detail provides
-    if key == 'volumes' and not detailed:
-        resource_list[start:end] = _remove_details(resource_list[start:end])
+    if key == 'volumes' and not detailed and version:
+        resource_list[start:end] = _remove_details(resource_list[start:end],
+                                                   version)
 
     response = {key: resource_list[start:end]}
 
@@ -191,9 +192,20 @@ def _is_reverse(order):
         raise ValueError
 
 
-def _remove_details(volumes):
+def _remove_details(volumes, version):
     """Delete key, value pairs if key is not in keys"""
-    keys = ['id', 'links', 'name']
+    keys = {
+        'v1': [
+            'status', 'attachments', 'availability_zone',
+            'encrypted', 'source_volid', 'display_description',
+            'snapshot_id', 'id', 'size', 'display_name',
+            'bootable', 'created_at', 'multiattach',
+            'volume_type', 'metadata'
+        ],
+        'v2': ['id', 'links', 'name']
+    }
+
     for i in range(len(volumes)):
-        volumes[i] = {key: volumes[i][key] for key in keys}
+        volumes[i] = {key: volumes[i][key] for key in keys[version]}
+
     return volumes
