@@ -298,6 +298,7 @@ class RequestHandler(object):
             services.aggregate(responses,
                                self.details['action'][0],
                                self.details['service'],
+                               version=self.details['version'],
                                params=request.args.to_dict(),
                                path=request.base_url,
                                strip_details=self.strip_details),
