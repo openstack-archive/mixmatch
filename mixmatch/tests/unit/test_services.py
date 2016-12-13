@@ -51,10 +51,15 @@ class Url(object):
 
 
 VOLUMES = {'default': Response(json.dumps(samples.VOLUME_LIST_V2)),
-           'sp1': Response(json.dumps(samples.VOLUME_LIST_V2))}
+           'sp1': Response(json.dumps(samples.VOLUME_LIST_V2_2))}
 
 IMAGES = {'default': Response(json.dumps(samples.IMAGE_LIST_V2)),
           'sp1': Response(json.dumps(samples.IMAGE_LIST_V2_2))}
+
+VOLUMES_DETAILED = {
+    'default': Response(json.dumps(samples.VOLUME_DETAILED_V2)),
+    'sp1': Response(json.dumps(samples.VOLUME_DETAILED_V2_2))
+}
 
 SMALLEST_IMAGE = '941882c5-b992-4fa9-bcba-9d25d2f4e3b8'
 EARLIEST_IMAGE = '781b3762-9469-4cec-b58d-3349e5de4e9c'
@@ -62,6 +67,7 @@ SECOND_EARLIEST_IMAGE = '1bea47ed-f6a9-463b-b423-14b9cca9ad27'
 LATEST_IMAGE = '61f655c0-4511-4307-a257-4162c87a5130'
 
 IMAGE_PATH = 'http://localhost/image/images'
+VOLUME_PATH = 'http://localhost/volume/volumes'
 
 IMAGES_IN_SAMPLE = 5
 VOLUMES_IN_SAMPLE = 2
@@ -70,6 +76,8 @@ API_VERSIONS = 'v3.2, v2.0, v1'
 NUM_OF_VERSIONS = 3
 IMAGE_UNVERSIONED = 'http://localhost/image'
 IMAGE_VERSIONED = 'http://localhost/image/v3/'
+VOLUME_UNVERSIONED = 'http://localhost/volume'
+VOLUME_VERSIONED = 'http://localhost/volume/v3/'
 
 
 class TestServices(testcase.TestCase):
@@ -93,6 +101,10 @@ class TestServices(testcase.TestCase):
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
                                                  params, IMAGE_PATH))
         self.assertEqual(1, len(response['images']))
+
+        response = json.loads(services.aggregate(VOLUMES, 'volumes', 'volume',
+                                                 params, VOLUME_PATH))
+        self.assertEqual(1, len(response['volumes']))
 
     def test_aggregate_sort_images_ascending(self):
         """Sort images by smallest size, ascending."""
@@ -266,6 +278,31 @@ class TestServices(testcase.TestCase):
         self.assertEqual(
             Url(current_version_url),
             Url(IMAGE_VERSIONED))
+
+        # List volume api
+        response = json.loads(services.list_api_versions('volume',
+                                                         VOLUME_UNVERSIONED))
+        current_version = response['versions'][0]['id']
+        current_version_status = response['versions'][0]['status']
+        current_version_url = response['versions'][0]['links'][1]['href']
+
+        self.assertEqual(NUM_OF_VERSIONS, len(response['versions']))
+        self.assertEqual(current_version, 'v3.2')
+        self.assertEqual(current_version_status, 'CURRENT')
+        self.assertEqual(
+            Url(current_version_url),
+            Url(VOLUME_VERSIONED))
+
+    def test_remove_details(self):
+        """Test aggregation on volumes with detailed = False"""
+        response = json.loads(services.aggregate(
+            VOLUMES_DETAILED, 'volumes', 'volume', detailed=False
+        ))
+        for v in response['volumes']:
+            self.assertEqual(
+                set(v.keys()),
+                {'id', 'links', 'name'}
+            )
 
     @staticmethod
     def _prepare_params(user_params, marker=None):
