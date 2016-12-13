@@ -153,3 +153,194 @@ VOLUME_LIST_V2 = {
         }
     ]
 }
+
+VOLUME_LIST_V2_2 = {
+    "volumes": [
+        {
+            "id": "79baebf2-c242-47f4-b0a3-ab1761cfe755",
+            "links": [
+                {
+                    "href": "http://localhost:8776/v2/"
+                            "5f4358e168b747a487fe34e64c5619b2/"
+                            "volumes/"
+                            "79baebf2-c242-47f4-b0a3-ab1761cfe755",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://localhost:8776/"
+                            "5f4358e168b747a487fe34e64c5619b2/"
+                            "volumes/"
+                            "79baebf2-c242-47f4-b0a3-ab1761cfe755",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "volume2"
+        }
+    ]
+}
+
+VOLUME_DETAILED_V2 = {
+    'volumes': [
+        {
+            "volume_type": "lvmdriver-1",
+            "created_at": "2016-12-08T19:47:37.000000",
+            "bootable": "False",
+            "name": "vol1",
+            "os-vol-mig-status-attr:name_id": None,
+            "consistencygroup_id": None,
+            "source_volid": None,
+            "multiattach": False,
+            "description": None,
+            "replication_status": "disabled",
+            "updated_at": "2016-12-08T19:47:39.000000",
+            "encrypted": False,
+            "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+            "availability_zone": "nova",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
+                    76f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                },
+                {
+                    "rel": "bookmark",
+                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
+                    843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                }
+            ],
+            "attachments": [],
+            "migration_status": None,
+            "snapshot_id": None,
+            "id": "a8da5976-f8ff-4a13-8e92-24f3cf7ac06d",
+            "size": 1,
+            "user_id": "5ef3fad4df274b61b4f16f816616208d",
+            "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+            "os-vol-mig-status-attr:migstat": None,
+            "metadata": {},
+            "status": "available"
+        }
+    ]
+}
+
+VOLUME_DETAILED_V2_2 = {
+    "volumes": [
+        {
+            "volume_type": "lvmdriver-1",
+            "created_at": "2016-12-08T19:47:54.000000",
+            "bootable": "False",
+            "name": "vol2",
+            "os-vol-mig-status-attr:name_id": None,
+            "consistencygroup_id": None,
+            "source_volid": None,
+            "multiattach": False,
+            "description": None,
+            "replication_status": "disabled",
+            "updated_at": "2016-12-08T19:47:55.000000",
+            "encrypted": False,
+            "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+            "availability_zone": "nova",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
+                    76f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+                },
+                {
+                    "rel": "bookmark",
+                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
+                    843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+                }
+            ],
+            "attachments": [],
+            "migration_status": None,
+            "snapshot_id": None,
+            "id": "0f1cef9e-cea0-4237-be35-5873670aa771",
+            "size": 2,
+            "user_id": "5ef3fad4df274b61b4f16f816616208d",
+            "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+            "os-vol-mig-status-attr:migstat": None,
+            "metadata": {},
+            "status": "available"
+        }
+    ]
+}
+
+VOLUME_DETAILED_V2 = {
+    'volumes': [
+        {
+            "volume_type": "lvmdriver-1",
+            "created_at": "2016-12-08T19:47:37.000000",
+            "bootable": "False",
+            "name": "vol1",
+            "os-vol-mig-status-attr:name_id": None,
+            "consistencygroup_id": None,
+            "source_volid": None,
+            "multiattach": False,
+            "description": None,
+            "replication_status": "disabled",
+            "updated_at": "2016-12-08T19:47:39.000000",
+            "encrypted": False,
+            "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+            "availability_zone": "nova",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
+                    76f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                },
+                {
+                    "rel": "bookmark",
+                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
+                    843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                }
+            ],
+            "attachments": [],
+            "migration_status": None,
+            "snapshot_id": None,
+            "id": "a8da5976-f8ff-4a13-8e92-24f3cf7ac06d",
+            "size": 1,
+            "user_id": "5ef3fad4df274b61b4f16f816616208d",
+            "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+            "os-vol-mig-status-attr:migstat": None,
+            "metadata": {},
+            "status": "available"
+        }
+    ]
+}
+
+VOLUME_DETAILED_V2_COMBINED = {
+    "volumes": [
+        {
+            "name": "vol2",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
+                    76f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+                },
+                {
+                    "rel": "bookmark",
+                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
+                    843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+                }
+            ],
+            "id": "0f1cef9e-cea0-4237-be35-5873670aa771",
+        },
+        {
+            "name": "vol1",
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
+                    76f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                },
+                {
+                    "rel": "bookmark",
+                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
+                    843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+                }
+            ],
+            "id": "a8da5976-f8ff-4a13-8e92-24f3cf7ac06d",
+        }
+    ]
+}
