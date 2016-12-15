@@ -14,12 +14,12 @@
 
 import json
 from six.moves.urllib import parse
-from oslo_config import fixture as config_fixture
-from mixmatch.config import CONF
-
 from testtools import testcase
 
+from oslo_config import fixture as config_fixture
+
 from mixmatch import services
+from mixmatch.config import CONF
 from mixmatch.tests.unit import samples
 
 
