@@ -55,6 +55,11 @@ class RequestHandler(object):
             self.request_path.insert(0, 'image')
 
         self.service_type = self.request_path[0]
+        self.enabled_sps = filter(
+            lambda sp: (self.service_type in
+                        config.get_conf_for_sp(sp).enabled_services),
+            CONF.service_providers
+        )
 
         if len(self.request_path) == 1:
             # unversioned calls with no action
@@ -185,7 +190,7 @@ class RequestHandler(object):
         if not CONF.search_by_broadcast:
             return self._local_forward()
 
-        for sp in CONF.service_providers:
+        for sp in self.enabled_sps:
             if sp == 'default':
                 response = self._do_request_on('default')
                 if 200 <= response.status_code < 300:
@@ -207,23 +212,26 @@ class RequestHandler(object):
 
         responses = {}
 
-        for sp in CONF.service_providers:
+        for sp in self.enabled_sps:
             if sp == 'default':
                 responses['default'] = self._do_request_on('default')
             else:
                 for proj in auth.get_projects_at_sp(sp, self.local_token):
                     responses[(sp, proj)] = self._do_request_on(sp, proj)
 
-        return flask.Response(
-            services.aggregate(responses,
-                               self.action[0],
-                               self.service_type,
-                               params=request.args.to_dict(),
-                               path=request.base_url,
-                               detailed=self.detailed),
-            200,
-            content_type=responses['default'].headers['content-type']
-        )
+        if not self.enabled_sps:
+            return flask.Response('{"%s": []}' % self.action[0])
+        else:
+            return flask.Response(
+                services.aggregate(responses,
+                                   self.action[0],
+                                   self.service_type,
+                                   params=request.args.to_dict(),
+                                   path=request.base_url,
+                                   detailed=self.detailed),
+                200,
+                content_type=responses['default'].headers['content-type']
+            )
 
     def _list_api_versions(self):
         return services.list_api_versions(self.service_type,
