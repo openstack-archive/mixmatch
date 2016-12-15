@@ -37,3 +37,6 @@ class TestRequestHandler(testcase.TestCase):
         }
         args = proxy.RequestHandler._prepare_args(user_args)
         self.assertEqual({}, args)
+
+    def test_service_picking(self):
+        pass

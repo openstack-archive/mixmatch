@@ -27,6 +27,7 @@ messagebus="rabbit://stackrabbit:stackqueue@localhost"
 auth_url="http://127.0.0.1:5000/v3"
 image_endpoint="http://localhost:9292"
 volume_endpoint="http://localhost:8776"
+enabled_services=image, volume
 
 [sp_cornmeal-sp]
 sp_name=cornmeal-sp
@@ -34,6 +35,7 @@ messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
 auth_url="http://192.168.0.141:5000/v3"
 image_endpoint="http://192.168.0.141:9292"
 volume_endpoint="http://192.168.0.141:8776"
+enabled_services=image, volume
 
 # Logging
 [loggers]

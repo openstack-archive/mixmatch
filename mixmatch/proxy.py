@@ -55,6 +55,11 @@ class RequestHandler(object):
             self.request_path.insert(0, 'image')
 
         self.service_type = self.request_path[0]
+        self.enabled_sps = filter(
+            lambda sp: self.service_type \
+                       in config.get_conf_for_sp(sp).enabled_services,
+            CONF.service_providers
+        )
 
         if len(self.request_path) == 1:
             # unversioned calls with no action
@@ -185,7 +190,7 @@ class RequestHandler(object):
         if not CONF.search_by_broadcast:
             return self._local_forward()
 
-        for sp in CONF.service_providers:
+        for sp in self.enabled_sps:
             if sp == 'default':
                 response = self._do_request_on('default')
                 if 200 <= response.status_code < 300:
@@ -207,7 +212,7 @@ class RequestHandler(object):
 
         responses = {}
 
-        for sp in CONF.service_providers:
+        for sp in self.enabled_sps:
             if sp == 'default':
                 responses['default'] = self._do_request_on('default')
             else:
