@@ -151,7 +151,10 @@ def more_config():
 
             cfg.StrOpt('volume_endpoint',
                        default=None,
-                       help="Volume Endpoint for Service Provider")
+                       help="Volume Endpoint for Service Provider"),
+            cfg.ListOpt('disabled_services',
+                        default=[],
+                        help="Services to disable for Service Provider")
         ]
 
         CONF.register_group(sp_group)
