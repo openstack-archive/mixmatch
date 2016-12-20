@@ -1,0 +1,79 @@
+[
+  {
+    "first": "/v2/images",
+    "schema": "/v2/schemas/images",
+    "images": [
+      {
+        "schema": "/v2/schemas/image",
+        "min_ram": 0,
+        "virtual_size": null,
+        "owner": "79579219f37b481aa3aad19776f843bc",
+        "checksum": "eb9139e4942121f22bbc2afc0400b2a4",
+        "disk_format": "ami",
+        "ramdisk_id": "9b29c5e6-823e-48d0-b69f-e9bf2446e684",
+        "created_at": "2016-12-08T18:04:39Z",
+        "container_format": "ami",
+        "kernel_id": "6527d45d-3f0e-422f-ac11-53761c2a13d4",
+        "tags": [],
+        "name": "cirros-0.3.4-x86_64-uec",
+        "status": "active",
+        "updated_at": "2016-12-08T18:04:39Z",
+        "visibility": "public",
+        "self": "/v2/images/aceb8ab1-ca19-4c23-874a-871766543242",
+        "min_disk": 0,
+        "protected": false,
+        "id": "aceb8ab1-ca19-4c23-874a-871766543242",
+        "size": 25165824,
+        "file": "/v2/images/aceb8ab1-ca19-4c23-874a-871766543242/file"
+      },
+      {
+        "schema": "/v2/schemas/image",
+        "min_ram": 0,
+        "virtual_size": null,
+        "updated_at": "2016-12-08T18:04:36Z",
+        "disk_format": "ari",
+        "size": 3740163,
+        "created_at": "2016-12-08T18:04:35Z",
+        "container_format": "ari",
+        "tags": [],
+        "name": "cirros-0.3.4-x86_64-uec-ramdisk",
+        "status": "active",
+        "visibility": "public",
+        "self": "/v2/images/9b29c5e6-823e-48d0-b69f-e9bf2446e684",
+        "min_disk": 0,
+        "protected": false,
+        "id": "9b29c5e6-823e-48d0-b69f-e9bf2446e684",
+        "file": "/v2/images/9b29c5e6-823e-48d0-b69f-e9bf2446e684/file",
+        "checksum": "be575a2b939972276ef675752936977f",
+        "owner": "79579219f37b481aa3aad19776f843bc"
+      }
+    ]
+  },
+  {
+    "first": "/v2/images",
+    "schema": "/v2/schemas/images",
+    "images": [
+      {
+        "schema": "/v2/schemas/image",
+        "min_ram": 0,
+        "virtual_size": null,
+        "updated_at": "2016-12-08T18:04:33Z",
+        "disk_format": "aki",
+        "size": 4979632,
+        "created_at": "2016-12-08T18:04:33Z",
+        "container_format": "aki",
+        "tags": [],
+        "name": "cirros-0.3.4-x86_64-uec-kernel",
+        "status": "active",
+        "visibility": "public",
+        "self": "/v2/images/6527d45d-3f0e-422f-ac11-53761c2a13d4",
+        "min_disk": 0,
+        "protected": false,
+        "id": "6527d45d-3f0e-422f-ac11-53761c2a13d4",
+        "file": "/v2/images/6527d45d-3f0e-422f-ac11-53761c2a13d4/file",
+        "checksum": "8a40c862b5735975d82605c1dd395796",
+        "owner": "79579219f37b481aa3aad19776f843bc"
+      }
+    ]
+  }
+]
