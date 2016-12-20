@@ -1,0 +1,118 @@
+[
+  {
+    "volumes": [
+      {
+        "volume_type": "lvmdriver-1",
+        "created_at": "2016-12-08T19:48:07.000000",
+        "bootable": "false",
+        "name": "vol3",
+        "os-vol-mig-status-attr:name_id": null,
+        "consistencygroup_id": null,
+        "source_volid": null,
+        "multiattach": false,
+        "description": null,
+        "replication_status": "disabled",
+        "updated_at": "2016-12-08T19:48:09.000000",
+        "encrypted": false,
+        "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+        "availability_zone": "nova",
+        "links": [
+          {
+            "rel": "self",
+            "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
+          },
+          {
+            "rel": "bookmark",
+            "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
+          }
+        ],
+        "attachments": [],
+        "migration_status": null,
+        "snapshot_id": null,
+        "id": "927f62d4-140c-40b3-ba47-07575db8a26b",
+        "size": 3,
+        "user_id": "5ef3fad4df274b61b4f16f816616208d",
+        "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+        "os-vol-mig-status-attr:migstat": null,
+        "metadata": {},
+        "status": "available"
+      },
+      {
+        "volume_type": "lvmdriver-1",
+        "created_at": "2016-12-08T19:47:54.000000",
+        "bootable": "false",
+        "name": "vol2",
+        "os-vol-mig-status-attr:name_id": null,
+        "consistencygroup_id": null,
+        "source_volid": null,
+        "multiattach": false,
+        "description": null,
+        "replication_status": "disabled",
+        "updated_at": "2016-12-08T19:47:55.000000",
+        "encrypted": false,
+        "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+        "availability_zone": "nova",
+        "links": [
+          {
+            "rel": "self",
+            "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+          },
+          {
+            "rel": "bookmark",
+            "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+          }
+        ],
+        "attachments": [],
+        "migration_status": null,
+        "snapshot_id": null,
+        "id": "0f1cef9e-cea0-4237-be35-5873670aa771",
+        "size": 2,
+        "user_id": "5ef3fad4df274b61b4f16f816616208d",
+        "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+        "os-vol-mig-status-attr:migstat": null,
+        "metadata": {},
+        "status": "available"
+      }
+    ]
+  },
+  {
+    "volumes": [
+      {
+        "volume_type": "lvmdriver-1",
+        "created_at": "2016-12-08T19:47:37.000000",
+        "bootable": "false",
+        "name": "vol1",
+        "os-vol-mig-status-attr:name_id": null,
+        "consistencygroup_id": null,
+        "source_volid": null,
+        "multiattach": false,
+        "description": null,
+        "replication_status": "disabled",
+        "updated_at": "2016-12-08T19:47:39.000000",
+        "encrypted": false,
+        "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
+        "availability_zone": "nova",
+        "links": [
+          {
+            "rel": "self",
+            "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+          },
+          {
+            "rel": "bookmark",
+            "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+          }
+        ],
+        "attachments": [],
+        "migration_status": null,
+        "snapshot_id": null,
+        "id": "a8da5976-f8ff-4a13-8e92-24f3cf7ac06d",
+        "size": 1,
+        "user_id": "5ef3fad4df274b61b4f16f816616208d",
+        "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
+        "os-vol-mig-status-attr:migstat": null,
+        "metadata": {},
+        "status": "available"
+      }
+    ]
+  }
+]
