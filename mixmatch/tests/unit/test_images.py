@@ -16,6 +16,7 @@ import six
 import json
 
 from mixmatch.tests.unit.base import BaseTest
+from mixmatch.tests.unit import samples
 
 from mixmatch.model import insert, ResourceMapping
 
@@ -171,43 +172,15 @@ class TestImages(BaseTest):
         self.session_fixture.add_sp_auth('remote1', 'local-tok',
                                          REMOTE_PROJECT_ID, 'remote-tok')
         self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
-
-        LOCAL_IMAGES = json.dumps({
-            "images": [
-                {"id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
-                 "size": 4096},
-                {"id": "781b3762-9469-4cec-b58d-3349e5de4e9c",
-                 "size": 476704768}
-            ],
-        })
-
-        REMOTE1_IMAGES = json.dumps({
-            "images": [
-                {"id": "4af2929a-3c1f-4ccf-bf91-724444719c78",
-                 "size": 13167626}
-            ],
-        })
-
-        EXPECTED = {
-            "images": [
-                {"id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
-                 "size": 4096},
-                {"id": "4af2929a-3c1f-4ccf-bf91-724444719c78",
-                 "size": 13167626},
-                {"id": "781b3762-9469-4cec-b58d-3349e5de4e9c",
-                 "size": 476704768}
-            ],
-        }
-
         self.requests_fixture.get(
             'http://images.local/v2/images',
-            text=LOCAL_IMAGES,
+            text=json.dumps(samples.multiple_sps['/image/v2/images'][0]),
             status_code=200,
             request_headers={'X-AUTH-TOKEN': 'local-tok'},
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
             'http://images.remote1/v2/images',
-            text=REMOTE1_IMAGES,
+            text=json.dumps(samples.multiple_sps['/image/v2/images'][1]),
             status_code=200,
             request_headers={'X-AUTH-TOKEN': 'remote-tok'},
             headers={'CONTENT-TYPE': 'application/json'})
@@ -217,8 +190,12 @@ class TestImages(BaseTest):
             headers={'X-AUTH-TOKEN': 'local-tok',
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.data.decode("ascii"))
-        actual['images'].sort(key=(lambda x: x[u'id']))
-        self.assertEqual(actual, EXPECTED)
+        actual['images'].sort(key=lambda x: x[u'id'])
+        # actual[u'schema'] = u'/v2/schemas/images'
+        # actual[u'first'] = u'/v2/images'
+        expected = samples.single_sp['/image/v2/images']
+        expected['images'].sort(key=lambda x: x[u'id'])
+        self.assertEqual(actual, expected)
 
     def test_image_unversioned_calls_no_action(self):
         response = self.app.get(

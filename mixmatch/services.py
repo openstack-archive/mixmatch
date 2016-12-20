@@ -98,6 +98,11 @@ def aggregate(responses, key, service_type,
 
     response = {key: resource_list[start:end]}
 
+    for r in responses.values():
+        for k, v in [i for i in json.loads(r.text).items()]:
+            if k in ['schema', 'first'] and k not in response.keys():
+                response[k] = v
+
     # Inject the pagination URIs
     if start > 0:
         params.pop('marker', None)
