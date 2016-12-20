@@ -17,21 +17,21 @@ import json
 json_sample_file_names = [
     'volume_list_v1',
     'volume_list_v2',
-    'volume_list_v2_split',
-    'volume_list_v2_paginated',
+    'volume_list_split_v2',
+    'volume_list_paginated_v2',
     'volume_list_detailed_v1',
     'volume_list_detailed_v2',
     'image_list_v1',
     'image_list_v2',
-    'image_list_v2_split',
-    'image_list_v2_paginated',
+    'image_list_split_v2',
+    'image_list_paginated_v2',
 ]
 
 sample_data_path = './mixmatch/test/unit/sample_data/'
 sample_data = dict()
 for filename in json_sample_file_names:
     with open(sample_data_path + filename + '.json', 'r') as f:
-        all_sample_data[filename] = json.loads(f.read())
+        sample_data[filename] = json.loads(f.read())
 
 multiple_sps = {
     '/image/v2/images': sample_data['image_list_v2_split'],
