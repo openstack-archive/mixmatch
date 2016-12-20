@@ -211,9 +211,11 @@ class TestVolumesV2(BaseTest):
             ],
         }"""
 
-        LOCAL_VOLUMES = json.dumps(samples.VOLUME_DETAILED_V2)
-        REMOTE1_VOLUMES = json.dumps(samples.VOLUME_DETAILED_V2_2)
-        EXPECTED = samples.VOLUME_DETAILED_V2_COMBINED
+        LOCAL_VOLUMES, REMOTE1_VOLUMES = map(
+            json.dumps, samples.two_response['/volume/v2/id/volumes/detail']
+        )
+        EXPECTED = samples.one_response['/volume/v2/id/volumes']
+        EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
 
         self.requests_fixture.get(
             'http://volumes.local/v2/my_project_id/volumes/detail',
@@ -234,7 +236,7 @@ class TestVolumesV2(BaseTest):
             headers={'X-AUTH-TOKEN': 'local-tok',
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.data.decode("ascii"))
-        actual['volumes'].sort(key=(lambda x: x[u'id']))
+        actual['volumes'].sort(key=lambda x: x[u'id'])
         self.assertEqual(actual, EXPECTED)
 
     def test_volume_unversioned_calls_no_action(self):

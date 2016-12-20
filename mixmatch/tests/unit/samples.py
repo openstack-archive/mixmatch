@@ -12,6 +12,44 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+import json
+import os
+
+
+filenames = [
+    'volume_list_v1',
+    'volume_list_v2',
+    'volume_list_paginated_v2',
+    'volume_list_detail_v1',
+    'volume_list_detail_v2',
+    'split_volume_list_detail_v2',
+    'image_list_v1',
+    'image_list_v2',
+    'split_image_list_v2',
+    'image_list_paginated_v2',
+]
+
+data_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'sample_data', '%s.json'
+)
+sample_data = {s: json.loads(open(data_path % s).read()) for s in filenames}
+
+two_response = {
+    '/image/v2/images': sample_data['split_image_list_v2'],
+    '/volume/v2/id/volumes/detail': sample_data['split_volume_list_detail_v2']
+}
+
+one_response = {
+    '/image/v1/images': sample_data['image_list_v1'],
+    '/image/v2/images': sample_data['image_list_v2'],
+    '/image/v2/images?limit=1': sample_data['image_list_paginated_v2'],
+    '/volume/v1/id/volumes': sample_data['volume_list_v1'],
+    '/volume/v1/id/volumes/detail': sample_data['volume_list_detail_v1'],
+    '/volume/v2/id/volumes': sample_data['volume_list_v2'],
+    '/volume/v2/id/volumes/detail': sample_data['volume_list_detail_v2'],
+    '/volume/v2/id/volumes?limit=1': sample_data['volume_list_paginated_v2']
+}
+
 IMAGE_LIST_V2 = {
     "images": [
         {
@@ -256,49 +294,6 @@ VOLUME_DETAILED_V2_2 = {
             "snapshot_id": None,
             "id": "0f1cef9e-cea0-4237-be35-5873670aa771",
             "size": 2,
-            "user_id": "5ef3fad4df274b61b4f16f816616208d",
-            "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
-            "os-vol-mig-status-attr:migstat": None,
-            "metadata": {},
-            "status": "available"
-        }
-    ]
-}
-
-VOLUME_DETAILED_V2 = {
-    'volumes': [
-        {
-            "volume_type": "lvmdriver-1",
-            "created_at": "2016-12-08T19:47:37.000000",
-            "bootable": "False",
-            "name": "vol1",
-            "os-vol-mig-status-attr:name_id": None,
-            "consistencygroup_id": None,
-            "source_volid": None,
-            "multiattach": False,
-            "description": None,
-            "replication_status": "disabled",
-            "updated_at": "2016-12-08T19:47:39.000000",
-            "encrypted": False,
-            "os-vol-host-attr:host": "dragonfruit-idp@lvmdriver-1#lvmdriver-1",
-            "availability_zone": "nova",
-            "links": [
-                {
-                    "rel": "self",
-                    "href": "http://localhost:8776/v2/79579219f37b481aa3aad197\
-                    76f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
-                },
-                {
-                    "rel": "bookmark",
-                    "href": "http://localhost:8776/79579219f37b481aa3aad19776f\
-                    843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
-                }
-            ],
-            "attachments": [],
-            "migration_status": None,
-            "snapshot_id": None,
-            "id": "a8da5976-f8ff-4a13-8e92-24f3cf7ac06d",
-            "size": 1,
             "user_id": "5ef3fad4df274b61b4f16f816616208d",
             "os-vol-tenant-attr:tenant_id": "79579219f37b481aa3aad19776f843bc",
             "os-vol-mig-status-attr:migstat": None,
