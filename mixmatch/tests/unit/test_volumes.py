@@ -183,37 +183,12 @@ class TestVolumesV2(BaseTest):
         self.session_fixture.add_sp_auth('remote1', 'local-tok',
                                          REMOTE_PROJECT_ID, 'remote-tok')
         self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
-        """
-        LOCAL_VOLUMES = json.dumps({
-            "volumes": [
-                {"id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
-                 "size": 1},
-                {"id": "781b3762-9469-4cec-b58d-3349e5de4e9c",
-                 "size": 3}
-            ],
-        })
 
-        REMOTE1_VOLUMES = json.dumps({
-            "volumes": [
-                {"id": "4af2929a-3c1f-4ccf-bf91-724444719c78",
-                 "size": 2}
-            ],
-        })
-
-        EXPECTED = {
-            "volumes": [
-                {"id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
-                 "size": 1},
-                {"id": "4af2929a-3c1f-4ccf-bf91-724444719c78",
-                 "size": 2},
-                {"id": "781b3762-9469-4cec-b58d-3349e5de4e9c",
-                 "size": 3}
-            ],
-        }"""
-
-        LOCAL_VOLUMES = json.dumps(samples.VOLUME_DETAILED_V2)
-        REMOTE1_VOLUMES = json.dumps(samples.VOLUME_DETAILED_V2_2)
-        EXPECTED = samples.VOLUME_DETAILED_V2_COMBINED
+        LOCAL_VOLUMES, REMOTE1_VOLUMES = map(
+            json.dumps, samples.multiple_sps['/volume/v2/id/volumes/detail']
+        )
+        EXPECTED = samples.single_sp['/volume/v2/id/volumes']
+        EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
 
         self.requests_fixture.get(
             'http://volumes.local/v2/my_project_id/volumes/detail',
@@ -234,7 +209,7 @@ class TestVolumesV2(BaseTest):
             headers={'X-AUTH-TOKEN': 'local-tok',
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.data.decode("ascii"))
-        actual['volumes'].sort(key=(lambda x: x[u'id']))
+        actual['volumes'].sort(key=lambda x: x[u'id'])
         self.assertEqual(actual, EXPECTED)
 
     def test_volume_unversioned_calls_no_action(self):
