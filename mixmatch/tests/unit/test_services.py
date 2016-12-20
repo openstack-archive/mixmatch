@@ -50,27 +50,46 @@ class Url(object):
         return hash(self.parts)
 
 
-VOLUMES = {'default': Response(json.dumps(samples.VOLUME_LIST_V2)),
-           'sp1': Response(json.dumps(samples.VOLUME_LIST_V2_2))}
-
-IMAGES = {'default': Response(json.dumps(samples.IMAGE_LIST_V2)),
-          'sp1': Response(json.dumps(samples.IMAGE_LIST_V2_2))}
-
-VOLUMES_DETAILED = {
-    'default': Response(json.dumps(samples.VOLUME_DETAILED_V2)),
-    'sp1': Response(json.dumps(samples.VOLUME_DETAILED_V2_2))
+VOLUMES = {
+    'default': Response(json.dumps(
+        samples.two_sps['/volume/v2/id/volumes/detail'][0]
+    )),
+    'sp1': Response(json.dumps(
+        samples.two_sps['/volume/v2/id/volumes/detail'][1]
+    ))
 }
 
-SMALLEST_IMAGE = '941882c5-b992-4fa9-bcba-9d25d2f4e3b8'
-EARLIEST_IMAGE = '781b3762-9469-4cec-b58d-3349e5de4e9c'
-SECOND_EARLIEST_IMAGE = '1bea47ed-f6a9-463b-b423-14b9cca9ad27'
-LATEST_IMAGE = '61f655c0-4511-4307-a257-4162c87a5130'
+IMAGES = {
+    'default': Response(json.dumps(
+        samples.two_sps['/image/v2/images'][0]
+    )),
+    'sp1': Response(json.dumps(
+        samples.two_sps['/image/v2/images'][1]
+    ))
+}
+
+SMALLEST_IMAGE = min(
+    samples.one_sp['/image/v2/images']['images'],
+    key=lambda d: d['size']
+)['id']
+EARLIEST_IMAGE = min(
+    samples.one_sp['/image/v2/images']['images'],
+    key=lambda d: d['updated_at']
+)['id']
+SECOND_EARLIEST_IMAGE = sorted(
+    samples.one_sp['/image/v2/images']['images'],
+    key=lambda d: d['updated_at']
+)[1]['id']
+LATEST_IMAGE = sorted(
+    samples.one_sp['/image/v2/images']['images'],
+    key=lambda d: d['updated_at']
+)[-1]['id']
 
 IMAGE_PATH = 'http://localhost/image/images'
 VOLUME_PATH = 'http://localhost/volume/volumes'
 
-IMAGES_IN_SAMPLE = 5
-VOLUMES_IN_SAMPLE = 2
+IMAGES_IN_SAMPLE = 3
+VOLUMES_IN_SAMPLE = 3
 
 API_VERSIONS = 'v3.2, v2.0, v1'
 NUM_OF_VERSIONS = 3
@@ -296,7 +315,7 @@ class TestServices(testcase.TestCase):
     def test_remove_details(self):
         """Test aggregation on volumes with detailed = False"""
         response = json.loads(services.aggregate(
-            VOLUMES_DETAILED, 'volumes', 'volume', detailed=False
+            VOLUMES, 'volumes', 'volume', detailed=False
         ))
         for v in response['volumes']:
             self.assertEqual(
