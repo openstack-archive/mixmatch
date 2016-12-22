@@ -184,22 +184,20 @@ class TestVolumesV2(BaseTest):
                                          REMOTE_PROJECT_ID, 'remote-tok')
         self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
 
-        LOCAL_VOLUMES, REMOTE1_VOLUMES = map(
-            json.dumps, samples.multiple_sps['/volume/v2/id/volumes/detail']
-        )
-        EXPECTED = samples.single_sp['/volume/v2/id/volumes']
-        EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
-
         self.requests_fixture.get(
             'http://volumes.local/v2/my_project_id/volumes/detail',
-            text=LOCAL_VOLUMES,
+            text=json.dumps(
+                samples.multiple_sps['/volume/v2/id/volumes/detail'][0]
+            ),
             status_code=200,
             request_headers={'X-AUTH-TOKEN': 'local-tok'},
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
             'http://volumes.remote1/v2/'
             '319d8162b38342609f5fafe1404216b9/volumes/detail',
-            text=REMOTE1_VOLUMES,
+            text=json.dumps(
+                samples.multiple_sps['/volume/v2/id/volumes/detail'][1]
+            ),
             status_code=200,
             request_headers={'X-AUTH-TOKEN': 'remote-tok'},
             headers={'CONTENT-TYPE': 'application/json'})
@@ -210,6 +208,8 @@ class TestVolumesV2(BaseTest):
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.data.decode("ascii"))
         actual['volumes'].sort(key=lambda x: x[u'id'])
+        EXPECTED = samples.single_sp['/volume/v2/id/volumes']
+        EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
         self.assertEqual(actual, EXPECTED)
 
     def test_volume_unversioned_calls_no_action(self):
