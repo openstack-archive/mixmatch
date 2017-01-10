@@ -14,6 +14,7 @@ Contents:
    readme
    architecture
    installation
+   identity
    contributing
 
 Indices and tables
