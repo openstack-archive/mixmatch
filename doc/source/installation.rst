@@ -40,8 +40,8 @@ To run the proxy with Apache in Ubuntu: ::
 Configuration
 =============
 The proxy searches for the configuration file ``mixmatch.conf`` in the
-current directory, the ``etc/mixmatch`` directory relative to the current directory or
-``/etc/mixmatch``
+current directory, the ``etc/mixmatch`` directory relative to the current
+directory or ``/etc/mixmatch``.
 
 A sample configuration file has been provided in the ``etc`` folder of the
 source code.
@@ -49,16 +49,21 @@ source code.
 The proxy will substitute the endpoint of the service it is proxying.
 Only Cinder and Glance are supported for now.
 
-For each SP, you must have a section in ``mixmatch.conf`` which contains the
-service provider name (as it is listed in Keystone's service catalog), and the
+For each SP, you must have an option group in ``mixmatch.conf`` which contains
+the service provider name (as it is listed in Keystone's service catalog), the
 URI for connecting to the notification messagebus in that OpenStack
-installation.  For instance::
+installation, the keystone auth url, and the endpoints for each of the services
+enabled under the enabled_services option. For instance::
 
     [sp_one]
     sp_name="keystone-sp1"
     messagebus="rabbit://rabbituser:rabbitpassword@192.168.7.20"
     image_endpoint="http://192.168.7.20:9292"
     volume_endpoint="http://192.168.7.20:8776"
+    enabled_services=image, volume
+
+You must also have each service provider's name listed under
+``service_providers`` in ``[DEFAULT]``.
 
 Keystone Configuration
 ----------------------

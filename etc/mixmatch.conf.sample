@@ -1,40 +1,80 @@
+# Configuration for mixmatch-proxy
+
 [DEFAULT]
+# Enable or disable the proxy's aggregation of responses from service providers
 aggregation=True
+
 search_by_broadcast=True
+
+# The names of the service providers
+# Each should have an option group below e.g. [sp_default], [sp_cornmeal-sp]
+# Change change this list to reflect service providers and h
 service_providers=default, cornmeal-sp
+
+# Available image API versions
 image_api_versions = v2.3, v2.2, v2.1, v2.0, v1.1, v1.0
+# Available volume API versions
 volume_api_versions = v3.0, v2.0, v1.0
 
 [database]
 connection="sqlite:////home/ubuntu/proxy.db"
 
 [auth]
+# URL for Keystone API
 auth_url="http://127.0.0.1:5000/v3"
+# Default username
 username="admin"
+# Default domain ID
 user_domain_id="default"
+# Default password
 password="nomoresecrete"
+# Default project name
 project_name="admin"
+# Default project domain ID
 project_domain_id="default"
+# Enable/disable caching
 caching=True
 
 [cache]
 enabled=True
 backend=dogpile.cache.memory
 
+# Default service provider configuration group
+# Change to match your own default service provider
 [sp_default]
+# Name of this service provider
 sp_name=default
+# Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@localhost"
+# Local Keystone (auth) endpoint on this service provider
+# Relative to default service provider
 auth_url="http://127.0.0.1:5000/v3"
+# Glance (image) endpoint for this service provider
+# Relative to default service provider
 image_endpoint="http://localhost:9292"
+# Local Cinder (volume) endpoint on this service provider
+# Relative to default service provider
 volume_endpoint="http://localhost:8776"
+# Services that are enabled for this service provider
 enabled_services=image, volume
 
+# Service provider configuration group
+# Change to match your own default service provider
 [sp_cornmeal-sp]
+# Name of this service provider
 sp_name=cornmeal-sp
+# Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
+# Local Keystone (auth) endpoint on this service provider
+# Relative to default service provider
 auth_url="http://192.168.0.141:5000/v3"
+# Glance (image) endpoint for this service provider
+# Relative to default service provider
 image_endpoint="http://192.168.0.141:9292"
+# Local Cinder (volume) endpoint on this service provider
+# Relative to default service provider
 volume_endpoint="http://192.168.0.141:8776"
+# Services that are enabled for this service provider
 enabled_services=image, volume
 
 # Logging
