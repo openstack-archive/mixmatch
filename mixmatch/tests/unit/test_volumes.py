@@ -30,15 +30,18 @@ class TestVolumesV2(base.BaseTest):
         # migrated to these fixtures.
         self.load_auth_fixtures()
 
-    def _construct_url(self, auth, volume_id, sp=None):
+    def _construct_url(self, auth=None, target=None, sp=None):
         if not sp:
-            prefix = '/volume'
+            url = '/volume'
         else:
-            prefix = self.service_providers[sp]['volume_endpoint']
+            url = self.service_providers[sp]['volume_endpoint']
 
-        return (
-            '%s/v2/%s/volumes/%s' % (prefix, auth.get_project_id(), volume_id)
-        )
+        if auth:
+            url = '%s/v2/%s/volumes' % (url, auth.get_project_id())
+            if target:
+                url = '%s/%s' % (url, target)
+
+        return url
 
     def test_get_volume_local_mapping(self):
         volume_id = uuid.uuid4().hex
@@ -227,13 +230,25 @@ class TestVolumesV2(base.BaseTest):
             headers=self.auth.get_headers())
         self.assertEqual(json.loads(response.data.decode("ascii")), local)
 
-    def test_volume_unversioned_calls_no_action(self):
+    def test_volume_unversioned_calls_no_action_aggregation(self):
         response = self.app.get(
             '/volume',
             headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
         actual = json.loads(response.data.decode("ascii"))
         self.assertEqual(len(actual['versions']), 3)
+
+    def test_unversioned_call_no_action_no_aggregation(self):
+        self.config_fixture.load_raw_values(aggregation=False)
+        fake_response = uuid.uuid4().hex
+
+        self.requests_fixture.get(self._construct_url(sp='default'),
+                                  text=six.u(fake_response),
+                                  headers={'CONTENT-TYPE': 'application/json'})
+
+        response = self.app.get('/volume')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, fake_response)
 
     def test_volume_versioned_calls_no_action(self):
         response = self.app.get(
