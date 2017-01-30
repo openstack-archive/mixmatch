@@ -23,31 +23,29 @@ CONF = config.CONF
 
 
 def construct_url(service_provider, service_type,
-                  version, action, project_id=None):
+                  version=None, action=None, project_id=None):
     """Construct the full URL for an Openstack API call."""
     conf = config.get_conf_for_sp(service_provider)
 
     if service_type == 'image':
-        endpoint = conf.image_endpoint
-
-        return "%(endpoint)s/%(version)s/%(action)s" % {
-            'endpoint': endpoint,
-            'version': version,
-            'action': os.path.join(*action)
-        }
+        url = conf.image_endpoint
+        if version:
+            url = '%s/%s' % (url, version)
     elif service_type == 'volume':
-        endpoint = conf.volume_endpoint
+        url = conf.volume_endpoint
+        if version:
+            url = '%s/%s' % (url, version)
+        if project_id:
+            url = '%s/%s' % (url, project_id)
 
-        return "%(endpoint)s/%(version)s/%(project)s/%(action)s" % {
-            'endpoint': endpoint,
-            'version': version,
-            'project': project_id,
-            'action': os.path.join(*action)
-        }
+    if action:
+        url = '%s/%s' % (url, os.path.join(*action))
+
+    return url
 
 
 def aggregate(responses, key, service_type,
-              params=None, path=None, detailed=True):
+              params=None, path=None, strip_details=True):
     """Combine responses from several clusters into one response."""
     if params:
         limit = int(params.get('limit', 0))
@@ -93,7 +91,7 @@ def aggregate(responses, key, service_type,
     # we automatically make the call to /volumes/detail
     # because we need sorting information. Here we
     # remove the extra values /volumes/detail provides
-    if key == 'volumes' and not detailed:
+    if key == 'volumes' and strip_details:
         resource_list[start:end] = _remove_details(resource_list[start:end])
 
     response = {key: resource_list[start:end]}
