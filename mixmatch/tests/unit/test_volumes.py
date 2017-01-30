@@ -14,209 +14,223 @@
 
 import six
 import json
+import uuid
 
-from mixmatch.tests.unit.base import BaseTest
+from mixmatch.tests.unit import base
 
 from mixmatch.model import insert, ResourceMapping
 from mixmatch.tests.unit import samples
 
 
-class TestVolumesV2(BaseTest):
+class TestVolumesV2(base.BaseTest):
     def setUp(self):
         super(TestVolumesV2, self).setUp()
+        # TODO(knikolla): load_auth_fixtures() should be done in the base
+        # class, but may conflict with the other tests which haven't been
+        # migrated to these fixtures.
+        self.load_auth_fixtures()
 
-    def test_get_volume(self):
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
-        insert(ResourceMapping('volumes', '6c4ae06e14bd422e97afe07223c99e18',
-                               'not-to-be-read', 'default'))
+    def _construct_url(self, auth, volume_id, sp=None):
+        if not sp:
+            prefix = '/volume'
+        else:
+            prefix = self.service_providers[sp]['volume_endpoint']
 
-        EXPECTED = 'WEOFIHJREINJEFDOWEIJFWIENFERINWFKEWF'
+        return (
+            '%s/v2/%s/volumes/%s' % (prefix, auth.get_project_id(), volume_id)
+        )
+
+    def test_get_volume_local_mapping(self):
+        volume_id = uuid.uuid4().hex
+
+        insert(ResourceMapping('volumes',
+                               volume_id,
+                               self.auth.get_project_id(),
+                               'default'))
+
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
-            text=six.u(EXPECTED),
+            self._construct_url(self.auth, volume_id, sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(volume_id),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.get(
-            '/volume/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'}
+            self._construct_url(self.auth, volume_id),
+            headers=self.auth.get_headers()
         )
-        self.assertEqual(response.data, six.b(EXPECTED))
+        self.assertEqual(response.data, six.b(volume_id))
 
-    def test_get_volume_remote(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        LOCAL_TOKEN = "my-local-token"
-        REMOTE_TOKEN = "my-remote-token"
+    def test_get_volume_remote_mapping(self):
+        volume_id = uuid.uuid4().hex
 
-        self.session_fixture.add_sp_auth('remote1', LOCAL_TOKEN,
-                                         REMOTE_PROJECT_ID, REMOTE_TOKEN)
-        insert(ResourceMapping('volumes', "6c4ae06e14bd422e97afe07223c99e18",
-                               REMOTE_PROJECT_ID, "remote1"))
-
-        EXPECTED = 'WEOFIHJREINJEFDOWEIJFWIENFERINWFKEWF'
-        self.requests_fixture.get(
-            'http://volumes.remote1/v2/'
-            '319d8162b38342609f5fafe1404216b9/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(EXPECTED),
-            request_headers={'X-AUTH-TOKEN': REMOTE_TOKEN},
-            headers={'CONTENT-TYPE': 'application/json'})
-        response = self.app.get(
-            '/volume/v2/319d8162b38342609f5fafe1404216b9/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': LOCAL_TOKEN,
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.data, six.b(EXPECTED))
-
-    def test_get_volume_default_to_local(self):
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
+        insert(ResourceMapping('volumes', volume_id,
+                               self.remote_auth.get_project_id(), "remote1"))
 
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
-            status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
+            self._construct_url(self.remote_auth, volume_id, sp='remote1'),
+            text=six.u(volume_id),
+            request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         response = self.app.get(
-            '/volume/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.status_code, 400)
+            self._construct_url(self.remote_auth, volume_id),
+            headers=self.auth.get_headers())
+        self.assertEqual(response.data, six.b(volume_id))
+
+    def test_get_volume_no_search(self):
+        volume_id = uuid.uuid4().hex
+
+        self.requests_fixture.get(
+            self._construct_url(self.auth, volume_id, sp='default'),
+            text=six.u(volume_id),
+            status_code=404,
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'})
+        response = self.app.get(
+            self._construct_url(self.auth, volume_id),
+            headers=self.auth.get_headers())
+        self.assertEqual(response.status_code, 404)
 
     def test_get_volume_search_local(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
 
-        VOLUME = 'Here is my volume.'
+        volume_id = uuid.uuid4().hex
 
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(VOLUME),
+            self._construct_url(self.auth, volume_id, sp='default'),
+            text=six.u(volume_id),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
+            request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         # Don't add a response for the remote SP, to ensure that our code
         # always checks locally first.
 
         response = self.app.get(
-            '/volume/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(self.auth, volume_id),
+            headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(VOLUME))
+        self.assertEqual(response.data, six.b(volume_id))
 
     def test_get_volume_search_remote(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
 
-        VOLUME = 'Here is my volume.'
+        volume_id = uuid.uuid4().hex
 
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
-            status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
+            self._construct_url(self.auth, volume_id, sp='default'),
+            status_code=404,
+            request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
-            'http://volumes.remote1/v2/319d8162b38342609f5fafe1404216b9'
-            '/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(VOLUME),
+            self._construct_url(self.remote_auth, volume_id, sp='remote1'),
+            text=six.u(volume_id),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
+            request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
 
         response = self.app.get(
-            '/volume/v2/319d8162b38342609f5fafe1404216b9/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(self.auth, volume_id),
+            headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(VOLUME))
+        self.assertEqual(response.data, six.b(volume_id))
 
     def test_get_volume_search_nexists(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
+
+        volume_id = uuid.uuid4().hex
 
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
-            status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
+            self._construct_url(self.auth, volume_id, sp='default'),
+            status_code=404,
+            request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
-            'http://volumes.remote1/v2/319d8162b38342609f5fafe1404216b9/'
-            'volumes/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="also nope.",
-            status_code=403,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
+            self._construct_url(self.remote_auth, volume_id, sp='remote1'),
+            status_code=404,
+            request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
 
         response = self.app.get(
-            '/volume/v2/my_project_id/'
-            'volumes/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(self.auth, volume_id),
+            headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 404)
 
-    def test_list_volumes(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
+    def test_list_volumes_aggregation_no_detail(self):
+        self.config_fixture.load_raw_values(aggregation=True)
 
         self.requests_fixture.get(
-            'http://volumes.local/v2/my_project_id/volumes/detail',
+            self._construct_url(self.auth, 'detail', sp='default'),
             text=json.dumps(
                 samples.multiple_sps['/volume/v2/id/volumes/detail'][0]
             ),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
+            request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
-            'http://volumes.remote1/v2/'
-            '319d8162b38342609f5fafe1404216b9/volumes/detail',
+            self._construct_url(self.remote_auth, 'detail', sp='remote1'),
             text=json.dumps(
                 samples.multiple_sps['/volume/v2/id/volumes/detail'][1]
             ),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
+            request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
 
         response = self.app.get(
-            '/volume/v2/my_project_id/volumes',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            '/volume/v2/%s/volumes' % self.auth.get_project_id(),
+            headers=self.auth.get_headers())
         actual = json.loads(response.data.decode("ascii"))
         actual['volumes'].sort(key=lambda x: x[u'id'])
         EXPECTED = samples.single_sp['/volume/v2/id/volumes']
         EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
         self.assertEqual(actual, EXPECTED)
 
+    def test_list_volumes_aggregation_detail(self):
+        self.config_fixture.load_raw_values(aggregation=True)
+
+        self.requests_fixture.get(
+            self._construct_url(self.auth, 'detail', sp='default'),
+            text=json.dumps(
+                samples.multiple_sps['/volume/v2/id/volumes/detail'][0]
+            ),
+            status_code=200,
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'})
+        self.requests_fixture.get(
+            self._construct_url(self.remote_auth, 'detail', sp='remote1'),
+            text=json.dumps(
+                samples.multiple_sps['/volume/v2/id/volumes/detail'][1]
+            ),
+            status_code=200,
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'})
+
+        response = self.app.get(
+            '/volume/v2/%s/volumes/detail' % self.auth.get_project_id(),
+            headers=self.auth.get_headers())
+        actual = json.loads(response.data.decode("ascii"))
+        actual['volumes'].sort(key=lambda x: x[u'id'])
+        EXPECTED = samples.single_sp['/volume/v2/id/volumes/detail']
+        EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
+        self.assertEqual(actual, EXPECTED)
+
+    def test_list_volumes_no_aggregation(self):
+        self.config_fixture.load_raw_values(aggregation=False)
+        local = samples.multiple_sps['/volume/v2/id/volumes/detail'][0]
+
+        self.requests_fixture.get(
+            self._construct_url(self.auth, 'detail', sp='default'),
+            text=json.dumps(local),
+            status_code=200,
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'})
+        response = self.app.get(
+            self._construct_url(self.auth, 'detail'),
+            headers=self.auth.get_headers())
+        self.assertEqual(json.loads(response.data.decode("ascii")), local)
+
     def test_volume_unversioned_calls_no_action(self):
         response = self.app.get(
             '/volume',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
         actual = json.loads(response.data.decode("ascii"))
         self.assertEqual(len(actual['versions']), 3)
@@ -224,6 +238,5 @@ class TestVolumesV2(BaseTest):
     def test_volume_versioned_calls_no_action(self):
         response = self.app.get(
             '/volume/v2',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 400)
