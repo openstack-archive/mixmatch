@@ -41,6 +41,13 @@ def is_valid_uuid(value):
         return False
 
 
+def _safe_get(a, index, default=None):
+    try:
+        return a[index]
+    except IndexError:
+        return default
+
+
 class RequestHandler(object):
     def __init__(self, method, path, headers):
         self.method = method
@@ -48,12 +55,16 @@ class RequestHandler(object):
         self.headers = headers
 
         self.request_path = path.split('/')
+        self.local_token = headers.get('X-AUTH-TOKEN', None)
+
+        self.strip_details = False
 
         # workaround to fix glance requests
         # that does not contain image directory
         if self.request_path[0] in ['v1', 'v2']:
             self.request_path.insert(0, 'image')
 
+        self.version = _safe_get(self.request_path, 1)
         self.service_type = self.request_path[0]
         self.enabled_sps = filter(
             lambda sp: (self.service_type in
@@ -62,38 +73,34 @@ class RequestHandler(object):
         )
 
         if len(self.request_path) == 1:
-            # unversioned calls with no action
-            self._forward = self._list_api_versions
+            if CONF.aggregation:
+                # unversioned calls with no action
+                self._forward = self._list_api_versions
+            else:
+                self._forward = self._local_forward
+                self.action = []
             return
         elif len(self.request_path) == 2:
             # versioned calls with no action
             abort(400)
-
-        self.version = self.request_path[1]
-
-        self.detailed = True
-        if self.service_type == 'image':
-            # /image/{version}/{action}
-            self.action = self.request_path[2:]
-        elif self.service_type == 'volume':
-            # /volume/{version}/{project_id}/{action}
-            self.action = self.request_path[3:]
-
-            # if request is to /volumes, change it
-            # to /volumes/detail for aggregation
-            if self.method == 'GET' \
-                    and self.action[-1] == 'volumes':
-                self.detailed = False
-                self.action.insert(len(self.action), 'detail')
         else:
-            raise ValueError
+            if self.service_type == 'image':
+                # /image/{version}/{action}
+                self.action = self.request_path[2:]
+            elif self.service_type == 'volume':
+                # /volume/{version}/{project_id}/{action}
+                self.action = self.request_path[3:]
 
-        if self.method in ['GET']:
-            self.stream = True
-        else:
-            self.stream = False
+                # if request is to /volumes, change it
+                # to /volumes/detail for aggregation
+                # and set strip_details to true
+                if self.method == 'GET' \
+                        and self.action[-1] == 'volumes':
+                    self.strip_details = True
+                    self.action.insert(len(self.action), 'detail')
+            else:
+                raise ValueError
 
-        resource_id = None
         mapping = None
         aggregate = False
 
@@ -131,21 +138,26 @@ class RequestHandler(object):
             self._forward = self._search_forward
 
     def _do_request_on(self, sp, project_id=None):
-        if sp == 'default':
-            auth_session = auth.get_local_auth(self.local_token)
-        else:
-            auth_session = auth.get_sp_auth(sp,
-                                            self.local_token,
-                                            project_id)
         headers = self._prepare_headers(self.headers)
-        headers['X-AUTH-TOKEN'] = auth_session.get_token()
+
+        if self.local_token:
+            if sp == 'default':
+                auth_session = auth.get_local_auth(self.local_token)
+            else:
+                auth_session = auth.get_sp_auth(sp,
+                                                self.local_token,
+                                                project_id)
+            headers['X-AUTH-TOKEN'] = auth_session.get_token()
+            project_id = auth_session.get_project_id()
+        else:
+            project_id = None
 
         url = services.construct_url(
             sp,
             self.service_type,
             self.version,
             self.action,
-            project_id=auth_session.get_project_id()
+            project_id=project_id
         )
 
         LOG.info('%s: %s' % (self.method, url))
@@ -225,7 +237,7 @@ class RequestHandler(object):
                                self.service_type,
                                params=request.args.to_dict(),
                                path=request.base_url,
-                               detailed=self.detailed),
+                               strip_details=self.strip_details),
             200,
             content_type='application/json'
         )
@@ -262,6 +274,10 @@ class RequestHandler(object):
     @property
     def chunked(self):
         return self.headers.get('Transfer-Encoding', '').lower() == 'chunked'
+
+    @property
+    def stream(self):
+        return True if self.method in ['GET'] else False
 
 
 @app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'PUT',
