@@ -61,7 +61,7 @@ class RequestHandler(object):
             CONF.service_providers
         )
 
-        if len(self.request_path) == 1:
+        if len(self.request_path) == 1 and CONF.aggregation:
             # unversioned calls with no action
             self._forward = self._list_api_versions
             return
