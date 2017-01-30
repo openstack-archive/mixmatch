@@ -14,7 +14,9 @@
 
 import oslo_db
 import fixtures
+import uuid
 
+import six
 from testtools import testcase
 from six.moves.urllib import parse
 from requests_mock.contrib import fixture as requests_fixture
@@ -23,6 +25,8 @@ from oslo_config import fixture as config_fixture
 from mixmatch.config import CONF, more_config
 from mixmatch.proxy import app
 from mixmatch.model import BASE, enginefacade
+from mixmatch import model
+from mixmatch import services
 
 
 class BaseTest(testcase.TestCase):
@@ -33,6 +37,17 @@ class BaseTest(testcase.TestCase):
         self.session_fixture = self.useFixture(SessionFixture())
         self.db_fixture = self.useFixture(DatabaseFixture(conf=CONF))
         self.app = app.test_client()
+
+        self.service_providers = {
+            'default': {
+                'image_endpoint': 'http://images.local',
+                'volume_endpoint': 'http://volumes.local'
+            },
+            'remote1': {
+                'image_endpoint': 'http://images.remote1',
+                'volume_endpoint': 'http://volumes.remote1'
+            },
+        }
 
         # set config values
         self.config_fixture.load_raw_values(
@@ -48,6 +63,22 @@ class BaseTest(testcase.TestCase):
             volume_endpoint='http://volumes.remote1')
         more_config()
 
+    def load_auth_fixtures(self):
+        self.auth = FakeSession(token=uuid.uuid4().hex,
+                                project=uuid.uuid4().hex)
+        self.remote_auth = (FakeSession(token=uuid.uuid4().hex,
+                                        project=uuid.uuid4().hex))
+
+        self.session_fixture.add_local_auth(self.auth.get_token(),
+                                            self.auth.get_project_id())
+        self.session_fixture.add_sp_auth('remote1',
+                                         self.auth.get_token(),
+                                         self.remote_auth.get_project_id(),
+                                         self.remote_auth.get_token())
+        self.session_fixture.add_project_at_sp(
+            'remote1', self.remote_auth.get_project_id()
+        )
+
 
 class FakeSession(object):
     """A replacement for keystoneauth1.session.Session."""
@@ -60,6 +91,10 @@ class FakeSession(object):
 
     def get_project_id(self):
         return self.project
+
+    def get_headers(self):
+        return {'X-AUTH-TOKEN': self.token,
+                'CONTENT-TYPE': 'application/json'}
 
 
 class SessionFixture(fixtures.Fixture):
