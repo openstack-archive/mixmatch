@@ -14,34 +14,50 @@
 
 import six
 import json
+import uuid
 
+from mixmatch.tests.unit import base
 from mixmatch.tests.unit import samples
-from mixmatch.tests.unit.base import BaseTest
 
 from mixmatch.model import insert, ResourceMapping
 
 
-class TestImages(BaseTest):
+class TestImages(base.BaseTest):
     def setUp(self):
         super(TestImages, self).setUp()
+        # TODO(ericjuma): load_auth_fixtures() should be done in the base
+        # class, but may conflict with the other tests which haven't been
+        # migrated to these fixtures.
 
-    def test_get_image(self):
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
-        insert(ResourceMapping("images", "6c4ae06e14bd422e97afe07223c99e18",
-                               "not-to-be-read", "default"))
+    def _construct_url(self, image_id, sp=None):
+        if not sp:
+            prefix = '/image'
+        else:
+            prefix = self.service_providers[sp]['image_endpoint']
 
-        EXPECTED = 'WEOFIHJREINJEFDOWEIJFWIENFERINWFKEWF'
+        return (
+            '%s/v2/images/%s' % (prefix, image_id)
+        )
+
+    def test_get_image_local(self):
+        self.load_auth_fixtures()
+
+        image_id = uuid.uuid4().hex
+        insert(ResourceMapping(
+            "images", image_id, self.auth.get_project_id(), "default"
+        ))
+
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
-            text=six.u(EXPECTED),
-            headers={'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id, sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(image_id),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.data, six.b(EXPECTED))
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+        self.assertEqual(response.data, six.b(image_id))
 
     def test_get_image_remote(self):
         REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
