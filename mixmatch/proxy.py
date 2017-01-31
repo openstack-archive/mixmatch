@@ -18,6 +18,7 @@ import requests
 from urllib3.util import retry
 import flask
 from flask import abort
+from keystoneauth1 import exceptions
 
 from mixmatch import config
 from mixmatch.config import LOG, CONF, service_providers
@@ -369,7 +370,10 @@ class RequestHandler(object):
 @app.route('/<path:path>', methods=METHODS_ACCEPTED)
 def proxy(path):
     k2k_request = RequestHandler(request.method, path, request.headers)
-    return k2k_request.forward()
+    try:
+        return k2k_request.forward()
+    except exceptions.NotFound, exceptions.AuthorizationFailure:
+        abort(401)
 
 
 def main():

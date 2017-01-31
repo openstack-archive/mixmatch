@@ -15,11 +15,8 @@
 from keystoneauth1 import identity
 from keystoneauth1 import session
 from keystoneclient import v3
-from keystoneauth1.exceptions import http
 
 import json
-
-from flask import abort
 
 from mixmatch import config
 
@@ -52,11 +49,7 @@ def get_local_auth(user_token):
     client = get_client()
     token = v3.tokens.TokenManager(client)
 
-    try:
-        token_data = token.validate(token=user_token, include_catalog=False)
-    except http.NotFound:
-        abort(401)
-
+    token_data = token.validate(token=user_token, include_catalog=False)
     project_id = token_data['project']['id']
 
     local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
