@@ -18,6 +18,7 @@ import requests
 import flask
 
 from flask import abort
+from keystoneauth1 import exceptions
 
 from mixmatch import config
 from mixmatch.config import LOG, CONF
@@ -27,7 +28,6 @@ from mixmatch.session import request
 from mixmatch import auth
 from mixmatch import model
 from mixmatch import services
-
 
 def stream_response(response):
     yield response.raw.read()
@@ -61,7 +61,7 @@ class RequestHandler(object):
             CONF.service_providers
         )
 
-        if len(self.request_path) == 1:
+        if len(self.request_path) == 1 and CONF.aggregation == True:
             # unversioned calls with no action
             self._forward = self._list_api_versions
             return
@@ -138,15 +138,20 @@ class RequestHandler(object):
                                             self.local_token,
                                             project_id)
         headers = self._prepare_headers(self.headers)
-        headers['X-AUTH-TOKEN'] = auth_session.get_token()
 
-        url = services.construct_url(
-            sp,
-            self.service_type,
-            self.version,
-            self.action,
-            project_id=auth_session.get_project_id()
-        )
+        # Try block here to return 401 if token is cached but has expired and is invalid
+        try:
+            headers['X-AUTH-TOKEN'] = auth_session.get_token()
+            url = services.construct_url(
+                sp,
+                self.service_type,
+                self.version,
+                self.action,
+                project_id=auth_session.get_project_id()
+            )
+        except (exceptions.http.NotFound, exceptions.AuthorizationFailure):
+            LOG.info('Expired token rejected.')
+            abort(401)
 
         LOG.info('%s: %s' % (self.method, url))
 
@@ -197,7 +202,13 @@ class RequestHandler(object):
                     return self._finalize(response)
             else:
                 self.service_provider = sp
-                for project in auth.get_projects_at_sp(sp, self.local_token):
+                # Try block here to return 401 if token is cached but has expired and is invalid
+                try:
+                    projects = auth.get_projects_at_sp(sp, self.local_token)
+                except exceptions.http.NotFound:
+                    LOG.info('Expired token rejected.')
+                    abort(401)
+                for project in projects:
                     response = self._do_request_on(sp, project)
                     if 200 <= response.status_code < 300:
                         return self._finalize(response)
