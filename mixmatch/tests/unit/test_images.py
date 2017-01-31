@@ -12,202 +12,207 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import six
 import json
+import six
+import uuid
 
+from mixmatch.tests.unit import base
 from mixmatch.tests.unit import samples
-from mixmatch.tests.unit.base import BaseTest
 
 from mixmatch.model import insert, ResourceMapping
 
 
-class TestImages(BaseTest):
+class TestImages(base.BaseTest):
     def setUp(self):
         super(TestImages, self).setUp()
+        # TODO(ericjuma): load_auth_fixtures() should be done in the base
+        # class, but may conflict with the other tests which haven't been
+        # migrated to these fixtures.
+        self.load_auth_fixtures()
 
-    def test_get_image(self):
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
-        insert(ResourceMapping("images", "6c4ae06e14bd422e97afe07223c99e18",
-                               "not-to-be-read", "default"))
+    def _construct_url(self, image_id='', sp=None):
+        if not sp:
+            prefix = '/image'
+        else:
+            prefix = self.service_providers[sp]['image_endpoint']
 
-        EXPECTED = 'WEOFIHJREINJEFDOWEIJFWIENFERINWFKEWF'
+        return (
+            '%s/v2/images/%s' % (prefix, image_id)
+        )
+
+    def test_get_image_local(self):
+        image_id = uuid.uuid4().hex
+        image_data = uuid.uuid4().hex
+        insert(ResourceMapping(
+            "images", image_id, self.auth.get_project_id(), "default"
+        ))
+
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
-            text=six.u(EXPECTED),
-            headers={'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id=image_id, sp='default'),
+            text=six.u(image_data),
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.data, six.b(EXPECTED))
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+
+        self.assertEqual(response.data, six.b(image_data))
 
     def test_get_image_remote(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        LOCAL_TOKEN = "my-local-token"
-        REMOTE_TOKEN = "my-remote-token"
+        image_id = uuid.uuid4().hex
+        image_data = uuid.uuid4().hex
+        insert(ResourceMapping(
+            "images", image_id, self.remote_auth.get_project_id(), "remote1"
+        ))
 
-        self.session_fixture.add_sp_auth('remote1', LOCAL_TOKEN,
-                                         REMOTE_PROJECT_ID, REMOTE_TOKEN)
-        insert(ResourceMapping("images", "6c4ae06e14bd422e97afe07223c99e18",
-                               REMOTE_PROJECT_ID, "remote1"))
-
-        EXPECTED = 'WEOFIHJREINJEFDOWEIJFWIENFERINWFKEWF'
         self.requests_fixture.get(
-            'http://images.remote1/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(EXPECTED),
-            request_headers={'X-AUTH-TOKEN': REMOTE_TOKEN},
-            headers={'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id=image_id, sp='remote1'),
+            text=six.u(image_data),
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': LOCAL_TOKEN,
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.data, six.b(EXPECTED))
+            self._construct_url(image_id=image_id),
+            headers=self.auth.get_headers()
+        )
+
+        self.assertEqual(response.data, six.b(image_data))
 
     def test_get_image_default_to_local(self):
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
+        image_id = uuid.uuid4().hex
+        image_data = uuid.uuid4().hex
 
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
+            self._construct_url(image_id=image_id, sp='default'),
+            text=six.u(image_data),
             status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
-            headers={'CONTENT-TYPE': 'application/json'})
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+
         self.assertEqual(response.status_code, 400)
 
     def test_get_image_search_local(self):
+        image_id = uuid.uuid4().hex
+        image_data = uuid.uuid4().hex
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('wewef', 'my_project_id')
-
-        IMAGE = 'Here is my image.'
 
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(IMAGE),
+            self._construct_url(image_id=image_id, sp='default'),
+            text=six.u(image_data),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'wewef'},
-            headers={'CONTENT-TYPE': 'application/json'})
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         # Don't add a response for the remote SP, to ensure that our code
         # always checks locally first.
-
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'wewef',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(IMAGE))
+        self.assertEqual(response.data, six.b(image_data))
 
     def test_get_image_search_remote(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
+        image_id = uuid.uuid4().hex
+        image_data_local = uuid.uuid4().hex
+        image_data_remote = uuid.uuid4().hex
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
-
-        IMAGE = 'Here is my image.'
 
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
+            self._construct_url(image_id=image_id, sp='default'),
+            text=six.u(image_data_local),
             status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         self.requests_fixture.get(
-            'http://images.remote1/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text=six.u(IMAGE),
+            self._construct_url(image_id=image_id, sp='remote1'),
+            text=six.u(image_data_remote),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
-
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(IMAGE))
+        self.assertEqual(response.data, six.b(image_data_remote))
 
     def test_get_image_search_nexists(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
+        image_id = uuid.uuid4().hex
+        image_data_local = uuid.uuid4().hex
+        image_data_remote = uuid.uuid4().hex
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
 
         self.requests_fixture.get(
-            'http://images.local/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="nope.",
+            self._construct_url(image_id=image_id, sp='default'),
+            text=six.u(image_data_local),
             status_code=400,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         self.requests_fixture.get(
-            'http://images.remote1/v2/images/'
-            '6c4ae06e-14bd-422e-97af-e07223c99e18',
-            text="also nope.",
+            self._construct_url(image_id=image_id, sp='remote1'),
+            text=six.u(image_data_remote),
             status_code=403,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
-
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images/6c4ae06e-14bd-422e-97af-e07223c99e18',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+
         self.assertEqual(response.status_code, 404)
 
     def test_list_images(self):
-        REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
-        self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
-
         self.requests_fixture.get(
-            'http://images.local/v2/images',
+            self._construct_url(sp='default'),
             text=json.dumps(samples.multiple_sps['/image/v2/images'][0]),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         self.requests_fixture.get(
-            'http://images.remote1/v2/images',
+            self._construct_url(sp='remote1'),
             text=json.dumps(samples.multiple_sps['/image/v2/images'][1]),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'remote-tok'},
-            headers={'CONTENT-TYPE': 'application/json'})
-
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
         response = self.app.get(
-            '/image/v2/images',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
-        actual = json.loads(response.data.decode("ascii"))
-        actual['images'].sort(key=lambda x: x['id'])
+            self._construct_url(),
+            headers=self.auth.get_headers()
+        )
+
         EXPECTED = samples.single_sp['/image/v2/images']
         EXPECTED['images'].sort(key=lambda x: x['id'])
+        actual = json.loads(response.data.decode("ascii"))
+        actual['images'].sort(key=lambda x: x['id'])
         self.assertEqual(actual, EXPECTED)
 
     def test_image_unversioned_calls_no_action(self):
         response = self.app.get(
             '/image',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
-        self.assertEqual(response.status_code, 200)
+            headers=self.auth.get_headers()
+        )
         actual = json.loads(response.data.decode("ascii"))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(actual['versions']), 6)
 
     def test_image_versioned_calls_no_action(self):
         response = self.app.get(
             '/image/v2',
-            headers={'X-AUTH-TOKEN': 'local-tok',
-                     'CONTENT-TYPE': 'application/json'})
+            headers=self.auth.get_headers()
+        )
         self.assertEqual(response.status_code, 400)
