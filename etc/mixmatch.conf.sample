@@ -5,7 +5,7 @@
 [DEFAULT]
 
 # Enable or disable the proxy's aggregation of responses from service providers
-aggregation=True
+aggregation=False
 
 search_by_broadcast=True
 
