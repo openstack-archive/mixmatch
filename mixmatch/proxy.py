@@ -28,103 +28,128 @@ from mixmatch import auth
 from mixmatch import model
 from mixmatch import services
 
+METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
+RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
+
 
 def stream_response(response):
     yield response.raw.read()
 
 
-def is_valid_uuid(value):
+def safe_get(a, i, default=None):
+    """Return the i-th element if it exists, or default."""
     try:
-        uuid.UUID(value, version=4)
-        return True
-    except ValueError:
-        return False
-
-
-def _safe_get(a, index, default=None):
-    try:
-        return a[index]
+        return a[i]
     except IndexError:
         return default
 
 
+def safe_pop(a, i=0, default=None):
+    """Pops the i-th element, if any, otherwise returns default"""
+    try:
+        return a.pop(i)
+    except (IndexError, KeyError):
+        return default
+
+
+def is_uuid(value):
+    """Return true if value is a valid uuid."""
+    try:
+        uuid.UUID(value, version=4)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+def pop_if_uuid(a):
+    """Pops the first element of the list only if it is a uuid."""
+    if is_uuid(safe_get(a, 0)):
+        return safe_pop(a)
+    else:
+        return None
+
+
+def get_service(a):
+    """Determine service type based on path."""
+    # NOTE(knikolla): Workaround to fix glance requests that do not
+    # contain image as the first part of the path.
+    if a[0] in ['v1', 'v2']:
+        return 'image'
+    else:
+        service = a.pop(0)
+        if service in ['image', 'volume']:
+            return service
+        else:
+            raise ValueError
+
+
+def get_details(method, path, headers):
+    """Get details for a request."""
+    path = path[:]
+    # NOTE(knikolla): Request usually look like:
+    # /<service>/<version>/<project_id:uuid>/<res_type>/<res_id:uuid>
+    # or
+    # /<service>/<version>/<res_type>/<specific action>
+    return {'method': method,
+            'service': get_service(path),
+            'version': safe_pop(path),
+            'project_id': pop_if_uuid(path),
+            'action': path[:],  # NOTE(knikolla): This includes
+            'resource_type': safe_pop(path),  # this
+            'resource_id': pop_if_uuid(path),  # and this
+            'token': headers.get('X-AUTH-TOKEN', None),
+            'headers': headers}
+
+
 class RequestHandler(object):
     def __init__(self, method, path, headers):
-        self.method = method
-        self.path = path
-        self.headers = headers
+        self.details = get_details(method, path.split('/'), headers)
 
-        self.request_path = path.split('/')
-        self.local_token = headers.get('X-AUTH-TOKEN', None)
+        self._set_strip_details(self.details)
 
-        self.strip_details = False
-
-        # workaround to fix glance requests
-        # that does not contain image directory
-        if self.request_path[0] in ['v1', 'v2']:
-            self.request_path.insert(0, 'image')
-
-        self.version = _safe_get(self.request_path, 1)
-        self.service_type = self.request_path[0]
         self.enabled_sps = filter(
-            lambda sp: (self.service_type in
+            lambda sp: (self.details['service'] in
                         config.get_conf_for_sp(sp).enabled_services),
             CONF.service_providers
         )
 
-        if len(self.request_path) == 1:
+        if not self.details['version']:
             if CONF.aggregation:
                 # unversioned calls with no action
                 self._forward = self._list_api_versions
             else:
                 self._forward = self._local_forward
-                self.action = []
             return
-        elif len(self.request_path) == 2:
+
+        if not self.details['resource_type']:
             # versioned calls with no action
             abort(400)
-        else:
-            if self.service_type == 'image':
-                # /image/{version}/{action}
-                self.action = self.request_path[2:]
-            elif self.service_type == 'volume':
-                # /volume/{version}/{project_id}/{action}
-                self.action = self.request_path[3:]
-
-                # if request is to /volumes, change it
-                # to /volumes/detail for aggregation
-                # and set strip_details to true
-                if self.method == 'GET' \
-                        and self.action[-1] == 'volumes':
-                    self.strip_details = True
-                    self.action.insert(len(self.action), 'detail')
-            else:
-                raise ValueError
 
         mapping = None
         aggregate = False
 
-        if len(self.action) > 1 and is_valid_uuid(self.action[1]):
-            resource_id = self.action[1]
+        if self.details['resource_id']:
             mapping = model.ResourceMapping.find(
-                resource_type=self.action[0],
-                resource_id=resource_id)
+                resource_type=self.details['action'][0],
+                resource_id=self.details['resource_id'])
         else:
-            if self.method == 'GET' \
-                    and self.action[0] in ['images', 'volumes', 'snapshots']:
+            if (self.details['method'] == 'GET' and
+                    self.details['action'][0] in RESOURCES_AGGREGATE):
                 aggregate = True
 
-        self.local_token = headers['X-AUTH-TOKEN']
-        LOG.debug('Local Token: %s ' % self.local_token)
+        LOG.debug('Local Token: %s ' % self.details['token'])
 
-        if 'MM-SERVICE-PROVIDER' in headers:
+        if 'MM-SERVICE-PROVIDER' in self.details['headers']:
             # The user wants a specific service provider, use that SP.
-            self.service_provider = headers['MM-SERVICE-PROVIDER']
-            self.project_id = headers.get('MM-PROJECT-ID', None)
+            # FIXME(knikolla): This isn't exercised by any unit test
+            (self.service_provider, self.project_id) = (
+                self.details['headers']['MM-SERVICE-PROVIDER'],
+                self.details['headers'].get('MM-PROJECT-ID', None)
+            )
             if not self.project_id and self.service_provider != 'default':
                 self.project_id = auth.get_projects_at_sp(
                     self.service_provider,
-                    self.local_token
+                    self.details['token']
                 )[0]
             self._forward = self._targeted_forward
         elif aggregate:
@@ -138,14 +163,14 @@ class RequestHandler(object):
             self._forward = self._search_forward
 
     def _do_request_on(self, sp, project_id=None):
-        headers = self._prepare_headers(self.headers)
+        headers = self._prepare_headers(self.details['headers'])
 
-        if self.local_token:
+        if self.details['token']:
             if sp == 'default':
-                auth_session = auth.get_local_auth(self.local_token)
+                auth_session = auth.get_local_auth(self.details['token'])
             else:
                 auth_session = auth.get_sp_auth(sp,
-                                                self.local_token,
+                                                self.details['token'],
                                                 project_id)
             headers['X-AUTH-TOKEN'] = auth_session.get_token()
             project_id = auth_session.get_project_id()
@@ -154,21 +179,21 @@ class RequestHandler(object):
 
         url = services.construct_url(
             sp,
-            self.service_type,
-            self.version,
-            self.action,
+            self.details['service'],
+            self.details['version'],
+            self.details['action'],
             project_id=project_id
         )
 
-        LOG.info('%s: %s' % (self.method, url))
+        LOG.info('%s: %s' % (self.details['method'], url))
 
         if self.chunked:
-            return requests.request(method=self.method,
+            return requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
                                     data=chunked_reader())
         else:
-            return requests.request(method=self.method,
+            return requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
                                     data=request.data,
@@ -209,8 +234,8 @@ class RequestHandler(object):
                     return self._finalize(response)
             else:
                 self.service_provider = sp
-                for project in auth.get_projects_at_sp(sp, self.local_token):
-                    response = self._do_request_on(sp, project)
+                for p in auth.get_projects_at_sp(sp, self.details['token']):
+                    response = self._do_request_on(sp, p)
                     if 200 <= response.status_code < 300:
                         return self._finalize(response)
         return flask.Response(
@@ -228,13 +253,13 @@ class RequestHandler(object):
             if sp == 'default':
                 responses['default'] = self._do_request_on('default')
             else:
-                for proj in auth.get_projects_at_sp(sp, self.local_token):
+                for proj in auth.get_projects_at_sp(sp, self.details['token']):
                     responses[(sp, proj)] = self._do_request_on(sp, proj)
 
         return flask.Response(
             services.aggregate(responses,
-                               self.action[0],
-                               self.service_type,
+                               self.details['action'][0],
+                               self.details['service'],
                                params=request.args.to_dict(),
                                path=request.base_url,
                                strip_details=self.strip_details),
@@ -243,7 +268,7 @@ class RequestHandler(object):
         )
 
     def _list_api_versions(self):
-        return services.list_api_versions(self.service_type,
+        return services.list_api_versions(self.details['service'],
                                           request.base_url)
 
     def forward(self):
@@ -273,17 +298,28 @@ class RequestHandler(object):
 
     @property
     def chunked(self):
-        return self.headers.get('Transfer-Encoding', '').lower() == 'chunked'
+        encoding = self.details['headers'].get('Transfer-Encoding', '')
+        return encoding.lower() == 'chunked'
 
     @property
     def stream(self):
-        return True if self.method in ['GET'] else False
+        return True if self.details['method'] in ['GET'] else False
+
+    def _set_strip_details(self, details):
+        # if request is to /volumes, change it
+        # to /volumes/detail for aggregation
+        # and set strip_details to true
+        if (details['service'] == 'volume' and
+                details['method'] == 'GET' and
+                safe_get(details['action'], -1) == 'volumes'):
+            self.strip_details = True
+            details['action'].insert(len(details['action']), 'detail')
+        else:
+            self.strip_details = False
 
 
-@app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'PUT',
-                                                'DELETE', 'HEAD', 'PATCH'])
-@app.route('/<path:path>', methods=['GET', 'POST', 'PUT',
-                                    'DELETE', 'HEAD', 'PATCH'])
+@app.route('/', defaults={'path': ''}, methods=METHODS_ACCEPTED)
+@app.route('/<path:path>', methods=METHODS_ACCEPTED)
 def proxy(path):
     k2k_request = RequestHandler(request.method, path, request.headers)
     return k2k_request.forward()
