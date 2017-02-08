@@ -37,6 +37,22 @@ To run the proxy with Apache in Ubuntu: ::
     $ service apache2 reload
 
 
+Running in a Docker Container
+=============================
+The proxy can be run in a Docker container using the provided Dockerfile.
+When it is run, the container port 5001 must be mapped to the port 5001 on the
+host and your configuration file must be passed in as a data volume,
+for example ::
+
+    sudo docker run \
+    --interactive --tty \
+    --volume /etc/mixmatch/mixmatch.conf:/<path>/<to>/<local>/mixmatch.conf: \
+    --publish 5001:5001 mixmatch
+
+You will still need to edit the configuration file and do the rest of the setup
+normally on the host.
+
+
 Configuration
 =============
 The proxy searches for the configuration file ``mixmatch.conf`` in the
@@ -113,4 +129,3 @@ in both the IdP and every SP, add the following to
     [oslo_messaging_notifications]
     driver = messaging
     topics = notifications
-
