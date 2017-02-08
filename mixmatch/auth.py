@@ -15,7 +15,7 @@
 from keystoneauth1 import identity
 from keystoneauth1 import session
 from keystoneclient import v3
-from keystoneauth1.exceptions import http
+import requests
 
 import json
 
@@ -42,22 +42,36 @@ def get_client():
 
 
 @config.MEMOIZE_SESSION
+def get_client_with_token(user_token):
+    LOG.info("Getting client")
+    service_auth = identity.Token(
+        auth_url=CONF.auth.auth_url,
+        token=user_token
+    )
+    local_session = session.Session(auth=service_auth)
+    return v3.client.Client(session=local_session)
+
+
+@config.MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
-    token = v3.tokens.TokenManager(client)
+
+    response = requests.get(
+        CONF.auth.auth_url + '/auth/tokens?nocatalog',
+        headers={'x-auth-token': user_token, 'x-subject-token': user_token}
+    )
 
     try:
-        token_data = token.validate(token=user_token, include_catalog=False)
-    except http.NotFound:
+        project_id = json.loads(response.text)['token']['project']['id']
+    except KeyError:
         abort(401)
 
-    project_id = token_data['project']['id']
-
-    local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
-                                   token=user_token,
-                                   project_id=project_id)
+    local_auth = identity.v3.Token(
+        auth_url=CONF.auth.auth_url,
+        token=user_token,
+        project_id=project_id
+    )
 
     return session.Session(auth=local_auth)
 
