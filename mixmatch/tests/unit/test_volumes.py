@@ -186,6 +186,13 @@ class TestVolumesV2(base.BaseTest):
         EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
         self.assertEqual(actual, EXPECTED)
 
+        # Test that limit and marker are popped when they are in the URL
+        response = self.app.get(
+            ('/volume/v2/%s/volumes?limit=1&marker=%s' %
+                (self.auth.get_project_id(), uuid.uuid4().hex)),
+            headers=self.auth.get_headers())
+        self.assertEqual(200, response.status_code)
+
     def test_list_volumes_aggregation_detail(self):
         self.config_fixture.load_raw_values(aggregation=True)
 

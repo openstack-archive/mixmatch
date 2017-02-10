@@ -292,8 +292,9 @@ class RequestHandler(object):
         the service providers.
         """
         args = user_args.copy()
-        args.pop('limit', None)
-        args.pop('marker', None)
+        if CONF.aggregation:
+            args.pop('limit', None)
+            args.pop('marker', None)
         return args
 
     @property
