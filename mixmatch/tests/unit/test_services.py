@@ -313,9 +313,9 @@ class TestServices(testcase.TestCase):
             Url(VOLUME_VERSIONED))
 
     def test_remove_details(self):
-        """Test aggregation on volumes with detailed = False"""
+        """Test aggregation on volumes with strip_details = True"""
         response = json.loads(services.aggregate(
-            VOLUMES, 'volumes', 'volume', detailed=False
+            VOLUMES, 'volumes', 'volume', strip_details=True
         ))
         for v in response['volumes']:
             self.assertEqual(
