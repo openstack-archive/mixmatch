@@ -44,8 +44,8 @@ def construct_url(service_provider, service_type,
     return url
 
 
-def aggregate(responses, key, service_type,
-              params=None, path=None, strip_details=True):
+def aggregate(responses, key, service_type, params=None,
+              project=None, path=None, root=None, strip_details=True):
     """Combine responses from several clusters into one response."""
     if params:
         limit = int(params.get('limit', 0))
@@ -63,10 +63,14 @@ def aggregate(responses, key, service_type,
         marker = None
 
     resource_list = []
-    for location, response in responses.items():
-        resources = json.loads(response.text)
-        if type(resources) == dict:
-            resource_list += resources[key]
+    for (location, project), response in responses.items():
+        resources_dict = json.loads(response.text)
+        if type(resources_dict) == dict:
+            resources = resources_dict[key]
+            resource_list += [replace_url(r,
+                                          location,
+                                          service_type,
+                                          root) for r in resources]
 
     start = 0
     last = end = len(resource_list)
@@ -183,6 +187,24 @@ def list_api_versions(service_type, url):
 
     else:
         raise ValueError
+
+
+def replace_url(response, sp, service, root,
+                local_project=None, remote_project=None):
+    if service == 'image':
+        endpoint = config.get_conf_for_sp(sp).image_endpoint
+    elif service == 'volume':
+        endpoint = config.get_conf_for_sp(sp).volume_endpoint
+    else:
+        raise ValueError
+
+    links = response.get('links', [])
+    for i, link in enumerate(links):
+        links[i]['href'] = link['href'].replace(endpoint, '%s/%s' % (root, service))
+        if remote_project:
+            links[i]['href'] = link['href'].replace(remote_project, local_project)
+
+    return response
 
 
 def _is_reverse(order):

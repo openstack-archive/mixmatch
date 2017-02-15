@@ -251,7 +251,9 @@ class RequestHandler(object):
 
         for sp in self.enabled_sps:
             if sp == 'default':
-                responses['default'] = self._do_request_on('default')
+                responses[(
+                    'default', self.details['project_id']
+                )] = self._do_request_on('default')
             else:
                 for proj in auth.get_projects_at_sp(sp, self.details['token']):
                     responses[(sp, proj)] = self._do_request_on(sp, proj)
@@ -261,6 +263,8 @@ class RequestHandler(object):
                                self.details['action'][0],
                                self.details['service'],
                                params=request.args.to_dict(),
+                               project=self.details['project_id'],
+                               root=request.url_root,
                                path=request.base_url,
                                strip_details=self.strip_details),
             200,
