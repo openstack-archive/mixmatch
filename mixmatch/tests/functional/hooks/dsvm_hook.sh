@@ -60,4 +60,12 @@ source openrc admin admin
 
 register_mixmatch
 
-exit 0
+# Run tempest API and scenario tests
+cd $BASE/new/tempest
+
+if [ -d .testrepository ]; then
+    sudo rm -r .testrepository
+fi
+
+tempest run --serial -r '(^tempest.api|^tempest.scenario)' --blacklist-file \
+    $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
