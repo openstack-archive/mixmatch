@@ -15,6 +15,7 @@ Contents:
    architecture
    installation
    identity
+   volumes
    contributing
 
 Indices and tables
