@@ -72,3 +72,5 @@ sudo chown -R jenkins:stack /opt/stack/data/tempest
 
 ostestr -r '(^tempest.api|^tempest.scenario)' --blacklist-file \
     $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
+
+ostestr -r mixmatch_tempest_plugin
