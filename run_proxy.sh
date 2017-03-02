@@ -6,4 +6,5 @@ uwsgi --socket 0.0.0.0:5001 \
     -w mixmatch.wsgi \
     --master \
     --processes 4 \
-    --threads 2
+    --threads 2 \
+    2>&1
