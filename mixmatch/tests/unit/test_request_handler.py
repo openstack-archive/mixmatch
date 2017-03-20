@@ -23,16 +23,37 @@ from mixmatch.tests.unit.base import BaseTest
 
 
 class TestRequestHandler(BaseTest):
+
     def setUp(self):
         super(TestRequestHandler, self).setUp()
         self.config_fixture = self.useFixture(config_fixture.Config(conf=CONF))
 
     def test_prepare_headers(self):
         user_headers = {
-            'x-auth-token': uuid.uuid4(),
+            'x-auth-token': 'auth token',
+            'x-service-token': 'service token',
+            'X-AUTH-TOKEN': 'AUTH TOKEN',
+            'X-SERVICE-TOKEN': 'SERVICE TOKEN',
+
+            'x-tra cheese': 'extra cheese',
+            'x-goth-token': 'x-auth-token',
+            'X-MEN': 'X MEN',
+
+            'y-men': 'y men',
+            'extra cheese': 'x-tra cheese',
+            'y-auth-token': 'x-auth-token',
+            'xauth-token': 'x-auth-token',
+            'start-x': 'startx'
+        }
+        expected_headers = {
+            'x-tra cheese': 'extra cheese',
+            'x-goth-token': 'x-auth-token',
+            'X-MEN': 'X MEN',
+            'Accept': '',
+            'Content-Type': ''
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
-        self.assertEqual({'Accept': '', 'Content-Type': ''}, headers)
+        self.assertEqual(expected_headers, headers)
 
     def test_prepare_args(self):
         user_args = {
