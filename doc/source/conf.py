@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'mixmatch'
-copyright = u'2016, Massachusetts Open Cloud'
+copyright = u'2017, Massachusetts Open Cloud'
 author = u'Massachusetts Open Cloud'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
