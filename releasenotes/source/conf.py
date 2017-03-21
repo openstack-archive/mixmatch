@@ -38,7 +38,6 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'oslosphinx',
     'reno.sphinxext',
 ]
 
@@ -56,7 +55,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'mixmatch Release Notes'
-copyright = u'2016, OpenStack Foundation'
+copyright = u'2017, Massachusetts Open Cloud'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -111,7 +110,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -130,7 +129,7 @@ html_theme = 'default'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = None
+html_logo = "../../doc/source/images/moc.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -189,7 +188,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'GlanceReleaseNotesdoc'
+htmlhelp_basename = 'MixmatchReleaseNotesdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -209,8 +208,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'GlanceReleaseNotes.tex', u'Glance Release Notes Documentation',
-     u'Glance Developers', 'manual'),
+    ('index', 'MixmatchReleaseNotes.tex', u'Mixmatch Release Notes Documentation',
+     u'Mixmatch Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -239,8 +238,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'glancereleasenotes', u'Glance Release Notes Documentation',
-     [u'Glance Developers'], 1)
+    ('index', 'mixmatchreleasenotes', u'Mixmatch Release Notes Documentation',
+     [u'Mixmatch Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -253,8 +252,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'GlanceReleaseNotes', u'Glance Release Notes Documentation',
-     u'Glance Developers', 'GlanceReleaseNotes',
+    ('index', 'MixmatchReleaseNotes', u'Mixmatch Release Notes Documentation',
+     u'Mixmatch Developers', 'MixmatchReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]
