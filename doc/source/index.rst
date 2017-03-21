@@ -18,6 +18,8 @@ Contents:
    volumes
    contributing
 
+* `Release Notes <https://mixmatch.readthedocs.org/projects/releasenotes>`_
+
 Indices and tables
 ==================
 
