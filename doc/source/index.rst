@@ -8,15 +8,20 @@ Welcome to mixmatch's documentation!
 
 Contents:
 
-.. toctree::
-   :maxdepth: 2
+..  toctree::
+    :maxdepth: 2
 
-   readme
-   architecture
-   installation
-   identity
-   volumes
-   contributing
+    readme
+    architecture
+    installation
+    identity
+    volumes
+    contributing
+
+..  toctree::
+    :maxdepth: 1
+
+    specs
 
 * `Release Notes <https://mixmatch.readthedocs.org/projects/releasenotes>`_
 
