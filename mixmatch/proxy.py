@@ -179,7 +179,7 @@ class RequestHandler(object):
         elif mapping:
             # Which we already know the location of, use that SP.
             self.service_provider = mapping.resource_sp
-            self.project_id = mapping.tenant_id
+            self.project_id = mapping.project_id
             self._forward = self._targeted_forward
         else:
             self._forward = self._search_forward
