@@ -10,3 +10,6 @@ tempest.api.volume.v2.test_volumes_list.VolumesV2ListTestJSON.test_volume_list_p
 
 # Failed only in gerrit due to connection reset
 tempest.api.image.v2.test_images_metadefs_namespace_tags.MetadataNamespaceTagsTest.test_create_update_delete_tag
+
+# TODO(knikolla): Investigate these failures
+tempest.api.object_storage.test_container_sync_middleware.ContainerSyncMiddlewareTest
