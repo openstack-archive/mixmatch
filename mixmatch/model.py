@@ -30,12 +30,12 @@ class ResourceMapping(BASE):
     resource_type = sql.Column(sql.String(60), nullable=False)
     resource_id = sql.Column(sql.String(255), nullable=False)
     resource_sp = sql.Column(sql.String(255), nullable=False)
-    tenant_id = sql.Column(sql.String(255), nullable=False)
+    project_id = sql.Column(sql.String(255), nullable=False)
 
-    def __init__(self, resource_type, resource_id, tenant_id, resource_sp):
+    def __init__(self, resource_type, resource_id, project_id, resource_sp):
         self.resource_type = resource_type
         self.resource_id = resource_id.replace("-", "")
-        self.tenant_id = tenant_id.replace("-", "")
+        self.project_id = project_id.replace("-", "")
         self.resource_sp = resource_sp
 
     def __repr__(self):
@@ -45,7 +45,7 @@ class ResourceMapping(BASE):
         return (self.resource_type == other.resource_type and
                 self.resource_id == other.resource_id and
                 self.resource_sp == other.resource_sp and
-                self.tenant_id == other.tenant_id)
+                self.project_id == other.project_id)
 
     def __ne__(self, other):
         return not self.__eq__(other)
