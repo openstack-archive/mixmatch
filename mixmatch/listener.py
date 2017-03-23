@@ -76,7 +76,7 @@ class VolumeTransferEndpoint(object):
         mapping = ResourceMapping.find("volumes", payload['volume_id'])
         # Since we're manually updating a field, we have to sanitize the UUID
         # ourselves.
-        mapping.tenant_id = payload['tenant_id'].replace("-", "")
+        mapping.project_id = payload['tenant_id'].replace("-", "")
 
 
 class SnapshotCreateEndpoint(object):
