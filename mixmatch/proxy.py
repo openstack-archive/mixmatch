@@ -16,6 +16,7 @@ import uuid
 
 import requests
 import flask
+import json
 
 from flask import abort
 
@@ -99,6 +100,30 @@ def get_details(method, path, headers):
             'resource_id': pop_if_uuid(path),  # and this
             'token': headers.get('X-AUTH-TOKEN', None),
             'headers': headers}
+
+
+def is_token_header_key(string):
+    return string.lower() in ['x-auth-token', 'x-service-token']
+
+
+def format_for_log(title=None, method=None, url=None, headers=None, data=None):
+    log_string = ''
+    if title:
+        log_string += '{}:\n'.format(title)
+    if method:
+        log_string += 'Method: {}\n'.format(method)
+    if url:
+        log_string += 'URL: {}\n'.format(url)
+    if headers:
+        filtered_headers = \
+            {k: '<token omitted>' if is_token_header_key(k) else headers[k] for k in headers}
+        log_string += 'Headers: {}\n'.format(json.dumps(filtered_headers, indent=2))
+    if data:
+        log_string += 'Data: {}\n'
+        try:
+            log_string.format(json.dumps(data, indent=2))
+        except ValueError:
+            log_string.format(data)
 
 
 class RequestHandler(object):
@@ -186,20 +211,27 @@ class RequestHandler(object):
             project_id=project_id
         )
 
-        LOG.info('%s: %s' % (self.details['method'], url))
-
         if self.chunked:
-            return requests.request(method=self.details['method'],
+            data = "<Chunked data>"
+            resp = requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
                                     data=chunked_reader())
         else:
-            return requests.request(method=self.details['method'],
+            data = request.data
+            resp = requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
-                                    data=request.data,
+                                    data=data,
                                     stream=self.stream,
                                     params=self._prepare_args(request.args))
+            data = json.dumps(json.loads(data), indent=2)
+        LOG.info(format_for_log(title='Request from proxy',
+                                method=self.details['method'],
+                                url=url,
+                                headers=headers,
+                                data=data))
+        return resp
 
     def _finalize(self, response):
         if not self.stream:
@@ -215,6 +247,7 @@ class RequestHandler(object):
                 response.status_code,
                 content_type=response.headers['content-type']
             )
+        LOG.info(format_for_log(title='Response from proxy', data=final_response.data))
         return final_response
 
     def _local_forward(self):
@@ -281,8 +314,7 @@ class RequestHandler(object):
         headers['Accept'] = user_headers.get('Accept', '')
         headers['Content-Type'] = user_headers.get('Content-Type', '')
         for key, value in user_headers.items():
-            if key.lower().startswith('x-') and key.lower() not in [
-                    'x-auth-token', 'x-service-token']:
+            if key.lower().startswith('x-') and is_token_header_key(key):
                 headers[key] = value
         return headers
 
