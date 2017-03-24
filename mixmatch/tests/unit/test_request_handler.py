@@ -55,6 +55,19 @@ class TestRequestHandler(BaseTest):
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertEqual(expected_headers, headers)
 
+    def test_strip_tokens_from_logs(self):
+        token = uuid.uuid4()
+        headers = {
+            'x-auth-token': token,
+            'X-AUTH-TOKEN': token,
+            'not a token': 'not a token',
+            'X-Service-Token': token,
+            'x-service-token': token
+        }
+        stripped_headers = proxy.strip_tokens_from_headers(headers)
+        self.assertFalse(token in stripped_headers.values())
+        self.assertTrue('not a token' in stripped_headers.values())
+
     def test_prepare_args(self):
         user_args = {
             'limit': 1,
