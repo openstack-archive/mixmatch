@@ -16,6 +16,7 @@ import uuid
 
 import requests
 import flask
+import json
 
 from flask import abort
 
@@ -101,6 +102,24 @@ def get_details(method, path, headers):
             'headers': headers}
 
 
+def is_token_header_key(string):
+    return string.lower() in ['x-auth-token', 'x-service-token']
+
+
+def strip_tokens_from_headers(headers):
+    return {k: '<token omitted>' if is_token_header_key(k) else headers[k] for k in headers}
+
+
+def format_for_log(title=None, method=None, url=None, headers=None, status_code=None):
+    return ''.join([
+        '{}:\n'.format(title) if title else '',
+        'Method: {}\n'.format(method) if method else '',
+        'URL: {}\n'.format(url) if url else '',
+        'Headers: {}\n'.format(strip_tokens_from_headers(headers)) if headers else '',
+        'Status Code: {}\n'.format(status_code) if status_code else ''
+    ])
+
+
 class RequestHandler(object):
 
     def __init__(self, method, path, headers):
@@ -163,6 +182,11 @@ class RequestHandler(object):
         else:
             self._forward = self._search_forward
 
+        LOG.info(format_for_log(title="Request to proxy",
+                                method=self.details['method'],
+                                url=path,
+                                headers=dict(headers)))
+
     def _do_request_on(self, sp, project_id=None):
         headers = self._prepare_headers(self.details['headers'])
 
@@ -186,20 +210,27 @@ class RequestHandler(object):
             project_id=project_id
         )
 
-        LOG.info('%s: %s' % (self.details['method'], url))
-
         if self.chunked:
-            return requests.request(method=self.details['method'],
+            resp = requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
                                     data=chunked_reader())
         else:
-            return requests.request(method=self.details['method'],
+            resp = requests.request(method=self.details['method'],
                                     url=url,
                                     headers=headers,
-                                    data=request.data,
                                     stream=self.stream,
-                                    params=self._prepare_args(request.args))
+                                    params=self._prepare_args(request.args),
+                                    data=data)
+        LOG.info(format_for_log(title='Request from proxy',
+                                method=self.details['method'],
+                                url=url,
+                                headers=headers))
+        LOG.info(format_for_log(title='Response to proxy',
+                                status_code=resp.status_code,
+                                url=resp.url,
+                                headers=resp.headers))
+        return resp
 
     def _finalize(self, response):
         if not self.stream:
@@ -215,6 +246,10 @@ class RequestHandler(object):
                 response.status_code,
                 content_type=response.headers['content-type']
             )
+        LOG.info(format_for_log(title='Response from proxy',
+                                status_code=final_response.status_code,
+                                url=response.url,
+                                headers=dict(final_response.headers)))
         return final_response
 
     def _local_forward(self):
@@ -281,8 +316,7 @@ class RequestHandler(object):
         headers['Accept'] = user_headers.get('Accept', '')
         headers['Content-Type'] = user_headers.get('Content-Type', '')
         for key, value in user_headers.items():
-            if key.lower().startswith('x-') and key.lower() not in [
-                    'x-auth-token', 'x-service-token']:
+            if key.lower().startswith('x-') and is_token_header_key(key):
                 headers[key] = value
         return headers
 
