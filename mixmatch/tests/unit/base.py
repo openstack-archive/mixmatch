@@ -14,7 +14,7 @@
 
 import oslo_db
 import fixtures
-import uuid
+#import uuid
 
 from testtools import testcase
 from six.moves.urllib import parse
@@ -24,7 +24,7 @@ from oslo_config import fixture as config_fixture
 from mixmatch.config import CONF, more_config
 from mixmatch.proxy import app
 from mixmatch.model import BASE, enginefacade
-
+from oslo_utils import uuidutils
 
 class BaseTest(testcase.TestCase):
     def setUp(self):
@@ -61,10 +61,10 @@ class BaseTest(testcase.TestCase):
         more_config()
 
     def load_auth_fixtures(self):
-        self.auth = FakeSession(token=uuid.uuid4().hex,
-                                project=uuid.uuid4().hex)
-        self.remote_auth = (FakeSession(token=uuid.uuid4().hex,
-                                        project=uuid.uuid4().hex))
+        self.auth = FakeSession(token=uuidutils.generate_uuid(dashed=False),
+                                project=uuidutils.generate_uuid(dashed=False))
+        self.remote_auth = (FakeSession(token=uuidutils.generate_uuid(dashed=False),
+                                        project=uuidutils.generate_uuid(dashed=False)))
 
         self.session_fixture.add_local_auth(self.auth.get_token(),
                                             self.auth.get_project_id())

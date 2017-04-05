@@ -14,13 +14,13 @@
 
 import six
 import json
-import uuid
+#import uuid
 
 from mixmatch.tests.unit import base
 
 from mixmatch.model import insert, ResourceMapping
 from mixmatch.tests.unit import samples
-
+from oslo_utils import uuidutils
 
 class TestVolumesV2(base.BaseTest):
     def setUp(self):
@@ -44,7 +44,7 @@ class TestVolumesV2(base.BaseTest):
         return url
 
     def test_get_volume_local_mapping(self):
-        volume_id = uuid.uuid4().hex
+        volume_id =  uuidutils.generate_uuid(dashed=False)
 
         insert(ResourceMapping('volumes',
                                volume_id,
@@ -64,7 +64,7 @@ class TestVolumesV2(base.BaseTest):
         self.assertEqual(response.data, six.b(volume_id))
 
     def test_get_volume_remote_mapping(self):
-        volume_id = uuid.uuid4().hex
+        volume_id = uuidutils.generate_uuid(dashed=False)
 
         insert(ResourceMapping('volumes', volume_id,
                                self.remote_auth.get_project_id(), "remote1"))
@@ -80,7 +80,7 @@ class TestVolumesV2(base.BaseTest):
         self.assertEqual(response.data, six.b(volume_id))
 
     def test_get_volume_no_search(self):
-        volume_id = uuid.uuid4().hex
+        volume_id = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
@@ -96,7 +96,7 @@ class TestVolumesV2(base.BaseTest):
     def test_get_volume_search_local(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
 
-        volume_id = uuid.uuid4().hex
+        volume_id = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
@@ -116,7 +116,7 @@ class TestVolumesV2(base.BaseTest):
     def test_get_volume_search_remote(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
 
-        volume_id = uuid.uuid4().hex
+        volume_id = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
@@ -139,7 +139,7 @@ class TestVolumesV2(base.BaseTest):
     def test_get_volume_search_nexists(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
 
-        volume_id = uuid.uuid4().hex
+        volume_id = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
@@ -189,7 +189,7 @@ class TestVolumesV2(base.BaseTest):
         # Test that limit and marker are popped when they are in the URL
         response = self.app.get(
             ('/volume/v2/%s/volumes?limit=1&marker=%s' %
-                (self.auth.get_project_id(), uuid.uuid4().hex)),
+                (self.auth.get_project_id(), uuidutils.generate_uuid(dashed=False))),
             headers=self.auth.get_headers())
         self.assertEqual(200, response.status_code)
 
@@ -247,7 +247,7 @@ class TestVolumesV2(base.BaseTest):
 
     def test_unversioned_call_no_action_no_aggregation(self):
         self.config_fixture.load_raw_values(aggregation=False)
-        fake_response = uuid.uuid4().hex
+        fake_response = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(self._construct_url(sp='default'),
                                   text=six.u(fake_response),

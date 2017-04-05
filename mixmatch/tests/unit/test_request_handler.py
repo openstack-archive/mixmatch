@@ -12,7 +12,7 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import uuid
+#import uuid
 import json
 
 from oslo_config import fixture as config_fixture
@@ -20,7 +20,7 @@ from oslo_config import fixture as config_fixture
 from mixmatch import proxy
 from mixmatch.config import CONF
 from mixmatch.tests.unit.base import BaseTest
-
+from oslo_utils import uuidutils
 
 class TestRequestHandler(BaseTest):
 

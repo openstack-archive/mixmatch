@@ -12,7 +12,7 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import uuid
+#import uuid
 
 import requests
 import flask
@@ -27,6 +27,7 @@ from mixmatch.session import request
 from mixmatch import auth
 from mixmatch import model
 from mixmatch import services
+from oslo_utils import uuidutils
 
 METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
 RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']

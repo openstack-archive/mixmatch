@@ -14,13 +14,13 @@
 
 import json
 import six
-import uuid
+#import uuid
 
 from mixmatch.tests.unit import base
 from mixmatch.tests.unit import samples
 
 from mixmatch.model import insert, ResourceMapping
-
+from oslo_utils import uuidutils
 
 class TestImages(base.BaseTest):
     def setUp(self):
@@ -41,8 +41,8 @@ class TestImages(base.BaseTest):
         )
 
     def test_get_image_local(self):
-        image_id = uuid.uuid4().hex
-        image_data = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
+        image_data = uuidutils.generate_uuid(dashed=False)
         insert(ResourceMapping(
             "images", image_id, self.auth.get_project_id(), "default"
         ))
@@ -61,8 +61,8 @@ class TestImages(base.BaseTest):
         self.assertEqual(response.data, six.b(image_data))
 
     def test_get_image_remote(self):
-        image_id = uuid.uuid4().hex
-        image_data = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
+        image_data = uuidutils.generate_uuid(dashed=False)
         insert(ResourceMapping(
             "images", image_id, self.remote_auth.get_project_id(), "remote1"
         ))
@@ -81,8 +81,8 @@ class TestImages(base.BaseTest):
         self.assertEqual(response.data, six.b(image_data))
 
     def test_get_image_default_to_local(self):
-        image_id = uuid.uuid4().hex
-        image_data = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
+        image_data = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
@@ -100,8 +100,8 @@ class TestImages(base.BaseTest):
 
     def test_get_image_search_local(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        image_id = uuid.uuid4().hex
-        image_data = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
+        image_data = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
@@ -122,8 +122,8 @@ class TestImages(base.BaseTest):
 
     def test_get_image_search_remote(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        image_id = uuid.uuid4().hex
-        image_data = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
+        image_data = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
@@ -148,7 +148,7 @@ class TestImages(base.BaseTest):
 
     def test_get_image_search_nexists(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
-        image_id = uuid.uuid4().hex
+        image_id = uuidutils.generate_uuid(dashed=False)
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
