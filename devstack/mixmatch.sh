@@ -31,8 +31,7 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF DEFAULT service_providers default
     iniset $MIXMATCH_CONF DEFAULT aggregation False
 
-    iniset $MIXMATCH_CONF auth auth_url \
-        "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:5000/v3"
+    iniset $MIXMATCH_CONF auth auth_url "$KEYSTONE_AUTH_URI/v3"
     iniset $MIXMATCH_CONF auth username admin
     iniset $MIXMATCH_CONF auth user_domain_id default
     iniset $MIXMATCH_CONF auth project_name admin
@@ -40,8 +39,7 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF auth password $ADMIN_PASSWORD
 
     iniset $MIXMATCH_CONF sp_default sp_name default
-    iniset $MIXMATCH_CONF sp_default auth_url \
-        "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:5000/v3"
+    iniset $MIXMATCH_CONF sp_default auth_url "$KEYSTONE_AUTH_URI/v3"
     iniset $MIXMATCH_CONF sp_default image_endpoint \
         "$GLANCE_SERVICE_PROTOCOL://$GLANCE_HOSTPORT"
     iniset $MIXMATCH_CONF sp_default volume_endpoint \
