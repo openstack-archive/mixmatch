@@ -17,11 +17,6 @@ tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_detail
 tempest.api.volume.test_volumes_snapshots.VolumesSnapshotTestJSON.test_snapshot_create_with_volume_in_use
 tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_deactivate_reactivate_image
 
-# These fail with Object not found because we do not handle /volume/v3/<project_id>/messages
-tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_show_message
-tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_list_messages
-tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_delete_message
-
 # TODO(knikolla): Investigate these failures
 tempest.api.object_storage.test_container_sync_middleware.ContainerSyncMiddlewareTest
 tempest.api.compute.images.test_images_oneserver.ImagesOneServerTestJSON.test_create_image_specify_multibyte_character_image_name
