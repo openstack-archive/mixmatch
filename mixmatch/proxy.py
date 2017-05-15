@@ -29,7 +29,7 @@ from mixmatch import model
 from mixmatch import services
 
 METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
-RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
+RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots', 'messages']
 
 
 def stream_response(response):
