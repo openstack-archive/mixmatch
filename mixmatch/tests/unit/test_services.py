@@ -59,6 +59,15 @@ VOLUMES = {
     ))
 }
 
+VOLUMES_V1 = {
+    'default': Response(json.dumps(
+        samples.single_sp['/volume/v1/id/volumes/detail']
+    )),
+    'sp1': Response(json.dumps(
+        samples.single_sp['/volume/v1/id/volumes/detail']
+    ))
+}
+
 IMAGES = {
     'default': Response(json.dumps(
         samples.multiple_sps['/image/v2/images'][0]
@@ -118,11 +127,13 @@ class TestServices(testcase.TestCase):
             'limit': 1
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
         self.assertEqual(1, len(response['images']))
 
         response = json.loads(services.aggregate(VOLUMES, 'volumes', 'volume',
-                                                 params, VOLUME_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
         self.assertEqual(1, len(response['volumes']))
 
     def test_aggregate_sort_images_ascending(self):
@@ -131,7 +142,8 @@ class TestServices(testcase.TestCase):
             'sort': 'size:asc'
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
         self.assertEqual(response['images'][0]['id'], SMALLEST_IMAGE)
 
     def test_aggregate_sort_images_limit(self):
@@ -142,7 +154,8 @@ class TestServices(testcase.TestCase):
             'limit': 1
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Ensure the smallest is first and there is only 1 entry.
         self.assertEqual(response['images'][0]['id'], SMALLEST_IMAGE)
@@ -164,7 +177,8 @@ class TestServices(testcase.TestCase):
             'limit': 2
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Check the first and second are the correct ids.
         self.assertEqual(response['images'][0]['id'], EARLIEST_IMAGE)
@@ -187,7 +201,8 @@ class TestServices(testcase.TestCase):
             'limit': 1
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Check the id and size
         self.assertEqual(response['images'][0]['id'], LATEST_IMAGE)
@@ -210,7 +225,8 @@ class TestServices(testcase.TestCase):
             'marker': EARLIEST_IMAGE
         }
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Ensure we skipped the first one
         self.assertEqual(response['images'][0]['id'], SECOND_EARLIEST_IMAGE)
@@ -242,7 +258,8 @@ class TestServices(testcase.TestCase):
         }
 
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Ensure we skipped the first one
         self.assertEqual(response['images'][0]['id'], SECOND_EARLIEST_IMAGE)
@@ -265,7 +282,8 @@ class TestServices(testcase.TestCase):
         }
 
         response = json.loads(services.aggregate(IMAGES, 'images', 'image',
-                                                 params, IMAGE_PATH))
+                                                 params=params,
+                                                 path=IMAGE_PATH))
 
         # Ensure we skipped the first one
         self.assertEqual(0, len(response['images']))
@@ -312,15 +330,31 @@ class TestServices(testcase.TestCase):
             Url(current_version_url),
             Url(VOLUME_VERSIONED))
 
-    def test_remove_details(self):
-        """Test aggregation on volumes with strip_details = True"""
+    def test_remove_details_v2(self):
+        """Test aggregation on volumes v2 with strip_details = True"""
         response = json.loads(services.aggregate(
-            VOLUMES, 'volumes', 'volume', strip_details=True
+            VOLUMES, 'volumes', 'volume', version='v2', strip_details=True
         ))
         for v in response['volumes']:
             self.assertEqual(
                 set(v.keys()),
                 {'id', 'links', 'name'}
+            )
+
+    def test_remove_details_v1(self):
+        """Test aggregation on volumes v2 with strip_details = True"""
+        response = json.loads(
+            services.aggregate(VOLUMES_V1, 'volumes', 'volume',
+                               version='v1', strip_details=True)
+        )
+        for v in response['volumes']:
+            self.assertEqual(
+                set(v.keys()),
+                {'status', 'attachments', 'availability_zone',
+                 'encrypted', 'source_volid', 'display_description',
+                 'snapshot_id', 'id', 'size', 'display_name',
+                 'bootable', 'created_at', 'multiattach',
+                 'volume_type', 'metadata'}
             )
 
     @staticmethod
