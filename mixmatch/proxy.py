@@ -248,6 +248,7 @@ class RequestHandler(object):
                 response.status_code,
                 content_type=response.headers['content-type']
             )
+
         LOG.info(format_for_log(title='Response from proxy',
                                 status_code=final_response.status_code,
                                 url=response.url,
@@ -319,7 +320,9 @@ class RequestHandler(object):
         headers['Accept'] = user_headers.get('Accept', '')
         headers['Content-Type'] = user_headers.get('Content-Type', '')
         for key, value in user_headers.items():
-            if key.lower().startswith('x-') and not is_token_header_key(key):
+            k = key.lower()
+            if ((k.startswith('x-') and not is_token_header_key(key)) or
+                    k == 'openstack-api-version'):
                 headers[key] = value
         return headers
 

@@ -43,14 +43,17 @@ class TestRequestHandler(BaseTest):
             'extra cheese': 'x-tra cheese',
             'y-auth-token': 'x-auth-token',
             'xauth-token': 'x-auth-token',
-            'start-x': 'startx'
+            'start-x': 'startx',
+
+            'OpenStack-API-Version': 'volume 3.0'
         }
         expected_headers = {
             'x-tra cheese': 'extra cheese',
             'x-goth-token': 'x-auth-token',
             'X-MEN': 'X MEN',
             'Accept': '',
-            'Content-Type': ''
+            'Content-Type': '',
+            'OpenStack-API-Version': 'volume 3.0'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertEqual(expected_headers, headers)
