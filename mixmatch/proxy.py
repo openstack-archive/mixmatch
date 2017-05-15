@@ -203,19 +203,16 @@ class RequestHandler(object):
         return resp
 
     def _finalize(self, response):
-        if not self.stream:
-            final_response = flask.Response(
-                response.text,
-                response.status_code
-            )
-            for key, value in response.headers.items():
-                final_response.headers[key] = value
+        if self.stream:
+            text = flask.stream_with_context(stream_response(response))
         else:
-            final_response = flask.Response(
-                flask.stream_with_context(stream_response(response)),
-                response.status_code,
-                content_type=response.headers['content-type']
-            )
+            text = response.text
+
+        final_response = flask.Response(
+            text,
+            response.status_code,
+            headers=self._prepare_headers(response.headers)
+        )
         LOG.info(format_for_log(title='Response from proxy',
                                 status_code=final_response.status_code,
                                 url=response.url,
@@ -299,7 +296,9 @@ class RequestHandler(object):
         headers['Accept'] = user_headers.get('Accept', '')
         headers['Content-Type'] = user_headers.get('Content-Type', '')
         for key, value in user_headers.items():
-            if key.lower().startswith('x-') and not is_token_header_key(key):
+            k = key.lower()
+            if ((k.startswith('x-') and not is_token_header_key(key)) or
+                    k == 'openstack-api-version'):
                 headers[key] = value
         return headers
 
