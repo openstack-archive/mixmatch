@@ -31,10 +31,6 @@ METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
 RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
 
 
-def stream_response(response):
-    yield response.raw.read()
-
-
 def get_service(a):
     """Determine service type based on path."""
     # NOTE(knikolla): Workaround to fix glance requests that do not
@@ -188,7 +184,6 @@ class RequestHandler(object):
                                     url=url,
                                     headers=headers,
                                     data=request.data,
-                                    stream=self.stream,
                                     params=self._prepare_args(request.args))
         LOG.info(format_for_log(title='Request from proxy',
                                 method=self.details['method'],
@@ -201,19 +196,16 @@ class RequestHandler(object):
         return resp
 
     def _finalize(self, response):
-        if not self.stream:
-            final_response = flask.Response(
-                response.text,
-                response.status_code
-            )
-            for key, value in response.headers.items():
-                final_response.headers[key] = value
-        else:
-            final_response = flask.Response(
-                flask.stream_with_context(stream_response(response)),
-                response.status_code,
-                content_type=response.headers['content-type']
-            )
+        def stream_response():
+            yield response.text
+
+        final_response = flask.Response(
+            flask.stream_with_context(stream_response(response)),
+            response.status_code,
+            content_type=response.headers['content-type']
+        )
+        for key, value in response.headers.items():
+            final_response.headers[key] = value
         LOG.info(format_for_log(title='Response from proxy',
                                 status_code=final_response.status_code,
                                 url=response.url,
@@ -306,10 +298,6 @@ class RequestHandler(object):
     def chunked(self):
         encoding = self.details['headers'].get('Transfer-Encoding', '')
         return encoding.lower() == 'chunked'
-
-    @property
-    def stream(self):
-        return True if self.details['method'] in ['GET'] else False
 
     def _set_strip_details(self, details):
         # if request is to /volumes, change it
