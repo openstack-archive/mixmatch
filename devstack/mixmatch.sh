@@ -13,9 +13,12 @@
 # under the License.
 
 function install_mixmatch {
+    # Note(knikolla): Change directory into the source code to install,
+    # and then back in case devstack assumes a relative path.
     cd $MIXMATCH_DIR
     pip_install -r requirements.txt
     sudo python setup.py install
+    cd $DEST
 
     pip_install uwsgi
 }
