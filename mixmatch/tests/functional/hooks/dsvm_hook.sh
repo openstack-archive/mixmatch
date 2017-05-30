@@ -54,6 +54,10 @@ function register_mixmatch {
         "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
 }
 
+# Restart Nova and Cinder so they use the proxy endpoints
+sudo systemctl restart devstack@n-*
+sudo systemctl restart devstack@c-*
+
 # Get admin credentials
 cd $BASE/new/devstack
 source openrc admin admin
