@@ -13,10 +13,7 @@
 # under the License.
 
 function install_mixmatch {
-    cd $MIXMATCH_DIR
-    pip_install -r requirements.txt
-    sudo python setup.py install
-
+    pip_install $MIXMATCH_DIR
     pip_install uwsgi
 }
 
