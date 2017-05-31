@@ -15,7 +15,7 @@
 import oslo_messaging
 
 from mixmatch import config
-from mixmatch.config import CONF, LOG
+from mixmatch.config import CONF, LOG, service_providers
 from mixmatch import model
 from mixmatch.model import insert, delete, ResourceMapping
 
@@ -170,7 +170,7 @@ def get_server_for_sp(sp):
 
     The server can be run in the background under eventlet using .start()
     """
-    cfg = config.get_conf_for_sp(sp)
+    cfg = service_providers.get(CONF, sp)
     transport = oslo_messaging.get_notification_transport(CONF, cfg.messagebus)
     targets = [oslo_messaging.Target(topic='notifications')]
     return oslo_messaging.get_notification_listener(
@@ -182,8 +182,7 @@ def get_server_for_sp(sp):
 
 
 if __name__ == "__main__":
-    config.load_config()
-    config.more_config()
+    config.configure()
     model.create_tables()
 
     LOG.info("Now listening for changes")

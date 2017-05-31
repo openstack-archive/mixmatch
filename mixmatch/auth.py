@@ -22,10 +22,14 @@ import json
 from flask import abort
 
 from mixmatch import config
-from mixmatch.config import LOG, CONF, get_conf_for_sp
+
+CONF = config.CONF
+LOG = config.LOG
+
+MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
-@config.MEMOIZE_SESSION
+@MEMOIZE_SESSION
 def get_client():
     """Return a Keystone client capable of validating tokens."""
     LOG.info("Getting Admin Client")
@@ -41,7 +45,7 @@ def get_client():
     return v3.client.Client(session=local_session)
 
 
-@config.MEMOIZE_SESSION
+@MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
@@ -62,10 +66,10 @@ def get_local_auth(user_token):
     return session.Session(auth=local_auth)
 
 
-@config.MEMOIZE_SESSION
+@MEMOIZE_SESSION
 def get_unscoped_sp_auth(service_provider, user_token):
     """Perform K2K auth, and return an unscoped session."""
-    conf = get_conf_for_sp(service_provider)
+    conf = config.service_providers.get(CONF, service_provider)
     local_auth = get_local_auth(user_token).auth
     LOG.debug("Getting unscoped session for (%s, %s)" % (service_provider,
                                                          user_token))
@@ -78,17 +82,17 @@ def get_unscoped_sp_auth(service_provider, user_token):
 
 def get_projects_at_sp(service_provider, user_token):
     """Perform K2K auth, and return the projects that can be scoped to."""
-    conf = get_conf_for_sp(service_provider)
+    conf = config.service_providers.get(CONF, service_provider)
     unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
     r = json.loads(str(unscoped_session.get(
         conf.auth_url + "/OS-FEDERATION/projects").text))
     return [project[u'id'] for project in r[u'projects']]
 
 
-@config.MEMOIZE_SESSION
+@MEMOIZE_SESSION
 def get_sp_auth(service_provider, user_token, remote_project_id):
     """Perform K2K auth, and return a session for a remote cluster."""
-    conf = get_conf_for_sp(service_provider)
+    conf = config.service_providers.get(CONF, service_provider)
     local_auth = get_local_auth(user_token).auth
 
     LOG.debug("Getting session for (%s, %s, %s)" % (service_provider,

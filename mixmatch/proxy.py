@@ -18,7 +18,7 @@ import flask
 from flask import abort
 
 from mixmatch import config
-from mixmatch.config import LOG, CONF
+from mixmatch.config import LOG, CONF, service_providers
 from mixmatch.session import app
 from mixmatch.session import chunked_reader
 from mixmatch.session import request
@@ -97,7 +97,7 @@ class RequestHandler(object):
 
         self.enabled_sps = filter(
             lambda sp: (self.details['service'] in
-                        config.get_conf_for_sp(sp).enabled_services),
+                        service_providers.get(CONF, sp).enabled_services),
             CONF.service_providers
         )
 
@@ -332,8 +332,7 @@ def proxy(path):
 
 
 def main():
-    config.load_config()
-    config.more_config()
+    config.configure()
     model.create_tables()
 
 

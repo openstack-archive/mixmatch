@@ -25,7 +25,7 @@ CONF = config.CONF
 def construct_url(service_provider, service_type,
                   version=None, action=None, project_id=None):
     """Construct the full URL for an Openstack API call."""
-    conf = config.get_conf_for_sp(service_provider)
+    conf = config.service_providers.get(CONF, service_provider)
 
     if service_type == 'image':
         url = conf.image_endpoint
