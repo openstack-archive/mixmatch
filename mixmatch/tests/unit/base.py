@@ -21,9 +21,11 @@ from six.moves.urllib import parse
 from requests_mock.contrib import fixture as requests_fixture
 from oslo_config import fixture as config_fixture
 
-from mixmatch.config import CONF, more_config
+from mixmatch import config
 from mixmatch.proxy import app
 from mixmatch.model import BASE, enginefacade
+
+CONF = config.CONF
 
 
 class BaseTest(testcase.TestCase):
@@ -58,7 +60,7 @@ class BaseTest(testcase.TestCase):
             group='sp_remote1',
             image_endpoint='http://images.remote1',
             volume_endpoint='http://volumes.remote1')
-        more_config()
+        config.post_config()
 
     def load_auth_fixtures(self):
         self.auth = FakeSession(token=uuid.uuid4().hex,
