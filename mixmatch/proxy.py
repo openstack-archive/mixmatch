@@ -12,8 +12,6 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-import uuid
-
 import requests
 import flask
 
@@ -27,6 +25,7 @@ from mixmatch.session import request
 from mixmatch import auth
 from mixmatch import model
 from mixmatch import services
+from mixmatch import utils
 
 METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
 RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
@@ -34,39 +33,6 @@ RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
 
 def stream_response(response):
     yield response.raw.read()
-
-
-def safe_get(a, i, default=None):
-    """Return the i-th element if it exists, or default."""
-    try:
-        return a[i]
-    except IndexError:
-        return default
-
-
-def safe_pop(a, i=0, default=None):
-    """Pops the i-th element, if any, otherwise returns default"""
-    try:
-        return a.pop(i)
-    except (IndexError, KeyError):
-        return default
-
-
-def is_uuid(value):
-    """Return true if value is a valid uuid."""
-    try:
-        uuid.UUID(value, version=4)
-        return True
-    except (ValueError, TypeError):
-        return False
-
-
-def pop_if_uuid(a):
-    """Pops the first element of the list only if it is a uuid."""
-    if is_uuid(safe_get(a, 0)):
-        return safe_pop(a)
-    else:
-        return None
 
 
 def get_service(a):
@@ -92,11 +58,11 @@ def get_details(method, path, headers):
     # /<service>/<version>/<res_type>/<specific action>
     return {'method': method,
             'service': get_service(path),
-            'version': safe_pop(path),
-            'project_id': pop_if_uuid(path),
+            'version': utils.safe_pop(path),
+            'project_id': utils.pop_if_uuid(path),
             'action': path[:],  # NOTE(knikolla): This includes
-            'resource_type': safe_pop(path),  # this
-            'resource_id': pop_if_uuid(path),  # and this
+            'resource_type': utils.safe_pop(path),  # this
+            'resource_id': utils.pop_if_uuid(path),  # and this
             'token': headers.get('X-AUTH-TOKEN', None),
             'headers': headers}
 
@@ -351,7 +317,7 @@ class RequestHandler(object):
         # and set strip_details to true
         if (details['service'] == 'volume' and
                 details['method'] == 'GET' and
-                safe_get(details['action'], -1) == 'volumes'):
+                utils.safe_get(details['action'], -1) == 'volumes'):
             self.strip_details = True
             details['action'].insert(len(details['action']), 'detail')
         else:
