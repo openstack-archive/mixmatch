@@ -14,7 +14,7 @@ We will use the word *remote* to refer to where the user is authenticating
 from (identity provider), and *local* to refer to where the user is
 authenticating to (service provider).
 
-.. _documentation: http://docs.openstack.org/developer/keystone/federation/federated_identity.html
+.. _documentation: https://docs.openstack.org/developer/keystone/federation/federated_identity.html
 
 Mappings
 ========
@@ -23,7 +23,7 @@ When a SAML2 assertion is presented to Keystone from the user, Keystone will
 use the attributes in the assertion to determine the user credentials and
 level of authorization to grant to the user. This is done through mappings_.
 
-.. _mappings: http://docs.openstack.org/developer/keystone/federation/mapping_combinations.html
+.. _mappings: https://docs.openstack.org/developer/keystone/federation/mapping_combinations.html
 
 In our reference architecture, a user is given access to a local project of
 the same name as the remote project.

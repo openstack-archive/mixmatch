@@ -1,6 +1,6 @@
-===============================
+========
 mixmatch
-===============================
+========
 
 Combine resources across federated OpenStack deployments
 
@@ -14,5 +14,5 @@ volume.
 
 * Free software: Apache license
 * Documentation: https://mixmatch.readthedocs.io
-* Source: http://git.openstack.org/cgit/openstack/mixmatch
-* Bugs: http://bugs.launchpad.net/mixmatch
+* Source: https://git.openstack.org/cgit/openstack/mixmatch
+* Bugs: https://bugs.launchpad.net/mixmatch
