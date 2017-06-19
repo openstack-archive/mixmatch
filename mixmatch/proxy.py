@@ -12,6 +12,8 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+import collections
+import six
 import requests
 import flask
 
@@ -231,21 +233,33 @@ class RequestHandler(object):
         if not CONF.search_by_broadcast:
             return self._local_forward()
 
+        errors = collections.defaultdict(lambda: [])
         for sp in self.enabled_sps:
             if sp == 'default':
                 response = self._do_request_on('default')
                 if 200 <= response.status_code < 300:
                     return self._finalize(response)
+                else:
+                    errors[response.status_code].append(response)
             else:
                 self.service_provider = sp
                 for p in auth.get_projects_at_sp(sp, self.details['token']):
                     response = self._do_request_on(sp, p)
                     if 200 <= response.status_code < 300:
                         return self._finalize(response)
-        return flask.Response(
-            "Not found\n.",
-            404
-        )
+                    else:
+                        errors[response.status_code].append(response)
+
+        if six.viewkeys(errors) == {404}:
+            return self._finalize(errors[404][0])
+        else:
+            utils.safe_pop(errors, 404)
+
+        if len(errors.keys()) == 1:
+            return self._finalize(list(errors.values())[0][0])
+
+        # TODO(jfreud): log
+        return flask.Response("Something strange happened.\n", 500)
 
     def _aggregate_forward(self):
         if not CONF.aggregation:

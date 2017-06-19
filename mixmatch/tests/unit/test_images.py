@@ -167,7 +167,7 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers()
         )
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 500)
 
     def test_list_images(self):
         self.requests_fixture.get(
