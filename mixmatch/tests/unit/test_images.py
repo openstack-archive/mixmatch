@@ -167,7 +167,8 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers()
         )
 
-        self.assertEqual(response.status_code, 404)
+        # TODO(jfreud): what will actually happen in this case?
+        self.assertEqual(response.status_code, 400)
 
     def test_list_images(self):
         self.requests_fixture.get(

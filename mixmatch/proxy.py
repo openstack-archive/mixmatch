@@ -231,21 +231,29 @@ class RequestHandler(object):
         if not CONF.search_by_broadcast:
             return self._local_forward()
 
+        client_side_errors = []
         for sp in self.enabled_sps:
             if sp == 'default':
                 response = self._do_request_on('default')
                 if 200 <= response.status_code < 300:
                     return self._finalize(response)
+                elif response.status_code == 400:
+                    # TODO(jfreud): check other 4xx errors
+                    client_side_errors.append(response)
             else:
                 self.service_provider = sp
                 for p in auth.get_projects_at_sp(sp, self.details['token']):
                     response = self._do_request_on(sp, p)
                     if 200 <= response.status_code < 300:
                         return self._finalize(response)
-        return flask.Response(
-            "Not found\n.",
-            404
-        )
+                    elif response.status_code == 400:
+                        client_side_errors.append(response)
+        if client_side_errors:
+            # TODO(jfreud): the chosen response must be legitimate
+            return self._finalize(client_side_errors[0])
+        else:
+            # TODO(jfreud): if it's actually a 404, return the real 404
+            return flask.Response("Not found\n.", 404)
 
     def _aggregate_forward(self):
         if not CONF.aggregation:
