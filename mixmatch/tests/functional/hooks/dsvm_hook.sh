@@ -28,30 +28,30 @@ function register_mixmatch {
     get_or_create_endpoint \
         "image" \
         "$REGION_NAME" \
-        "http://$HOST_IP:5001/image" \
-        "http://$HOST_IP:5001/image" \
-        "http://$HOST_IP:5001/image"
+        "$MIXMATCH_URI/image" \
+        "$MIXMATCH_URI/image" \
+        "$MIXMATCH_URI/image"
 
     get_or_create_endpoint \
         "volume" \
         "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s"
+        "$MIXMATCH_URI/volume/v1/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v1/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v1/\$(project_id)s"
 
     get_or_create_endpoint \
         "volumev2" \
         "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s"
+        "$MIXMATCH_URI/volume/v2/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v2/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v2/\$(project_id)s"
 
     get_or_create_endpoint \
         "volumev3" \
         "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+        "$MIXMATCH_URI/volume/v3/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v3/\$(project_id)s" \
+        "$MIXMATCH_URI/volume/v3/\$(project_id)s"
 }
 
 # Get admin credentials
