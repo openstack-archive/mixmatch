@@ -12,9 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+MIXMATCH_BIN_DIR=$(get_python_exec_prefix)
+MIXMATCH_CONF_DIR="/etc/mixmatch"
+
+MIXMATCH_UWSGI_INI="$MIXMATCH_CONF_DIR/mixmatch-uwsgi.ini"
+
 function install_mixmatch {
     pip_install $MIXMATCH_DIR
-    pip_install uwsgi
 }
 
 function configure_mixmatch {
@@ -23,8 +27,7 @@ function configure_mixmatch {
     sudo chown $STACK_USER:$STACK_USER /etc/mixmatch
     cp $MIXMATCH_DIR/etc/mixmatch.conf.sample $MIXMATCH_CONF
 
-    iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
-    iniset $MIXMATCH_CONF DEFAULT port $MIXMATCH_SERVICE_PORT
+    iniset $MIXMATCH_CONF database connection "sqlite://"
     iniset $MIXMATCH_CONF DEFAULT service_providers default
     iniset $MIXMATCH_CONF DEFAULT aggregation False
 
@@ -51,21 +54,25 @@ function configure_mixmatch {
         "$NEUTRON_SERVICE_PROTOCOL://$NEUTRON_SERVICE_HOST:$NEUTRON_SERVICE_PORT"
     iniset $MIXMATCH_CONF sp_default enabled_services "image, volume, network"
 
-    run_process mixmatch "$MIXMATCH_DIR/run_proxy.sh"
-
     # Nova
-    iniset $NOVA_CONF glance api_servers "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
-    iniset $NOVA_CONF neutron url "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/network"
+    iniset $NOVA_CONF glance api_servers "$MIXMATCH_URL/image"
+    iniset $NOVA_CONF neutron url "$MIXMATCH_URL/network"
 
     # Cinder
-    iniset $CINDER_CONF DEFAULT glance_api_servers \
-        "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
+    iniset $CINDER_CONF DEFAULT glance_api_servers "$MIXMATCH_URL/image"
     iniset $CINDER_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
 
     # Glance
     iniset $GLANCE_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
+
+    sudo cp $MIXMATCH_DIR/httpd/mixmatch-uwsgi.conf $(apache_site_config_for mixmatch)
+    enable_apache_site mixmatch
+    restart_apache_server
+
+    run_process mixmatch \
+        "$MIXMATCH_BIN_DIR/uwsgi --ini $MIXMATCH_DIR/httpd/mixmatch-uwsgi.ini"
 }
 
 function get_endpoint_ids {
@@ -84,36 +91,36 @@ function register_mixmatch {
         get_or_create_endpoint \
             "image" \
             "$REGION_NAME" \
-            "http://$HOST_IP:5001/image" \
-            "http://$HOST_IP:5001/image" \
-            "http://$HOST_IP:5001/image"
+            "$MIXMATCH_URL/image" \
+            "$MIXMATCH_URL/image" \
+            "$MIXMATCH_URL/image"
 
         get_or_create_endpoint \
             "volume" \
             "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s"
+            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v1/\$(project_id)s"
 
         get_or_create_endpoint \
             "volumev2" \
             "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s"
+            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v2/\$(project_id)s"
 
         get_or_create_endpoint \
             "volumev3" \
             "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s"
 
         get_or_create_endpoint \
             "network" \
             "$REGION_NAME" \
-            "http://$HOST_IP:5001/network" \
-            "http://$HOST_IP:5001/network" \
-            "http://$HOST_IP:5001/network"
+            "$MIXMATCH_URL/network" \
+            "$MIXMATCH_URL/network" \
+            "$MIXMATCH_URL/network"
     fi
 }
