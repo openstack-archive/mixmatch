@@ -14,27 +14,13 @@ Install dependencies. ::
 
 Web Server
 ==========
-The recommended way is to run the proxy using uWSGI through the
-``run_proxy.sh`` script. ::
+The recommended way is to run the proxy using uwsgi and apache through the
+`httpd/mixmatch-uwsgi.ini` and `httpd/mixmatch-uwsgi.conf` files respectively ::
 
-    $ ./run_proxy.sh
-
-
-It is also possible to run the proxy with Apache2 and ``mod_wsgi``, but there
-are limitations compared to running it with uWSGI.
-
-- Image uploading with Glance doesn't work unless running Apache in embedded
-  mode.
-- Image API v1 uses underscores in the header keys, which are silently dropped
-  by Apache. Hacking the configuration to allow these through is required.
-
-To run the proxy with Apache in Ubuntu: ::
-
-    $ apt-get install libapache2-mod-wsgi
-    $ cp httpd/apache.conf /etc/apache2/sites-available/proxy.conf
-    $ cp etc/mixmatch.conf.sample /etc/mixmatch/mixmatch.conf
-    $ a2ensite proxy
-    $ service apache2 reload
+    sudo apt install uwsgi uwsgi-plugin-python libapache2-mod-proxy-uwsgi
+    uwsgi mixmatch/httpd/mixmatch-uwsgi.ini
+    sudo cp mixmatch/httpd/mixmatach-uwsgi.ini /etc/apache2/sites-available/mixmatch.conf
+    sudo a2ensite mixmatch
 
 
 Running in a Docker Container
