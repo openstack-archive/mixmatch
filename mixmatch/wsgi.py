@@ -17,3 +17,6 @@ from mixmatch import session
 
 proxy.main()
 application = session.app
+
+def get_application():
+	return application

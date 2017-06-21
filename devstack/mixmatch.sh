@@ -14,7 +14,6 @@
 
 function install_mixmatch {
     pip_install $MIXMATCH_DIR
-    pip_install uwsgi
 }
 
 function configure_mixmatch {
@@ -42,7 +41,7 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF sp_default volume_endpoint \
         "$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST:$CINDER_SERVICE_PORT"
 
-    run_process mixmatch "$MIXMATCH_DIR/run_proxy.sh"
+    run_process mixmatch "uwsgi $MIXMATCH_DIR/httpd/mixmatch-uwsgi.ini"
 
     # Nova
     iniset $NOVA_CONF glance api_servers "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
@@ -56,4 +55,9 @@ function configure_mixmatch {
     # Glance
     iniset $GLANCE_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
+    
+    # Copy apache config
+    # FIXME(knikolla): Where's the directory
+    sudo cp "$MIXMATCH_DIR/httpd/mixmatch-uwsgi.conf" $(apache_site_config_for mixmatch)
+    restart_apache_server
 }
