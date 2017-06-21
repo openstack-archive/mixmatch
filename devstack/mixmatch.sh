@@ -14,7 +14,7 @@
 
 function install_mixmatch {
     pip_install $MIXMATCH_DIR
-    pip_install uwsgi
+    install_package uwsgi uwsgi-plugin-python libapache2-mod-proxy-uwsgi
 }
 
 function configure_mixmatch {
@@ -23,8 +23,7 @@ function configure_mixmatch {
     sudo chown $STACK_USER:$STACK_USER /etc/mixmatch
     cp $MIXMATCH_DIR/etc/mixmatch.conf.sample $MIXMATCH_CONF
 
-    iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
-    iniset $MIXMATCH_CONF DEFAULT port $MIXMATCH_SERVICE_PORT
+    iniset $MIXMATCH_CONF database connection "sqlite://"
     iniset $MIXMATCH_CONF DEFAULT service_providers default
     iniset $MIXMATCH_CONF DEFAULT aggregation False
 
@@ -42,18 +41,23 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF sp_default volume_endpoint \
         "$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST:$CINDER_SERVICE_PORT"
 
-    run_process mixmatch "$MIXMATCH_DIR/run_proxy.sh"
+    run_process mixmatch "uwsgi $MIXMATCH_DIR/httpd/mixmatch-uwsgi.ini"
 
     # Nova
-    iniset $NOVA_CONF glance api_servers "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
+    iniset $NOVA_CONF glance api_servers "$MIXMATCH_URI/image"
 
     # Cinder
-    iniset $CINDER_CONF DEFAULT glance_api_servers \
-        "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
+    iniset $CINDER_CONF DEFAULT glance_api_servers "$MIXMATCH_URI/image"
     iniset $CINDER_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
 
     # Glance
     iniset $GLANCE_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
+
+    # Copy apache config
+    sudo cp "$MIXMATCH_DIR/httpd/mixmatch-uwsgi.conf" $(apache_site_config_for mixmatch)
+    sudo a2ensite mixmatch
+    sudo a2enmod proxy_uwsgi
+    restart_apache_server
 }
