@@ -17,10 +17,6 @@ from oslo_config import cfg
 GROUP = None
 
 OPTS = [
-    cfg.IntOpt('port',
-               default=5001,
-               help='Web Server Port'),
-
     cfg.ListOpt('service_providers',
                 default=[],
                 help='List of service providers'),

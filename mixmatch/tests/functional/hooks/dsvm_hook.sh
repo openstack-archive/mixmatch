@@ -19,6 +19,7 @@ cd $BASE/new/devstack
 source openrc admin admin
 
 # Register the endpoints
+source $BASE/new/mixmatch/devstack/settings
 source $BASE/new/mixmatch/devstack/mixmatch.sh
 REGISTER_MIXMATCH=true
 register_mixmatch
