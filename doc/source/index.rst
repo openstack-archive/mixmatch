@@ -8,6 +8,9 @@ Welcome to mixmatch's documentation!
 
 Contents:
 
+Operators Guide
+---------------
+
 ..  toctree::
     :maxdepth: 2
 
@@ -16,14 +19,23 @@ Contents:
     installation
     identity
     volumes
-    contributing
+
+* `Release Notes <https://mixmatch.readthedocs.org/projects/releasenotes>`_
+
+Contributors Guide
+------------------
+
+..  toctree::
+    :maxdepth: 2
+   
+   reference
 
 ..  toctree::
     :maxdepth: 1
 
     specs
 
-* `Release Notes <https://mixmatch.readthedocs.org/projects/releasenotes>`_
+
 
 Indices and tables
 ==================
