@@ -37,8 +37,7 @@ function configure_mixmatch {
 
     iniset $MIXMATCH_CONF sp_default sp_name default
     iniset $MIXMATCH_CONF sp_default auth_url "$KEYSTONE_AUTH_URI/v3"
-    iniset $MIXMATCH_CONF sp_default image_endpoint \
-        "$GLANCE_SERVICE_PROTOCOL://$GLANCE_HOSTPORT"
+    iniset $MIXMATCH_CONF sp_default image_endpoint $GLANCE_URL
     iniset $MIXMATCH_CONF sp_default volume_endpoint \
         "$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST:$CINDER_SERVICE_PORT"
 
