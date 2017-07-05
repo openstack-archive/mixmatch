@@ -36,7 +36,9 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     # This phase is executed after the projects have been started
     echo "Mix & match plugin - Extra phase"
-    :
+    if is_service_enabled mixmatch; then
+        register_mixmatch
+    fi
 fi
 
 if [[ "$1" == "unstack" ]]; then
