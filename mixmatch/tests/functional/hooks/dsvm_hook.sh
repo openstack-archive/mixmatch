@@ -14,50 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-function get_endpoint_ids {
-    echo `openstack endpoint list --service $1 -c ID -f value`
-}
-
-function register_mixmatch {
-    # Update the endpoints
-    openstack endpoint delete `get_endpoint_ids image`
-    openstack endpoint delete `get_endpoint_ids volume`
-    openstack endpoint delete `get_endpoint_ids volumev2`
-    openstack endpoint delete `get_endpoint_ids volumev3`
-
-    get_or_create_endpoint \
-        "image" \
-        "$REGION_NAME" \
-        "http://$HOST_IP:5001/image" \
-        "http://$HOST_IP:5001/image" \
-        "http://$HOST_IP:5001/image"
-
-    get_or_create_endpoint \
-        "volume" \
-        "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v1/\$(project_id)s"
-
-    get_or_create_endpoint \
-        "volumev2" \
-        "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v2/\$(project_id)s"
-
-    get_or_create_endpoint \
-        "volumev3" \
-        "$REGION_NAME" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-        "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
-}
-
 # Get admin credentials
 cd $BASE/new/devstack
 source openrc admin admin
 
+# Register the endpoints
+source $BASE/new/mixmatch/devstack/mixmatch.sh
 register_mixmatch
 
 # Restart Nova and Cinder so they use the proxy endpoints
