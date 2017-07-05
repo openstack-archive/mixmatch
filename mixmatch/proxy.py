@@ -48,7 +48,7 @@ def get_service(a):
         if service in ['image', 'volume']:
             return service
         else:
-            raise ValueError
+            abort(404)
 
 
 def get_details(method, path, headers):
