@@ -22,6 +22,69 @@ from mixmatch.model import insert, ResourceMapping
 from mixmatch.tests.unit import samples
 
 
+class TestVolumesV3(base.BaseTest):
+    def setUp(self):
+        super(TestVolumesV3, self).setUp()
+        # TODO(knikolla): load_auth_fixtures() should be done in the base
+        # class, but may conflict with the other tests which haven't been
+        # migrated to these fixtures.
+        self.load_auth_fixtures()
+
+    def _construct_url(self, auth=None, target=None, sp=None,
+                       resource_type='volumes'):
+        if not sp:
+            url = '/volume'
+        else:
+            url = self.service_providers[sp]['volume_endpoint']
+
+        if auth:
+            url = '%(url)s/v3/%(project_id)s/%(resource_type)s' % {
+                'url': url,
+                'project_id': auth.get_project_id(),
+                'resource_type': resource_type
+            }
+            if target:
+                url = '%s/%s' % (url, target)
+
+        return url
+
+    def test_get_messages(self):
+        fake_message_list = uuid.uuid4().hex
+
+        self.requests_fixture.get(
+            self._construct_url(self.auth,
+                                resource_type='messages',
+                                sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(fake_message_list),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.get(
+            self._construct_url(self.auth, resource_type='messages'),
+            headers=self.auth.get_headers()
+        )
+        self.assertEqual(response.data, six.b(fake_message_list))
+
+    def test_get_message(self):
+        fake_message = uuid.uuid4().hex
+
+        self.requests_fixture.get(
+            self._construct_url(self.auth,
+                                fake_message,
+                                resource_type='messages',
+                                sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(fake_message),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.get(
+            self._construct_url(self.auth, fake_message,
+                                resource_type='messages'),
+            headers=self.auth.get_headers()
+        )
+        self.assertEqual(response.data, six.b(fake_message))
+
+
 class TestVolumesV2(base.BaseTest):
     def setUp(self):
         super(TestVolumesV2, self).setUp()
