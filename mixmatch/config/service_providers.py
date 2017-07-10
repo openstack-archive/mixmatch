@@ -42,6 +42,10 @@ SP_OPTS = [
                default=None,
                help="Volume Endpoint for Service Provider"),
 
+    cfg.StrOpt('network_endpoint',
+               default=None,
+               help='Network Endpoint for Service Provider'),
+
     cfg.ListOpt('enabled_services',
                 default=['image', 'volume'],
                 help="Services to enable for Service Provider")
