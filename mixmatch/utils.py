@@ -76,3 +76,10 @@ def pop_if_uuid(a):
         return safe_pop(a)
     else:
         return None
+
+
+def flatten(item):
+    """Return the first element if list-like, otherwise the item itself"""
+    if isinstance(item, list):
+        return item[0]
+    return item

@@ -18,6 +18,7 @@ import operator
 from six.moves.urllib import parse
 
 from mixmatch import config
+from mixmatch import utils
 
 from oslo_serialization import jsonutils
 
@@ -39,6 +40,10 @@ def construct_url(service_provider, service_type,
             url = '%s/%s' % (url, version)
         if project_id:
             url = '%s/%s' % (url, project_id)
+    elif service_type == 'network':
+        url = conf.network_endpoint
+        if version:
+            url = '%s/%s' % (url, version)
 
     if action:
         url = '%s/%s' % (url, os.path.join(*action))
@@ -50,12 +55,12 @@ def aggregate(responses, key, service_type, version=None,
               params=None, path=None, strip_details=True):
     """Combine responses from several clusters into one response."""
     if params:
-        limit = int(params.get('limit', 0))
-        sort = params.get('sort', None)
-        marker = params.get('marker', None)
+        limit = int(utils.flatten(params.get('limit', 0)))
+        sort = utils.flatten(params.get('sort', None))
+        marker = utils.flatten(params.get('marker', None))
 
-        sort_key = params.get('sort_key', None)
-        sort_dir = params.get('sort_dir', None)
+        sort_key = utils.flatten(params.get('sort_key', None))
+        sort_dir = utils.flatten(params.get('sort_dir', None))
 
         if sort and not sort_key:
             sort_key, sort_dir = sort.split(':')
@@ -108,14 +113,14 @@ def aggregate(responses, key, service_type, version=None,
     # Inject the pagination URIs
     if start > 0:
         params.pop('marker', None)
-        response['start'] = '%s?%s' % (path, parse.urlencode(params))
+        response['start'] = '%s?%s' % (path, parse.urlencode(params, True))
     if end < last:
         params['marker'] = response[key][-1]['id']
         if service_type == 'image':
-            response['next'] = '%s?%s' % (path, parse.urlencode(params))
+            response['next'] = '%s?%s' % (path, parse.urlencode(params, True))
         elif service_type == 'volume':
             response['volumes_links'] = [
-                {"href": '%s?%s' % (path, parse.urlencode(params)),
+                {"href": '%s?%s' % (path, parse.urlencode(params, True)),
                  "rel": "next"}
             ]
 
@@ -181,6 +186,22 @@ def list_api_versions(service_type, url):
                              % version[1:-2]}
                 ]
             })
+            api_versions.append(info)
+        return json.dumps({'versions': api_versions})
+
+    elif service_type == 'network':
+        supported_versions = CONF.network_api_versions
+
+        for version in supported_versions:
+            info = dict()
+            if version == supported_versions[0]:
+                info.update({'status': 'CURRENT'})
+            else:
+                info.update({'status': 'SUPPORTED'})
+
+            info.update({'id': version,
+                         'links': [{'href': '%s/%s/' % (url, version[:-2]),
+                                    'rel': 'self'}]})
             api_versions.append(info)
         return json.dumps({'versions': api_versions})
 
