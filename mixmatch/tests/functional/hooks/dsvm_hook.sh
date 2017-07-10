@@ -37,5 +37,5 @@ fi
 sudo chown -R jenkins:stack $BASE/new/tempest
 sudo chown -R jenkins:stack /opt/stack/data/tempest
 
-ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.scenario)' \
+ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.api.network|^tempest.scenario)' \
     --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
