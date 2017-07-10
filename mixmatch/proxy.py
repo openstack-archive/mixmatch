@@ -45,7 +45,7 @@ def get_service(a):
         return 'image'
     else:
         service = a.pop(0)
-        if service in ['image', 'volume']:
+        if service in ['image', 'volume', 'network']:
             return service
         else:
             abort(404)
