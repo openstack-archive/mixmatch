@@ -45,7 +45,7 @@ def get_service(a):
         return 'image'
     else:
         service = a.pop(0)
-        if service in ['image', 'volume']:
+        if service in ['image', 'volume', 'network']:
             return service
         else:
             abort(404)
@@ -276,7 +276,7 @@ class RequestHandler(object):
                                self.details['action'][0],
                                self.details['service'],
                                version=self.details['version'],
-                               params=request.args.to_dict(),
+                               params=dict(request.args),
                                path=request.base_url,
                                strip_details=self.strip_details),
             200,
@@ -310,7 +310,7 @@ class RequestHandler(object):
         This is because the id of the marker will only be present in one of
         the service providers.
         """
-        args = user_args.copy()
+        args = dict(user_args)
         if CONF.aggregation:
             args.pop('limit', None)
             args.pop('marker', None)
