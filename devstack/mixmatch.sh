@@ -40,11 +40,15 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF sp_default image_endpoint $GLANCE_URL
     iniset $MIXMATCH_CONF sp_default volume_endpoint \
         "$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST:$CINDER_SERVICE_PORT"
+    iniset $MIXMATCH_CONF sp_default network_endpoint \
+        "$NEUTRON_SERVICE_PROTOCOL://$NEUTRON_SERVICE_HOST:$NEUTRON_SERVICE_PORT"
+    iniset $MIXMATCH_CONF sp_default enabled_services "image, volume, network"
 
     run_process mixmatch "$MIXMATCH_DIR/run_proxy.sh"
 
     # Nova
     iniset $NOVA_CONF glance api_servers "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/image"
+    iniset $NOVA_CONF neutron url "$MIXMATCH_SERVICE_PROTOCOL://$HOST_IP:$MIXMATCH_SERVICE_PORT/network"
 
     # Cinder
     iniset $CINDER_CONF DEFAULT glance_api_servers \
@@ -68,6 +72,7 @@ function register_mixmatch {
         openstack endpoint delete `get_endpoint_ids volume`
         openstack endpoint delete `get_endpoint_ids volumev2`
         openstack endpoint delete `get_endpoint_ids volumev3`
+        openstack endpoint delete `get_endpoint_ids network`
 
         get_or_create_endpoint \
             "image" \
@@ -96,5 +101,12 @@ function register_mixmatch {
             "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
             "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
             "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+
+        get_or_create_endpoint \
+            "network" \
+            "$REGION_NAME" \
+            "http://$HOST_IP:5001/network" \
+            "http://$HOST_IP:5001/network" \
+            "http://$HOST_IP:5001/network"
     fi
 }
