@@ -24,6 +24,7 @@ function register_mixmatch {
     openstack endpoint delete `get_endpoint_ids volume`
     openstack endpoint delete `get_endpoint_ids volumev2`
     openstack endpoint delete `get_endpoint_ids volumev3`
+    openstack endpoint delete `get_endpoint_ids network`
 
     get_or_create_endpoint \
         "image" \
@@ -52,6 +53,13 @@ function register_mixmatch {
         "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
         "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
         "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+
+    get_or_create_endpoint \
+        "network" \
+        "$REGION_NAME" \
+        "http://$HOST_IP:5001/network" \
+        "http://$HOST_IP:5001/network" \
+        "http://$HOST_IP:5001/network"
 }
 
 # Get admin credentials
@@ -74,5 +82,5 @@ fi
 sudo chown -R jenkins:stack $BASE/new/tempest
 sudo chown -R jenkins:stack /opt/stack/data/tempest
 
-ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.scenario)' \
+ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.api.network|^tempest.scenario)' \
     --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt

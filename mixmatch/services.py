@@ -37,6 +37,10 @@ def construct_url(service_provider, service_type,
             url = '%s/%s' % (url, version)
         if project_id:
             url = '%s/%s' % (url, project_id)
+    elif service_type == 'network':
+        url = conf.network_endpoint
+        if version:
+            url = '%s/%s' % (url, version)
 
     if action:
         url = '%s/%s' % (url, os.path.join(*action))
@@ -48,7 +52,10 @@ def aggregate(responses, key, service_type, version=None,
               params=None, path=None, strip_details=True):
     """Combine responses from several clusters into one response."""
     if params:
-        limit = int(params.get('limit', 0))
+        limit = params.get('limit', 0)
+        if isinstance(limit, list):
+            limit = limit[0]
+        limit = int(limit)
         sort = params.get('sort', None)
         marker = params.get('marker', None)
 
@@ -179,6 +186,22 @@ def list_api_versions(service_type, url):
                              % version[1:-2]}
                 ]
             })
+            api_versions.append(info)
+        return json.dumps({'versions': api_versions})
+
+    elif service_type == 'network':
+        supported_versions = CONF.network_api_versions
+
+        for version in supported_versions:
+            info = dict()
+            if version == supported_versions[0]:
+                info.update({'status': 'CURRENT'})
+            else:
+                info.update({'status': 'SUPPORTED'})
+
+            info.update({'id': version,
+                         'links': [{'href': '%s/%s/' % (url, version[:-2]),
+                                    'rel': 'self'}]})
             api_versions.append(info)
         return json.dumps({'versions': api_versions})
 
