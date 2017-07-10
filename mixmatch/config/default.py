@@ -40,6 +40,8 @@ OPTS = [
     cfg.ListOpt('volume_api_versions',
                 default=['v3.0', 'v2.0', 'v1.0'],
                 help='List of supported volume api versions'),
+
+    cfg.ListOpt('network_api_versions', default=['v2.0'], help=''),
 ]
 
 
