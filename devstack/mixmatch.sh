@@ -57,44 +57,21 @@ function configure_mixmatch {
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
 }
 
-function get_endpoint_ids {
-    echo `openstack endpoint list --service $1 -c ID -f value`
-}
-
 function register_mixmatch {
-    if [ "$REGISTER_MIXMATCH" == "true" ]; then
-        # Update the endpoints
-        openstack endpoint delete `get_endpoint_ids image`
-        openstack endpoint delete `get_endpoint_ids volume`
-        openstack endpoint delete `get_endpoint_ids volumev2`
-        openstack endpoint delete `get_endpoint_ids volumev3`
+    if [[ "$REGISTER_MIXMATCH" == "true" ]]; then
+        if [[ "$REGISTER_MIXMATCH_ENDPOINTS" == "true" ]]; then
+            recreate_endpoint "image" "http://$HOST_IP:5001/image"
+            recreate_endpoint "volume" "http://$HOST_IP:5001/volume/v1/\$(project_id)s"
+            recreate_endpoint "volumev2" "http://$HOST_IP:5001/volume/v2/\$(project_id)s"
+            recreate_endpoint "volumev3" "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+        fi
 
-        get_or_create_endpoint \
-            "image" \
-            "$REGION_NAME" \
-            "http://$HOST_IP:5001/image" \
-            "http://$HOST_IP:5001/image" \
-            "http://$HOST_IP:5001/image"
+        if [[ "$REGISTER_SP" == "true" ]]; then
+            register_sp `cat /etc/nodepool/sub_nodes_private`
+        fi
 
-        get_or_create_endpoint \
-            "volume" \
-            "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v1/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "volumev2" \
-            "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v2/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "volumev3" \
-            "$REGION_NAME" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s" \
-            "http://$HOST_IP:5001/volume/v3/\$(project_id)s"
+        if [[ "$REGISTER_IDP" == "true" ]]; then
+            register_idp $IDP_REMOTE_ID
+        fi
     fi
 }
