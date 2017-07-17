@@ -19,7 +19,11 @@ cd $BASE/new/devstack
 source openrc admin admin
 
 # Register the endpoints
+<<<<<<< HEAD
 source $BASE/new/mixmatch/devstack/settings
+=======
+source $BASE/new/mixmatch/devstack/keystone.sh
+>>>>>>> adbcf66... Enable registering of IdP and SP in devstack plugin
 source $BASE/new/mixmatch/devstack/mixmatch.sh
 REGISTER_MIXMATCH=true
 register_mixmatch

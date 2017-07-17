@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+source $MIXMATCH_PLUGIN/keystone.sh
 source $MIXMATCH_PLUGIN/mixmatch.sh
 
 # For more information on Devstack plugins, including a more detailed
@@ -25,6 +26,20 @@ if [[ "$1" == "stack" && "$2" == "install" ]]; then
         install_mixmatch
     fi
 
+    if [[ "MIXMATCH_MULTINODE" == "true" ]]; then
+        if is_service_enabled keystone-idp; then
+            :
+        fi
+
+        # Note(knikolla): If keystone federation is enabled, then we're
+        # one of the service providers. In the case of a multinode CI
+        # environment, that means we're the subnode, so we should
+        # point the keystone plugin to federate with the primary node.
+        if is_service_enabled keystone-saml2-federation; then
+            override_keystone_configs
+        fi
+    fi
+
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     # This phase is executed after the projects have been configured and
     # before they are started
@@ -33,11 +48,28 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         configure_mixmatch
     fi
 
+
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     # This phase is executed after the projects have been started
     echo "Mix & match plugin - Extra phase"
     if is_service_enabled mixmatch; then
         register_mixmatch
+    fi
+
+    if [[ "MIXMATCH_MULTINODE" == "true" ]]; then
+        # Note(knikolla): If keystone as an idp is enabled, we're the
+        # primary node and we should federate with the subnode.
+        if is_service_enabled keystone-idp; then
+            register_sp
+        fi
+
+        # Note(knikolla): If keystone federation is enabled, then we're
+        # one of the service providers. In the case of a multinode CI
+        # environment, that means we're the subnode, so we should
+        # point the keystone plugin to federate with the primary node.
+        if is_service_enabled keystone-saml2-federation; then
+            register_idp
+        fi
     fi
 fi
 
