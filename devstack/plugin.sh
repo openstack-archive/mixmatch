@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+source $MIXMATCH_PLUGIN/keystone.sh
 source $MIXMATCH_PLUGIN/mixmatch.sh
 
 # For more information on Devstack plugins, including a more detailed
