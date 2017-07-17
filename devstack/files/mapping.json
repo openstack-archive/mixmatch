@@ -1,0 +1,33 @@
+[
+    {
+        "local": [
+            {
+                "user": {
+                    "name": "{0}"
+                },
+                "project": {
+                    "name": "{1}",
+                    "domain": { "id": "default" }
+                }
+            }
+        ],
+        "remote": [
+            {
+                "type": "openstack_user"
+            },
+            {
+                "type": "openstack_project"
+            },
+            {
+                "type": "openstack_user",
+                "not_any_of": [
+                  "admin",
+                  "nova",
+                  "cinder",
+                  "glance",
+                  "neutron"
+                ]
+            }
+        ]
+    }
+]
