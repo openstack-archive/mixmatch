@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+source $MIXMATCH_PLUGIN/keystone.sh
+
 MIXMATCH_BIN_DIR=$(get_python_exec_prefix)
 MIXMATCH_CONF_DIR="/etc/mixmatch"
 
@@ -28,8 +30,14 @@ function configure_mixmatch {
     cp $MIXMATCH_DIR/etc/mixmatch.conf.sample $MIXMATCH_CONF
 
     iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
-    iniset $MIXMATCH_CONF DEFAULT service_providers default
+
     iniset $MIXMATCH_CONF DEFAULT aggregation False
+
+    if [ "$MIXMATCH_MULTINODE" == "true" ]; then
+        iniset $MIXMATCH_CONF DEFAULT service_providers "default, sp"
+    else
+        iniset $MIXMATCH_CONF DEFAULT service_providers "default"
+    fi
 
     iniset $MIXMATCH_CONF auth auth_url "$KEYSTONE_AUTH_URI/v3"
     iniset $MIXMATCH_CONF auth username admin
@@ -77,52 +85,13 @@ function configure_mixmatch {
         "$MIXMATCH_BIN_DIR/uwsgi --ini $MIXMATCH_DIR/httpd/mixmatch-uwsgi.ini"
 }
 
-function get_endpoint_ids {
-    echo `openstack endpoint list --service $1 -c ID -f value`
-}
-
 function register_mixmatch {
     if [ "$REGISTER_MIXMATCH" == "true" ]; then
         # Update the endpoints
-        openstack endpoint delete `get_endpoint_ids image`
-        openstack endpoint delete `get_endpoint_ids volume`
-        openstack endpoint delete `get_endpoint_ids volumev2`
-        openstack endpoint delete `get_endpoint_ids volumev3`
-        openstack endpoint delete `get_endpoint_ids network`
-
-        get_or_create_endpoint \
-            "image" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/image" \
-            "$MIXMATCH_URL/image" \
-            "$MIXMATCH_URL/image"
-
-        get_or_create_endpoint \
-            "volume" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "volumev2" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "volumev3" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "network" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network"
+        recreate_endpoints image
+        recreate_endpoints volume
+        recreate_endpoints volumev2
+        recreate_endpoints volumev3
+        recreate_endpoints network
     fi
 }
