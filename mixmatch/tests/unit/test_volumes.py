@@ -106,6 +106,18 @@ class TestVolumesV2(base.BaseTest):
 
         return url
 
+    def test_create_volume(self):
+        self.requests_fixture.post(
+            self._construct_url(self.auth, sp='default'),
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        self.app.post(
+            self._construct_url(self.auth),
+            headers=self.auth.get_headers(),
+            data=json.dumps({'volume': {'name': 'local@remote1'}})
+        )
+
     def test_get_volume_local_mapping(self):
         volume_id = uuid.uuid4().hex
 
