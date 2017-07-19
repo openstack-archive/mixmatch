@@ -12,21 +12,29 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+from flask import abort
 from keystoneauth1 import identity
 from keystoneauth1 import session
 from keystoneclient import v3
 from keystoneauth1.exceptions import http
+from stevedore import driver
 
-import json
-
-from flask import abort
-
+from mixmatch.auth import base
 from mixmatch import config
 
 CONF = config.CONF
 LOG = config.LOG
 
 MEMOIZE_SESSION = config.auth.MEMOIZE
+
+DRIVERS = dict()  # type: dict(str, base:AuthDriver)
+for sp in CONF.service_providers:
+    DRIVERS[sp] = driver.DriverManager(
+        namespace='mixmatch.auth.driver',
+        name=CONF.service_providers.get(CONF, sp).auth,
+        invoke_on_load=True,
+        invoke_args=(sp,)
+    )
 
 
 @MEMOIZE_SESSION
@@ -67,42 +75,23 @@ def get_local_auth(user_token):
 
 
 @MEMOIZE_SESSION
-def get_unscoped_sp_auth(service_provider, user_token):
-    """Perform K2K auth, and return an unscoped session."""
-    conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
-    LOG.debug("Getting unscoped session for (%s, %s)" % (service_provider,
-                                                         user_token))
-    remote_auth = identity.v3.Keystone2Keystone(
-        local_auth,
-        conf.sp_name
-    )
-    return session.Session(auth=remote_auth)
-
-
 def get_projects_at_sp(service_provider, user_token):
-    """Perform K2K auth, and return the projects that can be scoped to."""
-    conf = config.service_providers.get(CONF, service_provider)
-    unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
-    r = json.loads(str(unscoped_session.get(
-        conf.auth_url + "/OS-FEDERATION/projects").text))
-    return [project[u'id'] for project in r[u'projects']]
+    """Return projects of the user at the service provider.
+    
+    :type service_provider: str
+    :type user_token: str
+    :return: List[str]
+    """
+    return DRIVERS[service_provider].get_projects_at_sp(user_token)
 
 
 @MEMOIZE_SESSION
-def get_sp_auth(service_provider, user_token, remote_project_id):
-    """Perform K2K auth, and return a session for a remote cluster."""
-    conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
-
-    LOG.debug("Getting session for (%s, %s, %s)" % (service_provider,
-                                                    user_token,
-                                                    remote_project_id))
-
-    remote_auth = identity.v3.Keystone2Keystone(
-        local_auth,
-        conf.sp_name,
-        project_id=remote_project_id
-    )
-
-    return session.Session(auth=remote_auth)
+def get_sp_auth(service_provider, user_token, remote_project):
+    """
+    
+    :type service_provider: str
+    :type user_token: str
+    :type remote_project: str
+    :rtype: session:Session
+    """
+    return DRIVERS[service_provider].get_sp_auth(user_token, remote_project)

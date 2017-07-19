@@ -23,6 +23,10 @@ SP_OPTS = [
                default="default",
                help='SP ID in Keystone Catalog. Omit for local.'),
 
+    cfg.StrOpt('auth',
+               default='keystone',
+               help='Authentication driver to use for service provider.'),
+
     cfg.StrOpt('messagebus',
                help='URI to connect to message bus'),
 
