@@ -25,6 +25,7 @@ from mixmatch.session import app
 from mixmatch.session import chunked_reader
 from mixmatch.session import request
 from mixmatch import auth
+from mixmatch import extend
 from mixmatch import model
 from mixmatch import services
 from mixmatch import utils
@@ -51,9 +52,9 @@ def get_service(a):
             abort(404)
 
 
-def get_details(method, path, headers):
+def get_details(method, orig_path, headers):
     """Get details for a request."""
-    path = path[:]
+    path = orig_path.split('/')
     # NOTE(knikolla): Request usually look like:
     # /<service>/<version>/<project_id:uuid>/<res_type>/<res_id:uuid>
     # or
@@ -66,7 +67,8 @@ def get_details(method, path, headers):
             'resource_type': utils.safe_pop(path),  # this
             'resource_id': utils.pop_if_uuid(path),  # and this
             'token': headers.get('X-AUTH-TOKEN', None),
-            'headers': headers}
+            'headers': dict(headers),
+            'path': orig_path}
 
 
 def is_token_header_key(string):
@@ -93,15 +95,17 @@ def format_for_log(title=None, method=None, url=None, headers=None,
 class RequestHandler(object):
 
     def __init__(self, method, path, headers):
-        self.details = get_details(method, path.split('/'), headers)
-
+        self.details = get_details(method, path, headers)
+        self.extensions = extend.get_matched_extensions(self.details)
         self._set_strip_details(self.details)
-
         self.enabled_sps = filter(
             lambda sp: (self.details['service'] in
                         service_providers.get(CONF, sp).enabled_services),
             CONF.service_providers
         )
+
+        for extension in self.extensions:
+            extension.handle_request(self.details)
 
         if not self.details['version']:
             if CONF.aggregation:
@@ -154,8 +158,8 @@ class RequestHandler(object):
 
         LOG.info(format_for_log(title="Request to proxy",
                                 method=self.details['method'],
-                                url=path,
-                                headers=dict(headers)))
+                                url=self.details['path'],
+                                headers=dict(self.details['headers'])))
 
     def _do_request_on(self, sp, project_id=None):
         headers = self._prepare_headers(self.details['headers'])
