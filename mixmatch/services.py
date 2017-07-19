@@ -19,6 +19,8 @@ from six.moves.urllib import parse
 
 from mixmatch import config
 
+from oslo_serialization import jsonutils
+
 CONF = config.CONF
 
 
@@ -64,7 +66,7 @@ def aggregate(responses, key, service_type, version=None,
 
     resource_list = []
     for location, response in responses.items():
-        resources = json.loads(response.text)
+        resources = jsonutils.loads(response.text)
         if type(resources) == dict:
             resource_list += resources[key]
 
