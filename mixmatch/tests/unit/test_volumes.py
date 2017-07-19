@@ -106,6 +106,36 @@ class TestVolumesV2(base.BaseTest):
 
         return url
 
+    def test_create_volume(self):
+        volume_id = uuid.uuid4().hex
+        self.requests_fixture.post(
+            self._construct_url(self.auth, sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(volume_id),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.post(
+            self._construct_url(self.auth),
+            headers=self.auth.get_headers(),
+            data=json.dumps({'volume': {'name': 'local'}})
+        )
+        self.assertEqual(six.b(volume_id), response.data)
+
+    def test_create_volume_routing(self):
+        volume_id = uuid.uuid4().hex
+        self.requests_fixture.post(
+            self._construct_url(self.remote_auth, sp='remote1'),
+            request_headers=self.remote_auth.get_headers(),
+            text=six.u(volume_id),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.post(
+            self._construct_url(self.auth),
+            headers=self.auth.get_headers(),
+            data=json.dumps({'volume': {'name': 'local@remote1'}})
+        )
+        self.assertEqual(six.b(volume_id), response.data)
+
     def test_get_volume_local_mapping(self):
         volume_id = uuid.uuid4().hex
 
