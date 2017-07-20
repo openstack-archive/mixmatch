@@ -15,6 +15,36 @@
 import uuid
 
 
+class CachedProperty(object):
+    """A decorator that converts a function into a lazy property.
+
+    Taken from : https://github.com/nshah/python-memoize
+    The function wrapped is called the first time to retrieve the result
+    and then that calculated result is used the next time you access
+    the value:
+
+        class Foo(object):
+
+            @CachedProperty
+            def bar(self):
+                # calculate something important here
+                return 42
+
+    """
+
+    def __init__(self, func, name=None, doc=None):
+        self.func = func
+        self.__name__ = name or func.__name__
+        self.__doc__ = doc or func.__doc__
+
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        value = self.func(obj)
+        setattr(obj, self.__name__, value)
+        return value
+
+
 def safe_get(a, i, default=None):
     """Return the i-th element if it exists, or default."""
     try:
