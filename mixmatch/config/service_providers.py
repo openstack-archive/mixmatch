@@ -26,10 +26,6 @@ SP_OPTS = [
     cfg.StrOpt('messagebus',
                help='URI to connect to message bus'),
 
-    cfg.StrOpt('services',
-               default=None,
-               help='Enabled services for this service provider.'),
-
     cfg.StrOpt('auth_url',
                default=None,
                help='Keystone AUTH URL for Service Provider'),
