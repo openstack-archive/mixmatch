@@ -66,6 +66,7 @@ def get_details(method, path, headers):
             'resource_type': utils.safe_pop(path),  # this
             'resource_id': utils.pop_if_uuid(path),  # and this
             'token': headers.get('X-AUTH-TOKEN', None),
+            'aggregate': False,
             'headers': headers}
 
 
@@ -116,7 +117,6 @@ class RequestHandler(object):
             abort(400)
 
         mapping = None
-        aggregate = False
 
         if self.details['resource_id']:
             mapping = model.ResourceMapping.find(
@@ -125,7 +125,7 @@ class RequestHandler(object):
         else:
             if (self.details['method'] == 'GET' and
                     self.details['action'][0] in RESOURCES_AGGREGATE):
-                aggregate = True
+                self.details['aggregate'] = True
 
         LOG.debug('Local Token: %s ' % self.details['token'])
 
@@ -142,7 +142,7 @@ class RequestHandler(object):
                     self.details['token']
                 )[0]
             self._forward = self._targeted_forward
-        elif aggregate:
+        elif self.details['aggregate']:
             self._forward = self._aggregate_forward
         elif mapping:
             # Which we already know the location of, use that SP.
@@ -150,7 +150,7 @@ class RequestHandler(object):
             self.project_id = mapping.project_id
             self._forward = self._targeted_forward
         else:
-            self._forward = self._search_forward
+            self._forward = self._aggregate_forward
 
         LOG.info(format_for_log(title="Request to proxy",
                                 method=self.details['method'],
@@ -226,26 +226,46 @@ class RequestHandler(object):
         return self._finalize(
             self._do_request_on(self.service_provider, self.project_id))
 
-    def _search_forward(self):
-        if not CONF.search_by_broadcast:
+    def _aggregate_forward(self):
+        if ((self.details['aggregate'] and not CONF.aggregation) or
+                (not self.details['aggregate'] and
+                 not CONF.search_by_broadcast)):
             return self._local_forward()
 
+        responses = {}
         errors = collections.defaultdict(lambda: [])
+
         for sp in self.enabled_sps:
             if sp == 'default':
-                response = self._do_request_on('default')
-                if 200 <= response.status_code < 300:
-                    return self._finalize(response)
+                r = self._do_request_on('default')
+                if 200 <= r.status_code < 300:
+                    responses['default'] = r
+                    if not self.details['aggregate']:
+                        return self._finalize(r)
                 else:
-                    errors[response.status_code].append(response)
+                    errors[r.status_code].append(r)
             else:
-                self.service_provider = sp
-                for p in auth.get_projects_at_sp(sp, self.details['token']):
-                    response = self._do_request_on(sp, p)
-                    if 200 <= response.status_code < 300:
-                        return self._finalize(response)
+                for proj in auth.get_projects_at_sp(sp, self.details['token']):
+                    r = self._do_request_on(sp, proj)
+                    if 200 <= r.status_code < 300:
+                        responses[(sp, proj)] = r
+                        if not self.details['aggregate']:
+                            return self._finalize(r)
                     else:
-                        errors[response.status_code].append(response)
+                        errors[r.status_code].append(r)
+
+        if not errors:
+            return flask.Response(
+                services.aggregate(responses,
+                                   self.details['action'][0],
+                                   self.details['service'],
+                                   version=self.details['version'],
+                                   params=request.args.to_dict(),
+                                   path=request.base_url,
+                                   strip_details=self.strip_details),
+                200,
+                content_type='application/json'
+            )
 
         if six.viewkeys(errors) == {404}:
             return self._finalize(errors[404][0])
@@ -257,31 +277,6 @@ class RequestHandler(object):
 
         # TODO(jfreud): log
         return flask.Response("Something strange happened.\n", 500)
-
-    def _aggregate_forward(self):
-        if not CONF.aggregation:
-            return self._local_forward()
-
-        responses = {}
-
-        for sp in self.enabled_sps:
-            if sp == 'default':
-                responses['default'] = self._do_request_on('default')
-            else:
-                for proj in auth.get_projects_at_sp(sp, self.details['token']):
-                    responses[(sp, proj)] = self._do_request_on(sp, proj)
-
-        return flask.Response(
-            services.aggregate(responses,
-                               self.details['action'][0],
-                               self.details['service'],
-                               version=self.details['version'],
-                               params=request.args.to_dict(),
-                               path=request.base_url,
-                               strip_details=self.strip_details),
-            200,
-            content_type='application/json'
-        )
 
     def _list_api_versions(self):
         return services.list_api_versions(self.details['service'],
