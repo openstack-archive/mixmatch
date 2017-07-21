@@ -15,8 +15,8 @@
 import collections
 import six
 import requests
+from urllib3.util import retry
 import flask
-
 from flask import abort
 
 from mixmatch import config
@@ -173,18 +173,19 @@ class RequestHandler(object):
             project_id=project_id
         )
 
+        request_kwargs = {
+            'method': self.details['method'],
+            'url': url,
+            'headers': headers,
+            'params': self._prepare_args(request.args)
+        }
         if self.chunked:
-            resp = requests.request(method=self.details['method'],
-                                    url=url,
-                                    headers=headers,
-                                    data=chunked_reader())
+            resp = self.session.request(data=chunked_reader(),
+                                        **request_kwargs)
         else:
-            resp = requests.request(method=self.details['method'],
-                                    url=url,
-                                    headers=headers,
-                                    data=request.data,
-                                    stream=self.stream,
-                                    params=self._prepare_args(request.args))
+            resp = self.session.request(data=request.data,
+                                        stream=self.stream,
+                                        **request_kwargs)
         LOG.info(format_for_log(title='Request from proxy',
                                 method=self.details['method'],
                                 url=url,
@@ -325,6 +326,20 @@ class RequestHandler(object):
         return (not self.details['resource_id'] and
                 self.details['method'] == 'GET' and
                 self.details['action'][0] in RESOURCES_AGGREGATE)
+
+    @utils.CachedProperty
+    def session(self):
+        requests_session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(
+            max_retries=retry.Retry(total=3,
+                                    read=3,
+                                    connect=3,
+                                    backoff_factor=0.3,
+                                    status_forcelist=[500, 502, 504])
+        )
+        requests_session.mount('http://', adapter=adapter)
+        requests_session.mount('https://', adapter=adapter)
+        return requests_session
 
     def _set_strip_details(self, details):
         # if request is to /volumes, change it
