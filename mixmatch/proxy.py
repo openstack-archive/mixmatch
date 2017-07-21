@@ -136,6 +136,8 @@ class RequestHandler(object):
                 self.details['headers']['MM-SERVICE-PROVIDER'],
                 self.details['headers'].get('MM-PROJECT-ID', None)
             )
+            if self.service_provider not in self.enabled_sps:
+                abort(400)
             if not self.project_id and self.service_provider != 'default':
                 self.project_id = auth.get_projects_at_sp(
                     self.service_provider,
