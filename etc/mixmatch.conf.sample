@@ -72,38 +72,38 @@ sp_name=default
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@localhost"
 
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://127.0.0.1:5000/v3"
-
 # Glance (image) endpoint for this service provider
 image_endpoint="http://localhost:9292"
 
 # Local Cinder (volume) endpoint on this service provider
 volume_endpoint="http://localhost:8776"
 
+# Local Neutron (network) endpoint on this service provider
+network_endpoint="http://localhost:9696"
+
 # Services that are enabled for this service provider
-enabled_services=image, volume
+enabled_services=image, volume, network
 
 #------------------------------------------------------------------------------
 
 # Service provider configuration group
 # Change to match your own service provider
-[sp_cornmeal-sp]
+[sp_]
 
 # Name of this service provider
-sp_name=cornmeal-sp
+sp_name=
 
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
 
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://192.168.0.141:5000/v3"
-
 # Glance (image) endpoint for this service provider
-image_endpoint="http://192.168.0.141:9292"
+image_endpoint=
 
 # Local Cinder (volume) endpoint on this service provider
-volume_endpoint="http://192.168.0.141:8776"
+volume_endpoint=
+
+# Local Neutron (network) endpoint on this service provider
+network_endpoint=
 
 # Services that are enabled for this service provider
-enabled_services=image, volume
+enabled_services=image, volume, network

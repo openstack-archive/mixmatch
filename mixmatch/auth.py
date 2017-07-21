@@ -18,10 +18,12 @@ from keystoneclient import v3
 from keystoneauth1.exceptions import http
 
 import json
+import os
 
 from flask import abort
 
 from mixmatch import config
+from mixmatch import utils
 
 CONF = config.CONF
 LOG = config.LOG
@@ -30,9 +32,9 @@ MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
 @MEMOIZE_SESSION
-def get_client():
-    """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
+def get_admin_session():
+    """Return a Keystone session using admin service credentials."""
+    LOG.info("Getting Admin Session")
     service_auth = identity.Password(
         auth_url=CONF.auth.auth_url,
         username=CONF.auth.username,
@@ -42,14 +44,24 @@ def get_client():
         user_domain_id=CONF.auth.user_domain_id
     )
     local_session = session.Session(auth=service_auth)
-    return v3.client.Client(session=local_session)
+
+    return local_session
+
+
+@MEMOIZE_SESSION
+def get_client(session):
+    """Return a Keystone client capable of validating tokens."""
+    LOG.debug("Getting client for %s" % session)
+
+    return v3.client.Client(session=session)
 
 
 @MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
+    admin_session = get_admin_session()
+    client = get_client(admin_session)
     token = v3.tokens.TokenManager(client)
 
     try:
@@ -62,7 +74,6 @@ def get_local_auth(user_token):
     local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
                                    token=user_token,
                                    project_id=project_id)
-
     return session.Session(auth=local_auth)
 
 
@@ -106,3 +117,34 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     )
 
     return session.Session(auth=remote_auth)
+
+
+def trim_endpoint(orig_path):
+    path = str(orig_path).split('/')
+    index = len(path) - 1
+    tail_variable = utils.safe_get(path, index)
+
+    if utils.is_uuid(tail_variable):
+        orig_path, project_id = os.path.split(orig_path)
+
+    return orig_path
+
+
+@MEMOIZE_SESSION
+def get_sp_endpoint(sp, service, project_id, version=None):
+    """Return an endpoint for a service."""
+    admin_session = get_admin_session()
+    token = admin_session.get_token()
+
+    if sp == 'default':
+        auth_session = get_local_auth(token)
+    else:
+        auth_session = get_sp_auth(sp, token, project_id)
+
+    endpoint = auth_session.get_endpoint(service_type=service,
+                                         interface='publicURL',
+                                         min_version=version,
+                                         max_version=version)
+
+    endpoint = trim_endpoint(endpoint)
+    return endpoint
