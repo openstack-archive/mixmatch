@@ -110,16 +110,23 @@ class SessionFixture(fixtures.Fixture):
                 return self.sp_projects[sp]
             else:
                 return []
-
+        def get_sp_endpoint(sp, service, token):
+            if sp in self.sp_endpoints:
+                return self.sp_endpoints[sp]
+            else:
+                return []
         self.local_auths = {}
         self.sp_auths = {}
         self.sp_projects = {}
+        self.sp_endpoints = {}
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_sp_auth', get_sp_auth))
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_local_auth', get_local_auth))
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_projects_at_sp', get_projects_at_sp))
+        self.useFixture(fixtures.MonkeyPatch(
+            'mixmatch.auth.get_sp_endpoint', get_sp_endpoint))
 
     def add_local_auth(self, token, project):
         self.local_auths[token] = project
