@@ -30,9 +30,10 @@ MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
 @MEMOIZE_SESSION
-def get_client():
-    """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
+def get_admin_session():
+    """Return a Keystone session using admin
+       service credentials."""
+    LOG.info("Getting Admin Session")
     service_auth = identity.Password(
         auth_url=CONF.auth.auth_url,
         username=CONF.auth.username,
@@ -42,6 +43,15 @@ def get_client():
         user_domain_id=CONF.auth.user_domain_id
     )
     local_session = session.Session(auth=service_auth)
+
+    return local_session
+
+
+@MEMOIZE_SESSION
+def get_client(local_session):
+    """Return a Keystone client capable of validating tokens."""
+    LOG.debug("Getting client for %s" % local_session)
+
     return v3.client.Client(session=local_session)
 
 
@@ -49,7 +59,8 @@ def get_client():
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
+    admin_session = get_admin_session()
+    client = get_client(admin_session)
     token = v3.tokens.TokenManager(client)
 
     try:
@@ -62,7 +73,6 @@ def get_local_auth(user_token):
     local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
                                    token=user_token,
                                    project_id=project_id)
-
     return session.Session(auth=local_auth)
 
 
@@ -106,3 +116,25 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     )
 
     return session.Session(auth=remote_auth)
+
+
+@MEMOIZE_SESSION
+def get_sp_endpoint(service_provider, service, version):
+    """Return an endpoint for a service."""
+    service_type = service
+    if service_type == 'volume':
+        service_type += version
+    session = get_admin_session()
+    token = session.get_token()
+    project_id = session.get_projects_at_sp(service_provider,
+                                            token)
+    auth_session = session.get_sp_auth(service_provider,
+                                       token,
+                                       project_id[0])
+    endpoint_filter = {'service_type': service_type,
+                       'interface': 'publicURL'}
+    base_url = auth_session.get_endpoint(auth=None,
+                                         allow={},
+                                         **endpoint_filter)
+    endpoint = base_url + '/' + service_type
+    return endpoint
