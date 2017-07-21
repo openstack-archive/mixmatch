@@ -16,6 +16,7 @@ import collections
 import six
 import requests
 import flask
+import os
 
 from flask import abort
 
@@ -172,13 +173,12 @@ class RequestHandler(object):
         else:
             project_id = None
 
-        url = services.construct_url(
-            sp,
-            self.details['service'],
-            self.details['version'],
-            self.details['action'],
-            project_id=project_id
-        )
+        endpoint = str(self.details['service']) + str(self.details['version'])
+        endpoint_filter = {'service_type': endpoint, 'interface': 'publicURL'}
+        allow = {}
+        base_url = auth_session.get_endpoint(auth=None, allow=allow, **endpoint_filter)
+        action = os.path.join(*self.details['action'])
+        url = auth.get_sp_endpoint(base_url, action)
 
         if self.chunked:
             resp = requests.request(method=self.details['method'],
