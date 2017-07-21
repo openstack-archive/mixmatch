@@ -106,3 +106,9 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     )
 
     return session.Session(auth=remote_auth)
+
+@MEMOIZE_SESSION
+def get_sp_endpoint(base_url, action):
+    "Return an endpoint for a service."""
+    url = str(base_url) + '/' + str(action)
+    return url
