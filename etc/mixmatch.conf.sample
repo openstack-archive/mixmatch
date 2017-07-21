@@ -72,15 +72,6 @@ sp_name=default
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@localhost"
 
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://127.0.0.1:5000/v3"
-
-# Glance (image) endpoint for this service provider
-image_endpoint="http://localhost:9292"
-
-# Local Cinder (volume) endpoint on this service provider
-volume_endpoint="http://localhost:8776"
-
 # Services that are enabled for this service provider
 enabled_services=image, volume
 
@@ -95,15 +86,6 @@ sp_name=cornmeal-sp
 
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
-
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://192.168.0.141:5000/v3"
-
-# Glance (image) endpoint for this service provider
-image_endpoint="http://192.168.0.141:9292"
-
-# Local Cinder (volume) endpoint on this service provider
-volume_endpoint="http://192.168.0.141:8776"
 
 # Services that are enabled for this service provider
 enabled_services=image, volume
