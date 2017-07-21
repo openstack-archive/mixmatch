@@ -32,13 +32,45 @@ class TestImages(base.BaseTest):
 
     def _construct_url(self, image_id='', sp=None):
         if not sp:
-            prefix = '/image'
+            url = '/image'
         else:
-            prefix = self.service_providers[sp]['image_endpoint']
+            url = self.service_providers[sp]['image_endpoint']
+        url = '%s/v2/images' % url
 
-        return (
-            '%s/v2/images/%s' % (prefix, image_id)
+        if image_id:
+            url = '%s/%s' % (url, image_id)
+
+        return url
+
+    def test_create_image(self):
+        image_id = uuid.uuid4().hex
+        self.requests_fixture.post(
+            self._construct_url(sp='default'),
+            request_headers=self.auth.get_headers(),
+            text=six.u(image_id),
+            headers={'CONTENT-TYPE': 'application/json'}
         )
+        response = self.app.post(
+            self._construct_url(),
+            headers=self.auth.get_headers(),
+            data=json.dumps({'name': 'local'})
+        )
+        self.assertEqual(six.b(image_id), response.data)
+
+    def test_create_image_routing(self):
+        image_id = uuid.uuid4().hex
+        self.requests_fixture.post(
+            self._construct_url(sp='remote1'),
+            request_headers=self.remote_auth.get_headers(),
+            text=six.u(image_id),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.post(
+            self._construct_url(),
+            headers=self.auth.get_headers(),
+            data=json.dumps({'name': 'local@remote1'})
+        )
+        self.assertEqual(six.b(image_id), response.data)
 
     def test_get_image_local(self):
         image_id = uuid.uuid4().hex
