@@ -75,8 +75,11 @@ class BaseTest(testcase.TestCase):
                                          self.remote_auth.get_project_id(),
                                          self.remote_auth.get_token())
         self.session_fixture.add_project_at_sp(
-            'remote1', self.remote_auth.get_project_id()
-        )
+            'remote1', self.remote_auth.get_project_id())
+        self.session_fixture.add_sp_endpoint(
+            self.service_providers['remote1']['volume_endpoint'])
+        self.session_fixture.add_sp_endpoint(
+            self.service_providers['remote1']['image_endpoint'])
 
 
 class FakeSession(object):
@@ -111,15 +114,24 @@ class SessionFixture(fixtures.Fixture):
             else:
                 return []
 
+        def get_sp_endpoint(endpoint):
+            if endpoint in self.sp_endpoints:
+                return endpoint
+            else:
+                return []
+
         self.local_auths = {}
         self.sp_auths = {}
         self.sp_projects = {}
+        self.sp_endpoints = []
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_sp_auth', get_sp_auth))
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_local_auth', get_local_auth))
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_projects_at_sp', get_projects_at_sp))
+        self.useFixture(fixtures.MonkeyPatch(
+            'mixmatch.auth.get_sp_endpoint', get_sp_endpoint))
 
     def add_local_auth(self, token, project):
         self.local_auths[token] = project
@@ -132,6 +144,10 @@ class SessionFixture(fixtures.Fixture):
             self.sp_projects[sp].append(project)
         else:
             self.sp_projects[sp] = [project]
+
+    def add_sp_endpoint(self, endpoint):
+        if endpoint not in self.sp_endpoints:
+            self.sp_endpoints.append(endpoint)
 
 
 class DatabaseFixture(fixtures.Fixture):

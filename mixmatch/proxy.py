@@ -172,13 +172,10 @@ class RequestHandler(object):
         else:
             project_id = None
 
-        url = services.construct_url(
-            sp,
-            self.details['service'],
-            self.details['version'],
-            self.details['action'],
-            project_id=project_id
-        )
+        url = auth.get_sp_endpoint(sp, self.details['service'],
+                                   self.details['version'],
+                                   self.details['action'],
+                                   self.details['project_id'])
 
         if self.chunked:
             resp = requests.request(method=self.details['method'],

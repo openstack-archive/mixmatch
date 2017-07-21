@@ -18,6 +18,7 @@ from keystoneclient import v3
 from keystoneauth1.exceptions import http
 
 import json
+import os
 
 from flask import abort
 
@@ -30,9 +31,9 @@ MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
 @MEMOIZE_SESSION
-def get_client():
-    """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
+def get_admin_session():
+    """Return a Keystone session using admin service credentials."""
+    LOG.info("Getting Admin Session")
     service_auth = identity.Password(
         auth_url=CONF.auth.auth_url,
         username=CONF.auth.username,
@@ -42,14 +43,24 @@ def get_client():
         user_domain_id=CONF.auth.user_domain_id
     )
     local_session = session.Session(auth=service_auth)
-    return v3.client.Client(session=local_session)
+
+    return local_session
+
+
+@MEMOIZE_SESSION
+def get_client(session):
+    """Return a Keystone client capable of validating tokens."""
+    LOG.debug("Getting client for %s" % session)
+
+    return v3.client.Client(session=session)
 
 
 @MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
+    admin_session = get_admin_session()
+    client = get_client(admin_session)
     token = v3.tokens.TokenManager(client)
 
     try:
@@ -62,7 +73,6 @@ def get_local_auth(user_token):
     local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
                                    token=user_token,
                                    project_id=project_id)
-
     return session.Session(auth=local_auth)
 
 
@@ -82,6 +92,7 @@ def get_unscoped_sp_auth(service_provider, user_token):
 
 def get_projects_at_sp(service_provider, user_token):
     """Perform K2K auth, and return the projects that can be scoped to."""
+    LOG.info('service_provider: ' + str(service_provider))
     conf = config.service_providers.get(CONF, service_provider)
     unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
     r = json.loads(str(unscoped_session.get(
@@ -106,3 +117,35 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     )
 
     return session.Session(auth=remote_auth)
+
+
+@MEMOIZE_SESSION
+def get_sp_endpoint(service_provider, service_type,
+                    version=None, action=None,
+                    project_id=None):
+    """Return an endpoint for a service."""
+    service_filter = service_type
+    if service_type == 'volume' or service_type == 'image':
+        if version:
+            service_filter = '%s%s' % (service_filter, version)
+    admin_session = get_admin_session()
+    token = admin_session.get_token()
+
+    if service_provider == 'default':
+        auth_session = get_local_auth(token)
+    else:
+        auth_session = get_sp_auth(service_provider,
+                                   token,
+                                   project_id[0])
+
+    endpoint_filter = {'service_type': service_filter,
+                       'interface': 'publicURL'}
+    base_url = auth_session.get_endpoint(auth=None,
+                                         allow={},
+                                         **endpoint_filter)
+    head_url, project_id = os.path.split(base_url)
+    endpoint = '%s/%s' % (head_url, version)
+    if action:
+        endpoint = '%s/%s' % (endpoint, os.path.join(*action[-2:]))
+
+    return endpoint
