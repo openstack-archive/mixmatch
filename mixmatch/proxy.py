@@ -52,25 +52,6 @@ def get_service(a):
             abort(404)
 
 
-def get_details(method, orig_path, headers):
-    """Get details for a request."""
-    path = orig_path.split('/')
-    # NOTE(knikolla): Request usually look like:
-    # /<service>/<version>/<project_id:uuid>/<res_type>/<res_id:uuid>
-    # or
-    # /<service>/<version>/<res_type>/<specific action>
-    return {'method': method,
-            'service': get_service(path),
-            'version': utils.safe_pop(path),
-            'project_id': utils.pop_if_uuid(path),
-            'action': path[:],  # NOTE(knikolla): This includes
-            'resource_type': utils.safe_pop(path),  # this
-            'resource_id': utils.pop_if_uuid(path),  # and this
-            'token': headers.get('X-AUTH-TOKEN', None),
-            'headers': dict(headers),
-            'path': orig_path}
-
-
 def is_token_header_key(string):
     return string.lower() in ['x-auth-token', 'x-service-token']
 
@@ -92,6 +73,11 @@ def format_for_log(title=None, method=None, url=None, headers=None,
     ])
 
 
+def path_split(orig_path):
+    path = orig_path.split('/')
+    return path
+
+
 class RequestDetails(object):
 
     def __init__(self, method, orig_path, headers):
@@ -107,9 +93,6 @@ class RequestDetails(object):
         self.headers = dict(headers)
         self.path = orig_path
 
-    def path_split(orig_path):
-        path = orig_path.split('/')
-        return path
 
 class RequestHandler(object):
 
