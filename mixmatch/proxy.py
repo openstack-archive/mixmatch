@@ -34,8 +34,13 @@ METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
 RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
 
 
-def stream_response(response):
-    yield response.raw.read()
+def stream_response(response, buffered):
+    if buffered:
+        json = response.raw.read()
+        # NOTE(ericjuma): Replace links and manipulate streamed data here
+        yield json
+    else:
+        yield response.raw.read()
 
 
 def get_service(a):
@@ -202,8 +207,11 @@ class RequestHandler(object):
         return resp
 
     def _finalize(self, response):
+        buffer_stream = response.headers.get(
+            'Content-Type') == 'application/json'
         if self.stream:
-            text = flask.stream_with_context(stream_response(response))
+            text = flask.stream_with_context(
+                stream_response(response, buffer_stream))
         else:
             text = response.text
 
