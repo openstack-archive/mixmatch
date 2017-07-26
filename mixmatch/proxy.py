@@ -71,6 +71,10 @@ def get_details(method, orig_path, headers):
             'path': orig_path}
 
 
+def is_json_response(response):
+    return response.headers.get('Content-Type') == 'application/json'
+
+
 def is_token_header_key(string):
     return string.lower() in ['x-auth-token', 'x-service-token']
 
@@ -202,8 +206,9 @@ class RequestHandler(object):
         return resp
 
     def _finalize(self, response):
-        if self.stream:
-            text = flask.stream_with_context(stream_response(response))
+        if self.stream and not is_json_response(response):
+            text = flask.stream_with_context(
+                stream_response(response))
         else:
             text = response.text
 
@@ -318,7 +323,7 @@ class RequestHandler(object):
 
     @utils.CachedProperty
     def stream(self):
-        return True if self.details['method'] in ['GET'] else False
+        return self.details['method'] == 'GET'
 
     @utils.CachedProperty
     def fallback_to_local(self):
