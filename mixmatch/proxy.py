@@ -202,8 +202,10 @@ class RequestHandler(object):
         return resp
 
     def _finalize(self, response):
-        if self.stream:
-            text = flask.stream_with_context(stream_response(response))
+        is_json = response.headers.get('Content-Type') == 'application/json'
+        if self.stream and not is_json:
+            text = flask.stream_with_context(
+                stream_response(response))
         else:
             text = response.text
 
@@ -318,7 +320,7 @@ class RequestHandler(object):
 
     @utils.CachedProperty
     def stream(self):
-        return True if self.details['method'] in ['GET'] else False
+        return self.details['method'] == 'GET'
 
     @utils.CachedProperty
     def fallback_to_local(self):
