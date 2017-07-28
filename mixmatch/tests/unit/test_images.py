@@ -13,7 +13,6 @@
 #   under the License.
 
 import json
-import six
 import uuid
 
 from mixmatch.tests.unit import base
@@ -47,7 +46,7 @@ class TestImages(base.BaseTest):
         self.requests_fixture.post(
             self._construct_url(sp='default'),
             request_headers=self.auth.get_headers(),
-            text=six.u(image_id),
+            text=image_id,
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.post(
@@ -55,14 +54,15 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers(),
             data=json.dumps({'name': 'local'})
         )
-        self.assertEqual(six.b(image_id), response.data)
+        self.assertEqual(image_id,
+                         response.get_data(as_text=True))
 
     def test_create_image_routing(self):
         image_id = uuid.uuid4().hex
         self.requests_fixture.post(
             self._construct_url(sp='remote1'),
             request_headers=self.remote_auth.get_headers(),
-            text=six.u(image_id),
+            text=image_id,
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.post(
@@ -70,7 +70,8 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers(),
             data=json.dumps({'name': 'local@remote1'})
         )
-        self.assertEqual(six.b(image_id), response.data)
+        self.assertEqual(image_id,
+                         response.get_data(as_text=True))
 
     def test_get_image_local(self):
         image_id = uuid.uuid4().hex
@@ -81,7 +82,7 @@ class TestImages(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
-            text=six.u(image_data),
+            text=image_data,
             request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'}
         )
@@ -90,7 +91,8 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers()
         )
 
-        self.assertEqual(response.data, six.b(image_data))
+        self.assertEqual(response.get_data(as_text=True),
+                         image_data)
 
     def test_get_image_remote(self):
         image_id = uuid.uuid4().hex
@@ -101,7 +103,7 @@ class TestImages(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='remote1'),
-            text=six.u(image_data),
+            text=image_data,
             request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'}
         )
@@ -110,7 +112,8 @@ class TestImages(base.BaseTest):
             headers=self.auth.get_headers()
         )
 
-        self.assertEqual(response.data, six.b(image_data))
+        self.assertEqual(response.get_data(as_text=True),
+                         image_data)
 
     def test_get_image_default_to_local(self):
         image_id = uuid.uuid4().hex
@@ -118,7 +121,7 @@ class TestImages(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
-            text=six.u(image_data),
+            text=image_data,
             status_code=400,
             request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'}
@@ -137,7 +140,7 @@ class TestImages(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='default'),
-            text=six.u(image_data),
+            text=image_data,
             status_code=200,
             request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'}
@@ -150,7 +153,8 @@ class TestImages(base.BaseTest):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(image_data))
+        self.assertEqual(response.get_data(as_text=True),
+                         image_data)
 
     def test_get_image_search_remote(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
@@ -165,7 +169,7 @@ class TestImages(base.BaseTest):
         )
         self.requests_fixture.get(
             self._construct_url(image_id=image_id, sp='remote1'),
-            text=six.u(image_data),
+            text=image_data,
             status_code=200,
             request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'}
@@ -176,7 +180,8 @@ class TestImages(base.BaseTest):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(image_data))
+        self.assertEqual(response.get_data(as_text=True),
+                         image_data)
 
     def test_get_image_search_nexists(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
@@ -223,7 +228,7 @@ class TestImages(base.BaseTest):
 
         EXPECTED = samples.single_sp['/image/v2/images']
         EXPECTED['images'].sort(key=lambda x: x['id'])
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         actual['images'].sort(key=lambda x: x['id'])
         self.assertEqual(actual, EXPECTED)
 
@@ -232,7 +237,7 @@ class TestImages(base.BaseTest):
             '/image',
             headers=self.auth.get_headers()
         )
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(actual['versions']), 6)
 

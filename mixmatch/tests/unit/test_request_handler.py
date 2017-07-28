@@ -110,7 +110,7 @@ class TestRequestHandler(BaseTest):
             '/image/v2/images',
             headers={'X-AUTH-TOKEN': 'local-tok',
                      'CONTENT-TYPE': 'application/json'})
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, LOCAL_IMAGES)
 
     def test_toggle_services_no_sps(self):
@@ -132,5 +132,5 @@ class TestRequestHandler(BaseTest):
             '/image/v2/images',
             headers={'X-AUTH-TOKEN': 'local-tok',
                      'CONTENT-TYPE': 'application/json'})
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, {'images': []})
