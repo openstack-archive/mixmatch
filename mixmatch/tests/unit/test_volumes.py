@@ -56,14 +56,15 @@ class TestVolumesV3(base.BaseTest):
                                 resource_type='messages',
                                 sp='default'),
             request_headers=self.auth.get_headers(),
-            text=six.u(fake_message_list),
+            text=six.text_type(fake_message_list),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.get(
             self._construct_url(self.auth, resource_type='messages'),
             headers=self.auth.get_headers()
         )
-        self.assertEqual(response.data, six.b(fake_message_list))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(fake_message_list))
 
     def test_get_message(self):
         fake_message = uuid.uuid4().hex
@@ -74,7 +75,7 @@ class TestVolumesV3(base.BaseTest):
                                 resource_type='messages',
                                 sp='default'),
             request_headers=self.auth.get_headers(),
-            text=six.u(fake_message),
+            text=six.text_type(fake_message),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.get(
@@ -82,7 +83,8 @@ class TestVolumesV3(base.BaseTest):
                                 resource_type='messages'),
             headers=self.auth.get_headers()
         )
-        self.assertEqual(response.data, six.b(fake_message))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(fake_message))
 
 
 class TestVolumesV2(base.BaseTest):
@@ -111,7 +113,7 @@ class TestVolumesV2(base.BaseTest):
         self.requests_fixture.post(
             self._construct_url(self.auth, sp='default'),
             request_headers=self.auth.get_headers(),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.post(
@@ -119,14 +121,15 @@ class TestVolumesV2(base.BaseTest):
             headers=self.auth.get_headers(),
             data=json.dumps({'volume': {'name': 'local'}})
         )
-        self.assertEqual(six.b(volume_id), response.data)
+        self.assertEqual(six.text_type(volume_id),
+                         response.get_data(as_text=True))
 
     def test_create_volume_routing(self):
         volume_id = uuid.uuid4().hex
         self.requests_fixture.post(
             self._construct_url(self.remote_auth, sp='remote1'),
             request_headers=self.remote_auth.get_headers(),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.post(
@@ -134,7 +137,8 @@ class TestVolumesV2(base.BaseTest):
             headers=self.auth.get_headers(),
             data=json.dumps({'volume': {'name': 'local@remote1'}})
         )
-        self.assertEqual(six.b(volume_id), response.data)
+        self.assertEqual(six.text_type(volume_id),
+                         response.get_data(as_text=True))
 
     def test_get_volume_local_mapping(self):
         volume_id = uuid.uuid4().hex
@@ -147,14 +151,15 @@ class TestVolumesV2(base.BaseTest):
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
             request_headers=self.auth.get_headers(),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             headers={'CONTENT-TYPE': 'application/json'}
         )
         response = self.app.get(
             self._construct_url(self.auth, volume_id),
             headers=self.auth.get_headers()
         )
-        self.assertEqual(response.data, six.b(volume_id))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(volume_id))
 
     def test_get_volume_remote_mapping(self):
         volume_id = uuid.uuid4().hex
@@ -164,20 +169,21 @@ class TestVolumesV2(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(self.remote_auth, volume_id, sp='remote1'),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
         response = self.app.get(
             self._construct_url(self.remote_auth, volume_id),
             headers=self.auth.get_headers())
-        self.assertEqual(response.data, six.b(volume_id))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(volume_id))
 
     def test_get_volume_no_search(self):
         volume_id = uuid.uuid4().hex
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             status_code=404,
             request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
@@ -193,7 +199,7 @@ class TestVolumesV2(base.BaseTest):
 
         self.requests_fixture.get(
             self._construct_url(self.auth, volume_id, sp='default'),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             status_code=200,
             request_headers=self.auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
@@ -204,7 +210,8 @@ class TestVolumesV2(base.BaseTest):
             self._construct_url(self.auth, volume_id),
             headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(volume_id))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(volume_id))
 
     def test_get_volume_search_remote(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
@@ -218,7 +225,7 @@ class TestVolumesV2(base.BaseTest):
             headers={'CONTENT-TYPE': 'application/json'})
         self.requests_fixture.get(
             self._construct_url(self.remote_auth, volume_id, sp='remote1'),
-            text=six.u(volume_id),
+            text=six.text_type(volume_id),
             status_code=200,
             request_headers=self.remote_auth.get_headers(),
             headers={'CONTENT-TYPE': 'application/json'})
@@ -227,7 +234,8 @@ class TestVolumesV2(base.BaseTest):
             self._construct_url(self.auth, volume_id),
             headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(volume_id))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(volume_id))
 
     def test_get_volume_search_nexists(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
@@ -273,7 +281,7 @@ class TestVolumesV2(base.BaseTest):
         response = self.app.get(
             '/volume/v2/%s/volumes' % self.auth.get_project_id(),
             headers=self.auth.get_headers())
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         actual['volumes'].sort(key=lambda x: x[u'id'])
         EXPECTED = samples.single_sp['/volume/v2/id/volumes']
         EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
@@ -309,7 +317,7 @@ class TestVolumesV2(base.BaseTest):
         response = self.app.get(
             '/volume/v2/%s/volumes/detail' % self.auth.get_project_id(),
             headers=self.auth.get_headers())
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         actual['volumes'].sort(key=lambda x: x[u'id'])
         EXPECTED = samples.single_sp['/volume/v2/id/volumes/detail']
         EXPECTED['volumes'].sort(key=lambda x: x[u'id'])
@@ -328,14 +336,14 @@ class TestVolumesV2(base.BaseTest):
         response = self.app.get(
             self._construct_url(self.auth, 'detail'),
             headers=self.auth.get_headers())
-        self.assertEqual(json.loads(response.data.decode("ascii")), local)
+        self.assertEqual(json.loads(response.get_data(as_text=True)), local)
 
     def test_volume_unversioned_calls_no_action_aggregation(self):
         response = self.app.get(
             '/volume',
             headers=self.auth.get_headers())
         self.assertEqual(response.status_code, 200)
-        actual = json.loads(response.data.decode("ascii"))
+        actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(actual['versions']), 3)
 
     def test_unversioned_call_no_action_no_aggregation(self):
@@ -343,12 +351,13 @@ class TestVolumesV2(base.BaseTest):
         fake_response = uuid.uuid4().hex
 
         self.requests_fixture.get(self._construct_url(sp='default'),
-                                  text=six.u(fake_response),
+                                  text=six.text_type(fake_response),
                                   headers={'CONTENT-TYPE': 'application/json'})
 
         response = self.app.get('/volume')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, six.b(fake_response))
+        self.assertEqual(response.get_data(as_text=True),
+                         six.text_type(fake_response))
 
     def test_volume_versioned_calls_no_action(self):
         response = self.app.get(
