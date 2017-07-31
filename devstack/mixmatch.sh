@@ -38,8 +38,15 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF sp_default sp_name default
     iniset $MIXMATCH_CONF sp_default auth_url "$KEYSTONE_AUTH_URI/v3"
     iniset $MIXMATCH_CONF sp_default image_endpoint $GLANCE_URL
-    iniset $MIXMATCH_CONF sp_default volume_endpoint \
-        "$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST:$CINDER_SERVICE_PORT"
+
+    CINDER_BASE="$CINDER_SERVICE_PROTOCOL://$CINDER_SERVICE_HOST"
+    if [ "$CINDER_USE_MOD_WSGI" == "True" ]; then
+        CINDER_URL="$CINDER_BASE/volume"
+    else
+        CINDER_URL="$CINDER_BASE:$CINDER_SERVICE_PORT"
+    fi
+
+    iniset $MIXMATCH_CONF sp_default volume_endpoint $CINDER_URL
 
     run_process mixmatch "$MIXMATCH_DIR/run_proxy.sh"
 
