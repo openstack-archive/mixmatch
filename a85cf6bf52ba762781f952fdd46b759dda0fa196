@@ -1,0 +1,9 @@
+Code-Review+2: Kristi Nikolla <knikolla@bu.edu>
+Code-Review+1: Leo Tomatsu <ltomatsu@bu.edu>
+Workflow+1: Kristi Nikolla <knikolla@bu.edu>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 31 Jul 2017 19:37:51 +0000
+Reviewed-on: https://review.openstack.org/488574
+Project: openstack/mixmatch
+Branch: refs/heads/master
