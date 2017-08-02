@@ -14,6 +14,7 @@
 
 import uuid
 import json
+import requests.models
 
 from oslo_config import fixture as config_fixture
 
@@ -134,3 +135,10 @@ class TestRequestHandler(BaseTest):
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, {'images': []})
+
+    def test_is_json_response(self):
+        response = requests.models.Response()
+        response.headers['Content-Type'] = 'application/json'
+        self.assertTrue(proxy.is_json_response(response))
+        response.headers['Content-Type'] = 'application/text'
+        self.assertFalse(proxy.is_json_response(response))
