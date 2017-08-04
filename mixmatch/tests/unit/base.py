@@ -49,6 +49,13 @@ class BaseTest(testcase.TestCase):
             },
         }
 
+        self.auth = FakeSession(token=uuid.uuid4().hex,
+                                project=uuid.uuid4().hex,
+                                sp=self.service_providers['default'])
+        self.remote_auth = FakeSession(token=uuid.uuid4().hex,
+                                       project=uuid.uuid4().hex,
+                                       sp=self.service_providers['remote1'])
+
         # set config values
         self.config_fixture.load_raw_values(
             service_providers='default, remote1',
@@ -65,27 +72,20 @@ class BaseTest(testcase.TestCase):
         extend.load_extensions()
 
     def load_auth_fixtures(self):
-        self.auth = FakeSession(token=uuid.uuid4().hex,
-                                project=uuid.uuid4().hex)
-        self.remote_auth = (FakeSession(token=uuid.uuid4().hex,
-                                        project=uuid.uuid4().hex))
-
-        self.session_fixture.add_local_auth(self.auth.get_token(),
-                                            self.auth.get_project_id())
+        self.session_fixture.add_local_auth(self.auth)
         self.session_fixture.add_sp_auth('remote1',
                                          self.auth.get_token(),
-                                         self.remote_auth.get_project_id(),
-                                         self.remote_auth.get_token())
+                                         self.remote_auth)
         self.session_fixture.add_project_at_sp(
-            'remote1', self.remote_auth.get_project_id()
-        )
+            'remote1', self.remote_auth.get_project_id())
 
 
 class FakeSession(object):
     """A replacement for keystoneauth1.session.Session."""
-    def __init__(self, token, project):
+    def __init__(self, token=None, project=None, sp=None):
         self.token = token
         self.project = project
+        self.sp = sp
 
     def get_token(self):
         return self.token
@@ -97,21 +97,31 @@ class FakeSession(object):
         return {'X-AUTH-TOKEN': self.token,
                 'CONTENT-TYPE': 'application/json'}
 
+    def get_endpoint(self, **kwargs):
+        if kwargs['service_type'] == 'image':
+            return self.sp['image_endpoint']
+        elif kwargs['service_type'] == 'volume':
+            return self.sp['volume_endpoint']
+
 
 class SessionFixture(fixtures.Fixture):
     """A fixture that mocks get_{sp,local}_session."""
     def _setUp(self):
         def get_local_auth(token):
-            return FakeSession(token, self.local_auths[token])
+            return self.local_auths[token]
 
         def get_sp_auth(sp, token, project):
-            return FakeSession(self.sp_auths[(sp, token, project)], project)
+            return self.sp_auths[(sp, token, project)]
 
         def get_projects_at_sp(sp, token):
             if sp in self.sp_projects:
                 return self.sp_projects[sp]
             else:
                 return []
+
+        def get_admin_session():
+            token, project = next(iter(self.local_auths.items()))
+            return FakeSession(token, project)
 
         self.local_auths = {}
         self.sp_auths = {}
@@ -122,12 +132,16 @@ class SessionFixture(fixtures.Fixture):
             'mixmatch.auth.get_local_auth', get_local_auth))
         self.useFixture(fixtures.MonkeyPatch(
             'mixmatch.auth.get_projects_at_sp', get_projects_at_sp))
+        self.useFixture(fixtures.MonkeyPatch(
+            'mixmatch.auth.get_admin_session', get_admin_session))
 
-    def add_local_auth(self, token, project):
-        self.local_auths[token] = project
+    def add_local_auth(self, session):
+        self.local_auths[session.get_token()] = session
 
-    def add_sp_auth(self, sp, token, project, remote_token):
-        self.sp_auths[(sp, token, project)] = remote_token
+    def add_sp_auth(self, sp, token, remote_session):
+        self.sp_auths[(sp,
+                       token,
+                       remote_session.get_project_id())] = remote_session
 
     def add_project_at_sp(self, sp, project):
         if sp in self.sp_projects:
