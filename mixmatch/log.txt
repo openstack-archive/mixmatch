@@ -1,0 +1,61 @@
+py27 develop-inst-nodeps: /home/ubuntu/endpoint_discovery/mixmatch
+py27 installed: alabaster==0.7.10,alembic==0.9.3,amqp==2.2.1,appdirs==1.4.3,Babel==2.3.4,bashate==0.5.1,cachetools==2.0.0,certifi==2017.4.17,chardet==3.0.4,click==6.7,contextlib2==0.5.5,coverage==4.4.1,debtcollector==1.17.0,decorator==4.1.2,docutils==0.13.1,dogpile.cache==0.6.4,dulwich==0.17.3,enum-compat==0.0.2,enum34==1.1.6,eventlet==0.20.0,extras==1.0.0,fasteners==0.14.1,fixtures==3.0.0,flake8==2.5.5,Flask==0.12.2,funcsigs==1.0.2,futures==3.1.1,futurist==1.3.0,greenlet==0.4.12,hacking==0.12.0,idna==2.5,imagesize==0.7.1,iso8601==0.1.11,itsdangerous==0.24,Jinja2==2.9.6,keystoneauth1==3.0.1,kombu==4.0.1,linecache2==1.0.0,Mako==1.0.7,MarkupSafe==1.0,mccabe==0.4.0,-e git+https://github.com/openstack/mixmatch@de6672b5d6e6bdb8dfcc13df4a008aa4f9cb50d7#egg=mixmatch,mock==2.0.0,monotonic==1.3,mox3==0.23.0,msgpack-python==0.4.8,netaddr==0.7.19,netifaces==0.10.6,os-client-config==1.28.0,os-testr==0.8.2,oslo.cache==1.25.0,oslo.concurrency==3.21.0,oslo.config==4.11.0,oslo.context==2.17.0,oslo.db==4.25.0,oslo.i18n==3.17.0,oslo.log==3.30.0,oslo.messaging==5.30.0,oslo.middleware==3.30.0,oslo.serialization==2.20.0,oslo.service==1.25.0,oslo.utils==3.28.0,oslosphinx==4.15.1,oslotest==2.17.0,Paste==2.0.3,PasteDeploy==1.5.2,pbr==3.1.1,pep8==1.7.0,pika==0.10.0,pika-pool==0.1.3,positional==1.1.1,prettytable==0.7.2,pyflakes==1.0.0,Pygments==2.2.0,pyinotify==0.9.6,pyparsing==2.2.0,python-dateutil==2.6.1,python-editor==1.0.3,python-keystoneclient==3.12.0,python-mimeparse==1.6.0,python-subunit==1.2.0,pytz==2017.2,PyYAML==3.12,reno==2.4.1,repoze.lru==0.6,requests==2.18.1,requests-mock==1.3.0,requestsexceptions==1.3.0,rfc3986==1.1.0,Routes==2.4.1,six==1.10.0,snowballstemmer==1.2.1,Sphinx==1.6.3,sphinxcontrib-websupport==1.0.1,SQLAlchemy==1.1.11,sqlalchemy-migrate==0.11.0,sqlparse==0.2.3,statsd==3.2.1,stevedore==1.25.0,Tempita==0.5.2,tenacity==4.3.0,testrepository==0.0.20,testscenarios==0.5.0,testtools==2.3.0,traceback2==1.4.0,typing==3.6.1,unittest2==1.1.0,urllib3==1.21.1,vine==1.1.4,WebOb==1.7.3,Werkzeug==0.12.2,wrapt==1.10.10
+py27 runtests: PYTHONHASHSEED='2600610944'
+py27 runtests: commands[0] | python setup.py test --slowest --testr-args=
+/home/ubuntu/endpoint_discovery/mixmatch/.tox/py27/local/lib/python2.7/site-packages/setuptools/dist.py:34: DeprecationWarning: Do not call this function
+  warnings.warn("Do not call this function", DeprecationWarning)
+running test
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ . --list 
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmp6KBqRN
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpQC6eqm
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpdPIljs
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpWqVmcY
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpHlqBCw
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpjkFAyo
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmpKtx7um
+running=OS_STDOUT_CAPTURE=${OS_STDOUT_CAPTURE:-1} \
+OS_STDERR_CAPTURE=${OS_STDERR_CAPTURE:-1} \
+OS_TEST_TIMEOUT=${OS_TEST_TIMEOUT:-60} \
+${PYTHON:-python} -m subunit.run discover -t ./ .  --load-list /tmp/tmplvCIlz
+Ran 52 tests in 2.769s (+2.091s)
+PASSED (id=46)
+Slowest Tests
+Test id                                                                                Runtime (s)
+-------------------------------------------------------------------------------------  -----------
+mixmatch.tests.unit.test_endpoint_discovery.TestEndpointDiscovery.test_trim_image      0.068
+mixmatch.tests.unit.test_images.TestImages.test_get_image_search_remote                0.035
+mixmatch.tests.unit.test_images.TestImages.test_get_image_remote                       0.033
+mixmatch.tests.unit.test_images.TestImages.test_get_image_search_local                 0.032
+mixmatch.tests.unit.test_images.TestImages.test_get_image_default_to_local             0.032
+mixmatch.tests.unit.test_volumes.TestVolumesV2.test_get_volume_search_local            0.026
+mixmatch.tests.unit.test_endpoint_discovery.TestEndpointDiscovery.test_trim_network    0.021
+mixmatch.tests.unit.test_endpoint_discovery.TestEndpointDiscovery.test_trim_volume_v1  0.021
+mixmatch.tests.unit.test_endpoint_discovery.TestEndpointDiscovery.test_trim_volume_v3  0.020
+mixmatch.tests.unit.test_volumes.TestVolumesV2.test_get_volume_remote_mapping          0.020
+___________________________________ summary ____________________________________
+  py27: commands succeeded
+  congratulations :)
