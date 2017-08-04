@@ -13,6 +13,9 @@
 #   under the License.
 
 import uuid
+import os
+
+from six.moves.urllib.parse import urlparse, urlunparse
 
 
 class CachedProperty(object):
@@ -70,10 +73,10 @@ def is_uuid(value):
         return False
 
 
-def pop_if_uuid(a):
-    """Pops the first element of the list only if it is a uuid."""
-    if is_uuid(safe_get(a, 0)):
-        return safe_pop(a)
+def pop_if_uuid(a, index=0):
+    """Pops the first or index element of the list only if it is a uuid."""
+    if is_uuid(safe_get(a, index)):
+        return safe_pop(a, i=index)
     else:
         return None
 
@@ -83,3 +86,17 @@ def flatten(item):
     if isinstance(item, list):
         return item[0]
     return item
+
+
+def trim_endpoint(endpoint):
+    """Removes the project_id and version from the endpoint."""
+    endpoint = list(urlparse(endpoint))  # type: urlparse.ParseResult
+    # Note(knikolla): Elements are in order 'scheme, netloc, path'
+    path = endpoint[2].split('/')
+    pop_if_uuid(path, index=-1)
+    # FIXME(knikolla): Write proper regex
+    if safe_get(path, -1) in ['v1', 'v2', 'v3']:
+        path.pop(-1)
+    endpoint[2] = os.path.join(*path)
+
+    return urlunparse(endpoint)
