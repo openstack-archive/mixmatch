@@ -70,10 +70,10 @@ def is_uuid(value):
         return False
 
 
-def pop_if_uuid(a):
-    """Pops the first element of the list only if it is a uuid."""
-    if is_uuid(safe_get(a, 0)):
-        return safe_pop(a)
+def pop_if_uuid(a, index=0):
+    """Pops the first or index element of the list only if it is a uuid."""
+    if is_uuid(safe_get(a, index)):
+        return safe_pop(a, i=index)
     else:
         return None
 
