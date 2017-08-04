@@ -78,6 +78,14 @@ def pop_if_uuid(a):
         return None
 
 
+def pop_tail_if_uuid(a):
+    """Pops the last element of the list only if it is a uuid."""
+    if is_uuid(safe_get(a, -1)):
+        return safe_pop(a, i=-1)
+    else:
+        return None
+
+
 def flatten(item):
     """Return the first element if list-like, otherwise the item itself"""
     if isinstance(item, list):
