@@ -25,25 +25,20 @@ from oslo_serialization import jsonutils
 CONF = config.CONF
 
 
-def construct_url(service_provider, service_type,
+def construct_url(endpoint, service_type,
                   version=None, action=None, project_id=None):
     """Construct the full URL for an Openstack API call."""
-    conf = config.service_providers.get(CONF, service_provider)
 
-    if service_type == 'image':
-        url = conf.image_endpoint
+    if service_type == 'image' or service_type == 'network':
+        url = endpoint
         if version:
             url = '%s/%s' % (url, version)
     elif service_type == 'volume':
-        url = conf.volume_endpoint
+        url = endpoint
         if version:
             url = '%s/%s' % (url, version)
         if project_id:
             url = '%s/%s' % (url, project_id)
-    elif service_type == 'network':
-        url = conf.network_endpoint
-        if version:
-            url = '%s/%s' % (url, version)
 
     if action:
         url = '%s/%s' % (url, os.path.join(*action))
