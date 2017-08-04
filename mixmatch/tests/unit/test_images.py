@@ -20,6 +20,10 @@ from mixmatch.tests.unit import samples
 
 from mixmatch.model import insert, ResourceMapping
 
+from mixmatch import config
+
+CONF = config.CONF
+
 
 class TestImages(base.BaseTest):
     def setUp(self):
@@ -29,7 +33,10 @@ class TestImages(base.BaseTest):
         if not sp:
             url = '/image'
         else:
-            url = self.service_providers[sp]['image_endpoint']
+            conf = config.service_providers.get(CONF, sp)
+            url = conf.image_endpoint
+            if url is None:
+                url = self.auth.get_endpoint(sp, "image")
         url = '%s/v2/images' % url
 
         if image_id:
