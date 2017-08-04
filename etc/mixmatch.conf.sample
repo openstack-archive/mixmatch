@@ -13,7 +13,7 @@ search_by_broadcast=True
 # Each service provider should have an option group below
 # e.g. [sp_default], [sp_cornmeal-sp]
 # The names should match the ones registered on Keystone
-service_providers=default, cornmeal-sp
+service_providers=default
 
 # Available image API versions
 image_api_versions = v2.3, v2.2, v2.1, v2.0, v1.1, v1.0
@@ -72,9 +72,6 @@ sp_name=default
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@localhost"
 
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://127.0.0.1:5000/v3"
-
 # Glance (image) endpoint for this service provider
 image_endpoint="http://localhost:9292"
 
@@ -88,22 +85,19 @@ enabled_services=image, volume
 
 # Service provider configuration group
 # Change to match your own service provider
-[sp_cornmeal-sp]
+[sp_enter_group_name_here]
 
 # Name of this service provider
-sp_name=cornmeal-sp
+sp_name=
 
 # Message bus URI of this service provider
 messagebus="rabbit://stackrabbit:stackqueue@192.168.0.141"
 
-# Local Keystone (auth) endpoint on this service provider
-auth_url="http://192.168.0.141:5000/v3"
-
 # Glance (image) endpoint for this service provider
-image_endpoint="http://192.168.0.141:9292"
+image_endpoint=
 
 # Local Cinder (volume) endpoint on this service provider
-volume_endpoint="http://192.168.0.141:8776"
+volume_endpoint=
 
 # Services that are enabled for this service provider
 enabled_services=image, volume
