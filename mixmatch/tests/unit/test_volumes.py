@@ -20,6 +20,9 @@ from mixmatch.tests.unit import base
 from mixmatch.model import insert, ResourceMapping
 from mixmatch.tests.unit import samples
 
+from mixmatch import config
+
+CONF = config.CONF
 
 class TestVolumesV3(base.BaseTest):
     def setUp(self):
@@ -30,7 +33,10 @@ class TestVolumesV3(base.BaseTest):
         if not sp:
             url = '/volume'
         else:
-            url = self.service_providers[sp]['volume_endpoint']
+            conf = config.service_providers.get(CONF, sp)
+            url = conf.volume_endpoint
+            if url is None:
+                url = self.auth.get_endpoint(sp, "volume")
 
         if auth:
             url = '%(url)s/v3/%(project_id)s/%(resource_type)s' % {
@@ -90,7 +96,10 @@ class TestVolumesV2(base.BaseTest):
         if not sp:
             url = '/volume'
         else:
-            url = self.service_providers[sp]['volume_endpoint']
+            conf = config.service_providers.get(CONF, sp)
+            url = conf.volume_endpoint
+            if url is None:
+                url = self.auth.get_endpoint(sp, "volume")
 
         if auth:
             url = '%s/v2/%s/volumes' % (url, auth.get_project_id())

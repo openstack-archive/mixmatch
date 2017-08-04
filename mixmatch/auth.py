@@ -22,6 +22,7 @@ import json
 from flask import abort
 
 from mixmatch import config
+from mixmatch import utils
 
 CONF = config.CONF
 LOG = config.LOG
@@ -76,7 +77,6 @@ def get_local_auth(user_token):
     local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
                                    token=user_token,
                                    project_id=project_id)
-
     return session.Session(auth=local_auth)
 
 
@@ -120,3 +120,16 @@ def get_sp_auth(service_provider, user_token, remote_project_id):
     )
 
     return session.Session(auth=remote_auth)
+
+
+@MEMOIZE_SESSION
+def get_sp_endpoint(service_provider, service_type):
+    """Return an endpoint for a service"""
+    admin_session = get_admin_session()
+    token = admin_session.get_token()
+    project_id = get_projects_at_sp(service_provider, token)[0]
+    auth_session = get_sp_auth(service_provider, token, project_id)
+
+    endpoint = auth_session.get_endpoint(service_type=service_type)
+
+    return utils.trim_endpoint(endpoint)

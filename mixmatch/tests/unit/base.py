@@ -38,17 +38,6 @@ class BaseTest(testcase.TestCase):
         self.db_fixture = self.useFixture(DatabaseFixture(conf=CONF))
         self.app = app.test_client()
 
-        self.service_providers = {
-            'default': {
-                'image_endpoint': 'http://images.local',
-                'volume_endpoint': 'http://volumes.local'
-            },
-            'remote1': {
-                'image_endpoint': 'http://images.remote1',
-                'volume_endpoint': 'http://volumes.remote1'
-            },
-        }
-
         # set config values
         self.config_fixture.load_raw_values(
             service_providers='default, remote1',
@@ -89,6 +78,17 @@ class FakeSession(object):
         self.token = token
         self.project = project
 
+        self.service_providers = {
+            'default': {
+                'image_endpoint': 'http://images.local',
+                'volume_endpoint': 'http://volumes.local'
+            },
+            'remote1': {
+                'image_endpoint': 'http://images.remote1',
+                'volume_endpoint': 'http://volumes.remote1'
+            },
+        }
+
     def get_token(self):
         return self.token
 
@@ -98,6 +98,12 @@ class FakeSession(object):
     def get_headers(self):
         return {'X-AUTH-TOKEN': self.token,
                 'CONTENT-TYPE': 'application/json'}
+
+    def get_endpoint(self, sp, service_type):
+        if service_type == 'volume':
+            return self.service_providers[sp]['volume_endpoint']
+        elif service_type == 'image':
+            return self.service_providers[sp]['image_endpoint']
 
 
 class SessionFixture(fixtures.Fixture):
