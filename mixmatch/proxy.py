@@ -171,17 +171,19 @@ class RequestHandler(object):
                                                 self.details.token,
                                                 project_id)
             headers['X-AUTH-TOKEN'] = auth_session.get_token()
-            project_id = auth_session.get_project_id()
+            remote_project_id = auth_session.get_project_id()
         else:
-            project_id = None
+            remote_project_id = None
 
-        url = services.construct_url(
-            sp,
-            self.details.service,
-            self.details.version,
-            self.details.action,
-            project_id=project_id
-        )
+        endpoint = auth.get_sp_endpoint(sp,
+                                        self.details.service,
+                                        self.details.version)
+
+        url = services.construct_url(endpoint,
+                                     self.details.service,
+                                     self.details.version,
+                                     self.details.action,
+                                     project_id=remote_project_id)
 
         request_kwargs = {
             'method': self.details.method,
