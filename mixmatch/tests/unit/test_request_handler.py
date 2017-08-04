@@ -86,9 +86,9 @@ class TestRequestHandler(BaseTest):
             enabled_services='volume'
         )
         REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
+        self.session_fixture.add_local_auth(self.auth)
+        self.session_fixture.add_sp_auth('remote1', self.auth.get_token(),
+                                         self.remote_auth)
         self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
 
         LOCAL_IMAGES = {
@@ -104,12 +104,12 @@ class TestRequestHandler(BaseTest):
             'http://images.local/v2/images',
             text=json.dumps(LOCAL_IMAGES),
             status_code=200,
-            request_headers={'X-AUTH-TOKEN': 'local-tok'},
+            request_headers={'X-AUTH-TOKEN': self.auth.get_token()},
             headers={'CONTENT-TYPE': 'application/json'})
 
         response = self.app.get(
             '/image/v2/images',
-            headers={'X-AUTH-TOKEN': 'local-tok',
+            headers={'X-AUTH-TOKEN': self.auth.get_token(),
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, LOCAL_IMAGES)
@@ -124,9 +124,9 @@ class TestRequestHandler(BaseTest):
             enabled_services='volume'
         )
         REMOTE_PROJECT_ID = "319d8162b38342609f5fafe1404216b9"
-        self.session_fixture.add_local_auth('local-tok', 'my_project_id')
-        self.session_fixture.add_sp_auth('remote1', 'local-tok',
-                                         REMOTE_PROJECT_ID, 'remote-tok')
+        self.session_fixture.add_local_auth(self.auth)
+        self.session_fixture.add_sp_auth('remote1', self.auth.get_token(),
+                                         self.remote_auth)
         self.session_fixture.add_project_at_sp('remote1', REMOTE_PROJECT_ID)
 
         response = self.app.get(
