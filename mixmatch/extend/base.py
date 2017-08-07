@@ -59,7 +59,7 @@ class Route(object):
         return True
 
     def match(self, request):
-        return (self._match_service(request['service']) and
-                self._match_version(request['version']) and
-                self._match_method(request['method']) and
-                self._match_action(request['action']))
+        return (self._match_service(request.service) and
+                self._match_version(request.version) and
+                self._match_method(request.method) and
+                self._match_action(request.action))
