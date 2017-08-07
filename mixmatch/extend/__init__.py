@@ -31,12 +31,14 @@ def load_extensions():
     )
 
 
-def get_matched_extensions(request):
+def get_matched_extensions(attributes):
     """Return list of matched extensions for request
 
     :type request: Dict[]
     :rtype: List[mixmatch.extend.base.Extension]
     """
+    request = attributes.__dict__
+
     def _match(e):
         return e.obj if e.obj.matches(request) else None
 
