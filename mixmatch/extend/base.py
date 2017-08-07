@@ -53,10 +53,18 @@ class Route(object):
         return True
 
     def _match_action(self, action):
-        if self.action:
-            # FIXME(knikolla): More sophisticated matching after PoC
-            return self.action == action
-        return True
+        if self.action == None:
+            return True
+        elif action == None:
+            return False
+        elif len(self.action) != len(action):
+            return False
+        else:
+            for i in range(len(self.action)):
+                if self.action[i] != action[i]:
+                    return False
+            return True    
+
 
     def match(self, request):
         return (self._match_service(request['service']) and
