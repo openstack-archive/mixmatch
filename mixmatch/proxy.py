@@ -52,25 +52,6 @@ def get_service(a):
             abort(404)
 
 
-def get_details(method, orig_path, headers):
-    """Get details for a request."""
-    path = orig_path.split('/')
-    # NOTE(knikolla): Request usually look like:
-    # /<service>/<version>/<project_id:uuid>/<res_type>/<res_id:uuid>
-    # or
-    # /<service>/<version>/<res_type>/<specific action>
-    return {'method': method,
-            'service': get_service(path),
-            'version': utils.safe_pop(path),
-            'project_id': utils.pop_if_uuid(path),
-            'action': path[:],  # NOTE(knikolla): This includes
-            'resource_type': utils.safe_pop(path),  # this
-            'resource_id': utils.pop_if_uuid(path),  # and this
-            'token': headers.get('X-AUTH-TOKEN', None),
-            'headers': dict(headers),
-            'path': orig_path}
-
-
 def is_json_response(response):
     return response.headers.get('Content-Type') == 'application/json'
 
@@ -96,14 +77,33 @@ def format_for_log(title=None, method=None, url=None, headers=None,
     ])
 
 
+class RequestDetails(object):
+    def __init__(self, method, orig_path, headers):
+        local_path = orig_path.split('/')
+        # NOTE(knikolla): Request usually looks like this:
+        # /<service>/<version>/<project_id:uuid>/<res_type>/<res_id:uuid>
+        # or
+        # /<service>/<version>/<res_type>/<specific action>
+        self.method = method
+        self.service = get_service(local_path)
+        self.version = utils.safe_pop(local_path)
+        self.project_id = utils.pop_if_uuid(local_path)
+        self.action = local_path[:]  # NOTE(knikolla): This includes
+        self.resource_type = utils.safe_pop(local_path)  # this
+        self.resource_id = utils.pop_if_uuid(local_path)  # and this
+        self.token = headers.get('X-AUTH-TOKEN', None)
+        self.headers = dict(headers)
+        self.path = orig_path
+
+
 class RequestHandler(object):
 
     def __init__(self, method, path, headers):
-        self.details = get_details(method, path, headers)
+        self.details = RequestDetails(method, path, headers)
         self.extensions = extend.get_matched_extensions(self.details)
         self._set_strip_details(self.details)
         self.enabled_sps = filter(
-            lambda sp: (self.details['service'] in
+            lambda sp: (self.details.service in
                         service_providers.get(CONF, sp).enabled_services),
             CONF.service_providers
         )
@@ -111,7 +111,7 @@ class RequestHandler(object):
         for extension in self.extensions:
             extension.handle_request(self.details)
 
-        if not self.details['version']:
+        if not self.details.version:
             if CONF.aggregation:
                 # unversioned calls with no action
                 self._forward = self._list_api_versions
@@ -119,32 +119,32 @@ class RequestHandler(object):
                 self._forward = self._local_forward
             return
 
-        if not self.details['resource_type']:
+        if not self.details.resource_type:
             # versioned calls with no action
             abort(400)
 
         mapping = None
 
-        if self.details['resource_id']:
+        if self.details.resource_id:
             mapping = model.ResourceMapping.find(
-                resource_type=self.details['action'][0],
-                resource_id=self.details['resource_id'])
+                resource_type=self.details.action[0],
+                resource_id=self.details.resource_id)
 
-        LOG.debug('Local Token: %s ' % self.details['token'])
+        LOG.debug('Local Token: %s ' % self.details.token)
 
-        if 'MM-SERVICE-PROVIDER' in self.details['headers']:
+        if 'MM-SERVICE-PROVIDER' in self.details.headers:
             # The user wants a specific service provider, use that SP.
             # FIXME(knikolla): This isn't exercised by any unit test
             (self.service_provider, self.project_id) = (
-                self.details['headers']['MM-SERVICE-PROVIDER'],
-                self.details['headers'].get('MM-PROJECT-ID', None)
+                self.details.headers['MM-SERVICE-PROVIDER'],
+                self.details.headers.get('MM-PROJECT-ID', None)
             )
             if self.service_provider not in self.enabled_sps:
                 abort(400)
             if not self.project_id and self.service_provider != 'default':
                 self.project_id = auth.get_projects_at_sp(
                     self.service_provider,
-                    self.details['token']
+                    self.details.token
                 )[0]
             self._forward = self._targeted_forward
         elif mapping:
@@ -156,19 +156,19 @@ class RequestHandler(object):
             self._forward = self._forward
 
         LOG.info(format_for_log(title="Request to proxy",
-                                method=self.details['method'],
-                                url=self.details['path'],
-                                headers=dict(self.details['headers'])))
+                                method=self.details.method,
+                                url=self.details.path,
+                                headers=dict(self.details.headers)))
 
     def _do_request_on(self, sp, project_id=None):
-        headers = self._prepare_headers(self.details['headers'])
+        headers = self._prepare_headers(self.details.headers)
 
-        if self.details['token']:
+        if self.details.token:
             if sp == 'default':
-                auth_session = auth.get_local_auth(self.details['token'])
+                auth_session = auth.get_local_auth(self.details.token)
             else:
                 auth_session = auth.get_sp_auth(sp,
-                                                self.details['token'],
+                                                self.details.token,
                                                 project_id)
             headers['X-AUTH-TOKEN'] = auth_session.get_token()
             project_id = auth_session.get_project_id()
@@ -177,14 +177,14 @@ class RequestHandler(object):
 
         url = services.construct_url(
             sp,
-            self.details['service'],
-            self.details['version'],
-            self.details['action'],
+            self.details.service,
+            self.details.version,
+            self.details.action,
             project_id=project_id
         )
 
         request_kwargs = {
-            'method': self.details['method'],
+            'method': self.details.method,
             'url': url,
             'headers': headers,
             'params': self._prepare_args(request.args)
@@ -197,7 +197,7 @@ class RequestHandler(object):
                                         stream=self.stream,
                                         **request_kwargs)
         LOG.info(format_for_log(title='Request from proxy',
-                                method=self.details['method'],
+                                method=self.details.method,
                                 url=url,
                                 headers=headers))
         LOG.info(format_for_log(title='Response to proxy',
@@ -246,7 +246,7 @@ class RequestHandler(object):
                 else:
                     errors[r.status_code].append(r)
             else:
-                for p in auth.get_projects_at_sp(sp, self.details['token']):
+                for p in auth.get_projects_at_sp(sp, self.details.token):
                     r = self._do_request_on(sp, p)
                     if 200 <= r.status_code < 300:
                         responses[(sp, p)] = r
@@ -262,9 +262,9 @@ class RequestHandler(object):
             # for everything that is returned.
             return flask.Response(
                 services.aggregate(responses,
-                                   self.details['action'][0],
-                                   self.details['service'],
-                                   version=self.details['version'],
+                                   self.details.action[0],
+                                   self.details.service,
+                                   version=self.details.version,
                                    params=dict(request.args),
                                    path=request.base_url,
                                    strip_details=self.strip_details),
@@ -284,7 +284,7 @@ class RequestHandler(object):
         return flask.Response("Something strange happened.\n", 500)
 
     def _list_api_versions(self):
-        return services.list_api_versions(self.details['service'],
+        return services.list_api_versions(self.details.service,
                                           request.base_url)
 
     def forward(self):
@@ -318,12 +318,12 @@ class RequestHandler(object):
 
     @utils.CachedProperty
     def chunked(self):
-        encoding = self.details['headers'].get('Transfer-Encoding', '')
+        encoding = self.details.headers.get('Transfer-Encoding', '')
         return encoding.lower() == 'chunked'
 
     @utils.CachedProperty
     def stream(self):
-        return self.details['method'] == 'GET'
+        return self.details.method == 'GET'
 
     @utils.CachedProperty
     def fallback_to_local(self):
@@ -334,9 +334,9 @@ class RequestHandler(object):
     @utils.CachedProperty
     def aggregate(self):
         """Return true if this is a case where we should aggregate."""
-        return (not self.details['resource_id'] and
-                self.details['method'] == 'GET' and
-                self.details['action'][0] in RESOURCES_AGGREGATE)
+        return (not self.details.resource_id and
+                self.details.method == 'GET' and
+                self.details.action[0] in RESOURCES_AGGREGATE)
 
     @utils.CachedProperty
     def session(self):
@@ -356,11 +356,11 @@ class RequestHandler(object):
         # if request is to /volumes, change it
         # to /volumes/detail for aggregation
         # and set strip_details to true
-        if (details['service'] == 'volume' and
-                details['method'] == 'GET' and
-                utils.safe_get(details['action'], -1) == 'volumes'):
+        if (details.service == 'volume' and
+                details.method == 'GET' and
+                utils.safe_get(details.action, -1) == 'volumes'):
             self.strip_details = True
-            details['action'].insert(len(details['action']), 'detail')
+            details.action.insert(len(details.action), 'detail')
         else:
             self.strip_details = False
 
