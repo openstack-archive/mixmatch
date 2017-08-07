@@ -31,7 +31,9 @@ class NameRouting(base.Extension):
     def _is_targeted(headers):
         return 'MM-SERVICE-PROVIDER' in headers
 
-    def handle_request(self, request):
+    def handle_request(self, attributes):
+        request = attributes.__dict__
+
         if self._is_targeted(request['headers']):
             return
 
