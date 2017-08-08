@@ -107,10 +107,21 @@ class RequestHandler(object):
                         service_providers.get(CONF, sp).enabled_services),
             CONF.service_providers
         )
+        self.mapping = None
 
+        self._handle_extension()
+
+        self._handle_action()
+
+        self._handle_sp_project()
+
+        self._log_request_to_proxy()
+
+    def _handle_extension(self):
         for extension in self.extensions:
             extension.handle_request(self.details)
 
+    def _handle_action(self):
         if not self.details.version:
             if CONF.aggregation:
                 # unversioned calls with no action
@@ -123,6 +134,7 @@ class RequestHandler(object):
             # versioned calls with no action
             abort(400)
 
+    def _handle_sp_project(self):
         mapping = None
 
         if self.details.resource_id:
@@ -155,6 +167,7 @@ class RequestHandler(object):
         else:
             self._forward = self._forward
 
+    def _log_request_to_proxy(self):
         LOG.info(format_for_log(title="Request to proxy",
                                 method=self.details.method,
                                 url=self.details.path,
