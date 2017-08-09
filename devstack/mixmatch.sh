@@ -27,7 +27,7 @@ function configure_mixmatch {
     sudo chown $STACK_USER:$STACK_USER /etc/mixmatch
     cp $MIXMATCH_DIR/etc/mixmatch.conf.sample $MIXMATCH_CONF
 
-    iniset $MIXMATCH_CONF database connection "sqlite://"
+    iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
     iniset $MIXMATCH_CONF DEFAULT service_providers default
     iniset $MIXMATCH_CONF DEFAULT aggregation False
 
