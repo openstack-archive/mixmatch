@@ -52,11 +52,10 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF sp_default volume_endpoint $CINDER_URL
     iniset $MIXMATCH_CONF sp_default network_endpoint \
         "$NEUTRON_SERVICE_PROTOCOL://$NEUTRON_SERVICE_HOST:$NEUTRON_SERVICE_PORT"
-    iniset $MIXMATCH_CONF sp_default enabled_services "image, volume, network"
+    iniset $MIXMATCH_CONF sp_default enabled_services "image, volume"
 
     # Nova
     iniset $NOVA_CONF glance api_servers "$MIXMATCH_URL/image"
-    iniset $NOVA_CONF neutron url "$MIXMATCH_URL/network"
 
     # Cinder
     iniset $CINDER_CONF DEFAULT glance_api_servers "$MIXMATCH_URL/image"
@@ -88,7 +87,6 @@ function register_mixmatch {
         openstack endpoint delete `get_endpoint_ids volume`
         openstack endpoint delete `get_endpoint_ids volumev2`
         openstack endpoint delete `get_endpoint_ids volumev3`
-        openstack endpoint delete `get_endpoint_ids network`
 
         get_or_create_endpoint \
             "image" \
@@ -117,12 +115,5 @@ function register_mixmatch {
             "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
             "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
             "$MIXMATCH_URL/volume/v3/\$(project_id)s"
-
-        get_or_create_endpoint \
-            "network" \
-            "$REGION_NAME" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network"
     fi
 }
