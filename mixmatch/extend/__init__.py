@@ -17,7 +17,7 @@ from mixmatch import config
 from stevedore import extension
 
 CONF = config.CONF
-LOG = config.LOG
+# LOG = config.LOG
 
 EXTENSION_MANAGER = None  # type: extension.ExtensionManager
 

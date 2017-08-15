@@ -32,11 +32,11 @@ class VolumeCreateEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating volume mapping %s -> %s at %s' % (
-            payload['volume_id'],
-            payload['tenant_id'],
-            self.sp_name)
-        )
+        # LOG.info('Creating volume mapping %s -> %s at %s' % (
+            # payload['volume_id'],
+            # payload['tenant_id'],
+            # self.sp_name)
+        # )
         insert(ResourceMapping("volumes",
                                payload['volume_id'],
                                payload['tenant_id'],
@@ -51,11 +51,11 @@ class VolumeDeleteEndpoint(object):
         event_type='^volume.delete.end$')
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting volume mapping %s -> %s at %s' % (
-            payload['volume_id'],
-            payload['tenant_id'],
-            self.sp_name)
-        )
+        # LOG.info('Deleting volume mapping %s -> %s at %s' % (
+            # payload['volume_id'],
+            # payload['tenant_id'],
+            # self.sp_name)
+        # )
         delete(ResourceMapping.find("volumes", payload['volume_id']))
 
 
@@ -68,11 +68,11 @@ class VolumeTransferEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Moving volume mapping %s -> %s at %s' % (
-            payload['volume_id'],
-            payload['tenant_id'],
-            self.sp_name)
-        )
+        # LOG.info('Moving volume mapping %s -> %s at %s' % (
+            # payload['volume_id'],
+            # payload['tenant_id'],
+            # self.sp_name)
+        # )
         mapping = ResourceMapping.find("volumes", payload['volume_id'])
         # Since we're manually updating a field, we have to sanitize the UUID
         # ourselves.
@@ -88,11 +88,11 @@ class SnapshotCreateEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating snapshot mapping %s -> %s at %s' % (
-            payload['snapshot_id'],
-            payload['tenant_id'],
-            self.sp_name)
-        )
+        # LOG.info('Creating snapshot mapping %s -> %s at %s' % (
+            # payload['snapshot_id'],
+            # payload['tenant_id'],
+            # self.sp_name)
+        # )
         insert(ResourceMapping("snapshots",
                                payload['snapshot_id'],
                                payload['tenant_id'],
@@ -108,11 +108,11 @@ class SnapshotDeleteEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting snapshot mapping %s -> %s at %s' % (
-            payload['snapshot_id'],
-            payload['tenant_id'],
-            self.sp_name)
-        )
+        # LOG.info('Deleting snapshot mapping %s -> %s at %s' % (
+            # payload['snapshot_id'],
+            # payload['tenant_id'],
+            # self.sp_name)
+        # )
         delete(ResourceMapping.find("snapshots", payload['snapshot_id']))
 
 
@@ -125,11 +125,11 @@ class ImageCreateEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating image mapping %s -> %s at %s' % (
-            payload['id'],
-            payload['owner'],
-            self.sp_name)
-        )
+        # LOG.info('Creating image mapping %s -> %s at %s' % (
+            # payload['id'],
+            # payload['owner'],
+            # self.sp_name)
+        # )
         insert(ResourceMapping("images",
                                payload['id'],
                                payload['owner'],
@@ -145,11 +145,11 @@ class ImageDeleteEndpoint(object):
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting image mapping %s -> %s at %s' % (
-            payload['id'],
-            payload['owner'],
-            self.sp_name)
-        )
+        # LOG.info('Deleting image mapping %s -> %s at %s' % (
+            # payload['id'],
+            # payload['owner'],
+            # self.sp_name)
+        # )
         delete(ResourceMapping.find("images", payload['id']))
 
 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     config.configure()
     model.create_tables()
 
-    LOG.info("Now listening for changes")
+    # LOG.info("Now listening for changes")
     for sp in CONF.service_providers:
         get_server_for_sp(sp).start()
     while True:
