@@ -16,6 +16,7 @@ from os import path
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_log import _options
 
 from mixmatch.config import auth
 from mixmatch.config import cache
@@ -81,8 +82,15 @@ def post_config():
     log.setup(CONF, 'demo')
 
 
-def configure():
-    load_from_file()
+def set_log_file(service_name):
+    cfg.set_defaults(_options.logging_cli_opts, log_file='%s.log' % (service_name))
+
+
+def configure(service=None):
+    if service:
+        set_log_file(service)
+    else:
+        load_from_file()
     post_config()
 
 
