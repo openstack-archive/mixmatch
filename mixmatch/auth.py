@@ -29,80 +29,82 @@ LOG = config.LOG
 MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
-@MEMOIZE_SESSION
-def get_client():
-    """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
-    service_auth = identity.Password(
-        auth_url=CONF.auth.auth_url,
-        username=CONF.auth.username,
-        password=CONF.auth.password,
-        project_name=CONF.auth.project_name,
-        project_domain_id=CONF.auth.project_domain_id,
-        user_domain_id=CONF.auth.user_domain_id
-    )
-    local_session = session.Session(auth=service_auth)
-    return v3.client.Client(session=local_session)
+class Authentication(object):
+    def __init__(self, service):
+        self.log = LOG(service)
 
+    @MEMOIZE_SESSION
+    def get_client(self):
+        """Return a Keystone client capable of validating tokens."""
+        self.log.info("Getting Admin Client")
+        service_auth = identity.Password(
+            auth_url=CONF.auth.auth_url,
+            username=CONF.auth.username,
+            password=CONF.auth.password,
+            project_name=CONF.auth.project_name,
+            project_domain_id=CONF.auth.project_domain_id,
+            user_domain_id=CONF.auth.user_domain_id
+        )
+        local_session = session.Session(auth=service_auth)
+        return v3.client.Client(session=local_session)
 
-@MEMOIZE_SESSION
-def get_local_auth(user_token):
-    """Return a Keystone session for the local cluster."""
-    LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
-    token = v3.tokens.TokenManager(client)
+    @MEMOIZE_SESSION
+    def get_local_auth(self, user_token):
+        """Return a Keystone session for the local cluster."""
+        self.log.debug("Getting session for %s" % user_token)
+        client = self.get_client()
+        token = v3.tokens.TokenManager(client)
 
-    try:
-        token_data = token.validate(token=user_token, include_catalog=False)
-    except http.NotFound:
-        abort(401)
+        try:
+            token_data = token.validate(token=user_token,
+                                        include_catalog=False)
+        except http.NotFound:
+            abort(401)
 
-    project_id = token_data['project']['id']
+        project_id = token_data['project']['id']
 
-    local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
-                                   token=user_token,
-                                   project_id=project_id)
+        local_auth = identity.v3.Token(auth_url=CONF.auth.auth_url,
+                                       token=user_token,
+                                       project_id=project_id)
 
-    return session.Session(auth=local_auth)
+        return session.Session(auth=local_auth)
 
+    @MEMOIZE_SESSION
+    def get_unscoped_sp_auth(self, service_provider, user_token):
+        """Perform K2K auth, and return an unscoped session."""
+        conf = config.service_providers.get(CONF, service_provider)
+        local_auth = self.get_local_auth(user_token).auth
+        self.log.debug("Getting unscoped session for (%s, %s)"
+                       % (service_provider, user_token))
+        remote_auth = identity.v3.Keystone2Keystone(
+            local_auth,
+            conf.sp_name
+        )
+        return session.Session(auth=remote_auth)
 
-@MEMOIZE_SESSION
-def get_unscoped_sp_auth(service_provider, user_token):
-    """Perform K2K auth, and return an unscoped session."""
-    conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
-    LOG.debug("Getting unscoped session for (%s, %s)" % (service_provider,
-                                                         user_token))
-    remote_auth = identity.v3.Keystone2Keystone(
-        local_auth,
-        conf.sp_name
-    )
-    return session.Session(auth=remote_auth)
+    def get_projects_at_sp(self, service_provider, user_token):
+        """Perform K2K auth, and return the projects that can be scoped to."""
+        conf = config.service_providers.get(CONF, service_provider)
+        unscoped_session = self.get_unscoped_sp_auth(self, service_provider,
+                                                     user_token)
+        r = json.loads(str(unscoped_session.get(
+            conf.auth_url + "/OS-FEDERATION/projects").text))
+        return [project[u'id'] for project in r[u'projects']]
 
+    @MEMOIZE_SESSION
+    def get_sp_auth(self, service_provider, user_token, remote_project_id):
+        """Perform K2K auth, and return a session for a remote cluster."""
+        conf = config.service_providers.get(CONF, service_provider)
+        local_auth = self.get_local_auth(user_token).auth
 
-def get_projects_at_sp(service_provider, user_token):
-    """Perform K2K auth, and return the projects that can be scoped to."""
-    conf = config.service_providers.get(CONF, service_provider)
-    unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
-    r = json.loads(str(unscoped_session.get(
-        conf.auth_url + "/OS-FEDERATION/projects").text))
-    return [project[u'id'] for project in r[u'projects']]
+        self.log.debug("Getting session for (%s, %s, %s)" %
+                       (service_provider,
+                        user_token, remote_project_id))
 
+        remote_auth = identity.v3.Keystone2Keystone(
+            local_auth,
+            conf.sp_name,
+            project_id=remote_project_id
+        )
 
-@MEMOIZE_SESSION
-def get_sp_auth(service_provider, user_token, remote_project_id):
-    """Perform K2K auth, and return a session for a remote cluster."""
-    conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
-
-    LOG.debug("Getting session for (%s, %s, %s)" % (service_provider,
-                                                    user_token,
-                                                    remote_project_id))
-
-    remote_auth = identity.v3.Keystone2Keystone(
-        local_auth,
-        conf.sp_name,
-        project_id=remote_project_id
-    )
-
-    return session.Session(auth=remote_auth)
+        return session.Session(auth=remote_auth)

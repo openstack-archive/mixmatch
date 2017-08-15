@@ -15,14 +15,16 @@
 from os import path
 
 from oslo_config import cfg
-from oslo_log import log
 
 from mixmatch.config import auth
 from mixmatch.config import cache
 from mixmatch.config import default
 from mixmatch.config import service_providers
 
-LOG = log.getLogger('root')
+from mixmatch.config import log_volume
+from mixmatch.config import log_image
+from mixmatch.config import log_network
+
 CONF = cfg.CONF
 
 # Note(knikolla): Configuration modules are registered in the list below.
@@ -39,7 +41,10 @@ MODULES = [
     default,
     cache,
     auth,
-    service_providers
+    service_providers,
+    log_volume,
+    log_image,
+    log_network
 ]
 
 
@@ -66,8 +71,6 @@ def list_opts():
 
 
 def pre_config():
-    log.register_options(CONF)
-
     for option_module in MODULES:
         option_module.pre_config(CONF)
 
@@ -78,12 +81,18 @@ def post_config():
     for option_module in MODULES:
         option_module.post_config(CONF)
 
-    log.setup(CONF, 'demo')
+
+def LOG(service):
+    if service == 'image':
+        return log_image.LOG_image
+    elif service == 'volume':
+        return log_volume.LOG_volume
+    elif service == 'network':
+        return log_network.LOG_network
 
 
 def configure():
     load_from_file()
     post_config()
-
 
 pre_config()
