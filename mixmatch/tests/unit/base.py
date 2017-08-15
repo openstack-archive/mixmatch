@@ -101,13 +101,13 @@ class FakeSession(object):
 class SessionFixture(fixtures.Fixture):
     """A fixture that mocks get_{sp,local}_session."""
     def _setUp(self):
-        def get_local_auth(token):
+        def get_local_auth(auth, token):
             return FakeSession(token, self.local_auths[token])
 
-        def get_sp_auth(sp, token, project):
+        def get_sp_auth(auth, sp, token, project):
             return FakeSession(self.sp_auths[(sp, token, project)], project)
 
-        def get_projects_at_sp(sp, token):
+        def get_projects_at_sp(auth, sp, token):
             if sp in self.sp_projects:
                 return self.sp_projects[sp]
             else:
@@ -117,11 +117,12 @@ class SessionFixture(fixtures.Fixture):
         self.sp_auths = {}
         self.sp_projects = {}
         self.useFixture(fixtures.MonkeyPatch(
-            'mixmatch.auth.get_sp_auth', get_sp_auth))
+            'mixmatch.auth.Authentication.get_sp_auth', get_sp_auth))
         self.useFixture(fixtures.MonkeyPatch(
-            'mixmatch.auth.get_local_auth', get_local_auth))
+            'mixmatch.auth.Authentication.get_local_auth', get_local_auth))
         self.useFixture(fixtures.MonkeyPatch(
-            'mixmatch.auth.get_projects_at_sp', get_projects_at_sp))
+            'mixmatch.auth.Authentication.get_projects_at_sp',
+            get_projects_at_sp))
 
     def add_local_auth(self, token, project):
         self.local_auths[token] = project
