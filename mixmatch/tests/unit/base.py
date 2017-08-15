@@ -101,13 +101,13 @@ class FakeSession(object):
 class SessionFixture(fixtures.Fixture):
     """A fixture that mocks get_{sp,local}_session."""
     def _setUp(self):
-        def get_local_auth(token):
+        def get_local_auth(service, token):
             return FakeSession(token, self.local_auths[token])
 
-        def get_sp_auth(sp, token, project):
+        def get_sp_auth(service, sp, token, project):
             return FakeSession(self.sp_auths[(sp, token, project)], project)
 
-        def get_projects_at_sp(sp, token):
+        def get_projects_at_sp(service, sp, token):
             if sp in self.sp_projects:
                 return self.sp_projects[sp]
             else:

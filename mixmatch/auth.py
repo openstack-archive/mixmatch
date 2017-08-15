@@ -24,15 +24,14 @@ from flask import abort
 from mixmatch import config
 
 CONF = config.CONF
-LOG = config.LOG
 
 MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
 @MEMOIZE_SESSION
-def get_client():
+def get_client(service):
     """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
+    LOG(service).info("Getting Admin Client")
     service_auth = identity.Password(
         auth_url=CONF.auth.auth_url,
         username=CONF.auth.username,
@@ -46,10 +45,10 @@ def get_client():
 
 
 @MEMOIZE_SESSION
-def get_local_auth(user_token):
+def get_local_auth(service, user_token):
     """Return a Keystone session for the local cluster."""
-    LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
+    LOG(service).debug("Getting session for %s" % user_token)
+    client = get_client(service)
     token = v3.tokens.TokenManager(client)
 
     try:
@@ -67,12 +66,12 @@ def get_local_auth(user_token):
 
 
 @MEMOIZE_SESSION
-def get_unscoped_sp_auth(service_provider, user_token):
+def get_unscoped_sp_auth(service, service_provider, user_token):
     """Perform K2K auth, and return an unscoped session."""
     conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
-    LOG.debug("Getting unscoped session for (%s, %s)" % (service_provider,
-                                                         user_token))
+    local_auth = get_local_auth(service, user_token).auth
+    LOG(service).debug("Getting unscoped session for (%s, %s)"
+        % (service_provider, user_token))
     remote_auth = identity.v3.Keystone2Keystone(
         local_auth,
         conf.sp_name
@@ -80,24 +79,25 @@ def get_unscoped_sp_auth(service_provider, user_token):
     return session.Session(auth=remote_auth)
 
 
-def get_projects_at_sp(service_provider, user_token):
+def get_projects_at_sp(service, service_provider, user_token):
     """Perform K2K auth, and return the projects that can be scoped to."""
     conf = config.service_providers.get(CONF, service_provider)
-    unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
+    unscoped_session = get_unscoped_sp_auth(service,
+                                            service_provider,
+                                            user_token)
     r = json.loads(str(unscoped_session.get(
         conf.auth_url + "/OS-FEDERATION/projects").text))
     return [project[u'id'] for project in r[u'projects']]
 
 
 @MEMOIZE_SESSION
-def get_sp_auth(service_provider, user_token, remote_project_id):
+def get_sp_auth(service, service_provider, user_token, remote_project_id):
     """Perform K2K auth, and return a session for a remote cluster."""
     conf = config.service_providers.get(CONF, service_provider)
-    local_auth = get_local_auth(user_token).auth
+    local_auth = get_local_auth(service, user_token).auth
 
-    LOG.debug("Getting session for (%s, %s, %s)" % (service_provider,
-                                                    user_token,
-                                                    remote_project_id))
+    LOG(service).debug("Getting session for (%s, %s, %s)" % 
+        (service_provider, user_token, remote_project_id))
 
     remote_auth = identity.v3.Keystone2Keystone(
         local_auth,
