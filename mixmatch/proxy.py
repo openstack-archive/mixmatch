@@ -130,7 +130,8 @@ class RequestHandler(object):
                 resource_type=self.details.action[0],
                 resource_id=self.details.resource_id)
 
-        LOG.debug('Local Token: %s ' % self.details.token)
+        LOG(self.details.service).debug('Local Token: %s '
+                                        % self.details.token)
 
         if 'MM-SERVICE-PROVIDER' in self.details.headers:
             # The user wants a specific service provider, use that SP.
@@ -143,6 +144,7 @@ class RequestHandler(object):
                 abort(400)
             if not self.project_id and self.service_provider != 'default':
                 self.project_id = auth.get_projects_at_sp(
+                    self.details.service,
                     self.service_provider,
                     self.details.token
                 )[0]
@@ -155,19 +157,22 @@ class RequestHandler(object):
         else:
             self._forward = self._forward
 
-        LOG.info(format_for_log(title="Request to proxy",
-                                method=self.details.method,
-                                url=self.details.path,
-                                headers=dict(self.details.headers)))
+        LOG(self.details.service).info(format_for_log(
+            title="Request to proxy",
+            method=self.details.method,
+            url=self.details.path,
+            headers=dict(self.details.headers)))
 
     def _do_request_on(self, sp, project_id=None):
         headers = self._prepare_headers(self.details.headers)
 
         if self.details.token:
             if sp == 'default':
-                auth_session = auth.get_local_auth(self.details.token)
+                auth_session = auth.get_local_auth(self.details.service,
+                                                   self.details.token)
             else:
-                auth_session = auth.get_sp_auth(sp,
+                auth_session = auth.get_sp_auth(self.details.service,
+                                                sp,
                                                 self.details.token,
                                                 project_id)
             headers['X-AUTH-TOKEN'] = auth_session.get_token()
@@ -196,13 +201,12 @@ class RequestHandler(object):
             resp = self.session.request(data=request.data,
                                         stream=self.stream,
                                         **request_kwargs)
-        LOG.info(format_for_log(title='Request from proxy',
-                                method=self.details.method,
-                                url=url,
-                                headers=headers))
-        LOG.info(format_for_log(title='Response to proxy',
-                                status_code=resp.status_code,
-                                headers=resp.headers))
+        LOG(self.details.service).info(format_for_log(
+            title='Request from proxy', method=self.details.method,
+            url=url, headers=headers))
+        LOG(self.details.service).info(format_for_log(
+            title='Response to proxy', status_code=resp.status_code,
+            headers=resp.headers))
         return resp
 
     def _finalize(self, response):
@@ -217,9 +221,10 @@ class RequestHandler(object):
             response.status_code,
             headers=self._prepare_headers(response.headers)
         )
-        LOG.info(format_for_log(title='Response from proxy',
-                                status_code=final_response.status_code,
-                                headers=dict(final_response.headers)))
+        LOG(self.details.service).info(format_for_log(
+            title='Response from proxy',
+            status_code=final_response.status_code,
+            headers=dict(final_response.headers)))
         return final_response
 
     def _local_forward(self):
@@ -246,7 +251,9 @@ class RequestHandler(object):
                 else:
                     errors[r.status_code].append(r)
             else:
-                for p in auth.get_projects_at_sp(sp, self.details.token):
+                for p in auth.get_projects_at_sp(self.details.service,
+                                                 sp,
+                                                 self.details.token):
                     r = self._do_request_on(sp, p)
                     if 200 <= r.status_code < 300:
                         responses[(sp, p)] = r
