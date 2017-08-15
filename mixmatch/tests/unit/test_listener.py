@@ -23,7 +23,7 @@ from mixmatch.listener import get_endpoints_for_sp
 class TestListener(testcase.TestCase):
     @mock.patch('mixmatch.listener.insert')
     def test_create_volume(self, insert):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('volume', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
@@ -48,7 +48,7 @@ class TestListener(testcase.TestCase):
     @mock.patch('mixmatch.listener.ResourceMapping.find', return_value=35)
     @mock.patch('mixmatch.listener.delete')
     def test_delete_volume(self, delete, find):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('volume', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
@@ -69,7 +69,7 @@ class TestListener(testcase.TestCase):
 
     @mock.patch('mixmatch.listener.insert')
     def test_create_snapshot(self, insert):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('image', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
@@ -94,7 +94,7 @@ class TestListener(testcase.TestCase):
     @mock.patch('mixmatch.listener.ResourceMapping.find', return_value=35)
     @mock.patch('mixmatch.listener.delete')
     def test_delete_snapshot(self, delete, find):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('image', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
@@ -115,7 +115,7 @@ class TestListener(testcase.TestCase):
 
     @mock.patch('mixmatch.listener.insert')
     def test_create_image(self, insert):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('image', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
@@ -140,7 +140,7 @@ class TestListener(testcase.TestCase):
     @mock.patch('mixmatch.listener.ResourceMapping.find', return_value=35)
     @mock.patch('mixmatch.listener.delete')
     def test_delete_image(self, delete, find):
-        endpoints = get_endpoints_for_sp('default')
+        endpoints = get_endpoints_for_sp('image', 'default')
         dispatcher = notify_dispatcher.NotificationDispatcher(
             endpoints, serializer=None)
         MESSAGE = {
