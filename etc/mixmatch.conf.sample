@@ -20,7 +20,35 @@ image_api_versions = v2.3, v2.2, v2.1, v2.0, v1.1, v1.0
 # Available volume API versions
 volume_api_versions = v3.0, v2.0, v1.0
 
-debug=False
+#------------------------------------------------------------------------------
+
+[log_volume]
+
+log_dir='/home/ubuntu/multiple_loggers/mixmatch'
+
+log_file='volume.log'
+
+debug=True
+
+#------------------------------------------------------------------------------
+
+[log_image]
+
+log_dir='/home/ubuntu/multiple_loggers/mixmatch'
+
+log_file='image.log'
+
+debug=True
+
+#------------------------------------------------------------------------------
+
+[log_network]
+
+log_dir='/home/ubuntu/multiple_loggers/mixmatch'
+
+log_file='network.log'
+
+debug=True
 
 #------------------------------------------------------------------------------
 

@@ -28,11 +28,12 @@ class VolumeCreateEndpoint(object):
         publisher_id='^volume.*',
         event_type='^volume.create.start$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating volume mapping %s -> %s at %s' % (
+        LOG(self.service).info('Creating volume mapping %s -> %s at %s' % (
             payload['volume_id'],
             payload['tenant_id'],
             self.sp_name)
@@ -44,14 +45,15 @@ class VolumeCreateEndpoint(object):
 
 
 class VolumeDeleteEndpoint(object):
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
     filter_rule = oslo_messaging.NotificationFilter(
         publisher_id='^volume.*',
         event_type='^volume.delete.end$')
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting volume mapping %s -> %s at %s' % (
+        LOG(self.service).info('Deleting volume mapping %s -> %s at %s' % (
             payload['volume_id'],
             payload['tenant_id'],
             self.sp_name)
@@ -64,11 +66,12 @@ class VolumeTransferEndpoint(object):
         publisher_id='^volume.*',
         event_type='^volume.transfer.accept.end$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Moving volume mapping %s -> %s at %s' % (
+        LOG(self.service).info('Moving volume mapping %s -> %s at %s' % (
             payload['volume_id'],
             payload['tenant_id'],
             self.sp_name)
@@ -84,11 +87,12 @@ class SnapshotCreateEndpoint(object):
         publisher_id='^snapshot.*',
         event_type='^snapshot.create.start$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating snapshot mapping %s -> %s at %s' % (
+        LOG(self.service).info('Creating snapshot mapping %s -> %s at %s' % (
             payload['snapshot_id'],
             payload['tenant_id'],
             self.sp_name)
@@ -104,11 +108,12 @@ class SnapshotDeleteEndpoint(object):
         publisher_id='^snapshot.*',
         event_type='^snapshot.delete.end$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting snapshot mapping %s -> %s at %s' % (
+        LOG(self.service).info('Deleting snapshot mapping %s -> %s at %s' % (
             payload['snapshot_id'],
             payload['tenant_id'],
             self.sp_name)
@@ -121,11 +126,12 @@ class ImageCreateEndpoint(object):
         publisher_id='^image.*',
         event_type='^image.create$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Creating image mapping %s -> %s at %s' % (
+        LOG(self.service).info('Creating image mapping %s -> %s at %s' % (
             payload['id'],
             payload['owner'],
             self.sp_name)
@@ -141,11 +147,12 @@ class ImageDeleteEndpoint(object):
         publisher_id='^image.*',
         event_type='^image.delete$')
 
-    def __init__(self, sp_name):
+    def __init__(self, service, sp_name):
+        self.service = service
         self.sp_name = sp_name
 
     def info(self, ctxt, publisher_id, event_type, payload, metadata):
-        LOG.info('Deleting image mapping %s -> %s at %s' % (
+        LOG(self.service).info('Deleting image mapping %s -> %s at %s' % (
             payload['id'],
             payload['owner'],
             self.sp_name)
@@ -153,15 +160,15 @@ class ImageDeleteEndpoint(object):
         delete(ResourceMapping.find("images", payload['id']))
 
 
-def get_endpoints_for_sp(sp_name):
+def get_endpoints_for_sp(service, sp_name):
     return [
-        VolumeCreateEndpoint(sp_name),
-        VolumeDeleteEndpoint(sp_name),
-        VolumeTransferEndpoint(sp_name),
-        SnapshotCreateEndpoint(sp_name),
-        SnapshotDeleteEndpoint(sp_name),
-        ImageCreateEndpoint(sp_name),
-        ImageDeleteEndpoint(sp_name)
+        VolumeCreateEndpoint(service, sp_name),
+        VolumeDeleteEndpoint(service, sp_name),
+        VolumeTransferEndpoint(service, sp_name),
+        SnapshotCreateEndpoint(service, sp_name),
+        SnapshotDeleteEndpoint(service, sp_name),
+        ImageCreateEndpoint(service, sp_name),
+        ImageDeleteEndpoint(service, sp_name)
     ]
 
 
