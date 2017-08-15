@@ -22,7 +22,9 @@ from mixmatch.config import cache
 from mixmatch.config import default
 from mixmatch.config import service_providers
 
-LOG = log.getLogger('root')
+LOG_image = log.getLogger('image')
+LOG_volume = log.getLogger('volume')
+LOG_network = log.getLogger('network')
 CONF = cfg.CONF
 
 # Note(knikolla): Configuration modules are registered in the list below.
@@ -81,7 +83,16 @@ def post_config():
     log.setup(CONF, 'demo')
 
 
-def configure():
+def LOG(service):
+    if service == 'image':
+        return LOG_image
+    elif service == 'volume':
+        return LOG_volume
+    elif service == 'network':
+        return LOG_network
+
+
+def configure(service=None):
     load_from_file()
     post_config()
 
