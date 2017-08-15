@@ -24,7 +24,7 @@ from mixmatch.config import LOG, CONF, service_providers
 from mixmatch.session import app
 from mixmatch.session import chunked_reader
 from mixmatch.session import request
-from mixmatch import auth
+from mixmatch.auth import Authentication
 from mixmatch import extend
 from mixmatch import model
 from mixmatch import services
@@ -100,6 +100,8 @@ class RequestHandler(object):
 
     def __init__(self, method, path, headers):
         self.details = RequestDetails(method, path, headers)
+        self.log = LOG(self.details.service)
+        self.auth = Authentication(self.details.service)
         self.extensions = extend.get_matched_extensions(self.details)
         self._set_strip_details(self.details)
         self.enabled_sps = filter(
@@ -130,7 +132,8 @@ class RequestHandler(object):
                 resource_type=self.details.action[0],
                 resource_id=self.details.resource_id)
 
-        LOG.debug('Local Token: %s ' % self.details.token)
+        self.log.debug('Local Token: %s '
+                       % self.details.token)
 
         if 'MM-SERVICE-PROVIDER' in self.details.headers:
             # The user wants a specific service provider, use that SP.
@@ -142,7 +145,7 @@ class RequestHandler(object):
             if self.service_provider not in self.enabled_sps:
                 abort(400)
             if not self.project_id and self.service_provider != 'default':
-                self.project_id = auth.get_projects_at_sp(
+                self.project_id = self.auth.get_projects_at_sp(
                     self.service_provider,
                     self.details.token
                 )[0]
@@ -155,21 +158,22 @@ class RequestHandler(object):
         else:
             self._forward = self._forward
 
-        LOG.info(format_for_log(title="Request to proxy",
-                                method=self.details.method,
-                                url=self.details.path,
-                                headers=dict(self.details.headers)))
+        self.log.info(format_for_log(
+            title="Request to proxy",
+            method=self.details.method,
+            url=self.details.path,
+            headers=dict(self.details.headers)))
 
     def _do_request_on(self, sp, project_id=None):
         headers = self._prepare_headers(self.details.headers)
 
         if self.details.token:
             if sp == 'default':
-                auth_session = auth.get_local_auth(self.details.token)
+                auth_session = self.auth.get_local_auth(self.details.token)
             else:
-                auth_session = auth.get_sp_auth(sp,
-                                                self.details.token,
-                                                project_id)
+                auth_session = self.auth.get_sp_auth(sp,
+                                                     self.details.token,
+                                                     project_id)
             headers['X-AUTH-TOKEN'] = auth_session.get_token()
             project_id = auth_session.get_project_id()
         else:
@@ -196,13 +200,12 @@ class RequestHandler(object):
             resp = self.session.request(data=request.data,
                                         stream=self.stream,
                                         **request_kwargs)
-        LOG.info(format_for_log(title='Request from proxy',
-                                method=self.details.method,
-                                url=url,
-                                headers=headers))
-        LOG.info(format_for_log(title='Response to proxy',
-                                status_code=resp.status_code,
-                                headers=resp.headers))
+        self.log.info(format_for_log(
+            title='Request from proxy', method=self.details.method,
+            url=url, headers=headers))
+        self.log.info(format_for_log(
+            title='Response to proxy', status_code=resp.status_code,
+            headers=resp.headers))
         return resp
 
     def _finalize(self, response):
@@ -217,9 +220,10 @@ class RequestHandler(object):
             response.status_code,
             headers=self._prepare_headers(response.headers)
         )
-        LOG.info(format_for_log(title='Response from proxy',
-                                status_code=final_response.status_code,
-                                headers=dict(final_response.headers)))
+        self.log.info(format_for_log(
+            title='Response from proxy',
+            status_code=final_response.status_code,
+            headers=dict(final_response.headers)))
         return final_response
 
     def _local_forward(self):
@@ -246,7 +250,8 @@ class RequestHandler(object):
                 else:
                     errors[r.status_code].append(r)
             else:
-                for p in auth.get_projects_at_sp(sp, self.details.token):
+                for p in self.auth.get_projects_at_sp(sp,
+                                                      self.details.token):
                     r = self._do_request_on(sp, p)
                     if 200 <= r.status_code < 300:
                         responses[(sp, p)] = r
