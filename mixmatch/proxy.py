@@ -20,7 +20,7 @@ import flask
 from flask import abort
 
 from mixmatch import config
-from mixmatch.config import LOG, CONF, service_providers
+from mixmatch.config import LOG, CONF, service_providers, set_log_file
 from mixmatch.session import app
 from mixmatch.session import chunked_reader
 from mixmatch.session import request
@@ -161,6 +161,7 @@ class RequestHandler(object):
                                 headers=dict(self.details.headers)))
 
     def _do_request_on(self, sp, project_id=None):
+        config.configure(self.details.service)
         headers = self._prepare_headers(self.details.headers)
 
         if self.details.token:
