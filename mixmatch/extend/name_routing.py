@@ -32,18 +32,18 @@ class NameRouting(base.Extension):
         return 'MM-SERVICE-PROVIDER' in headers
 
     def handle_request(self, request):
-        if self._is_targeted(request['headers']):
+        if self._is_targeted(request.headers):
             return
 
         body = jsonutils.loads(mm_request.data)
-        if request['service'] == 'image':
-            if request['version'] == 'v1':
-                name = request['headers'].get('X-IMAGE-META-NAME', '')
+        if request.service == 'image':
+            if request.version == 'v1':
+                name = request.headers.get('X-IMAGE-META-NAME', '')
             else:
                 name = body.get('name', '')
-        elif request['service'] == 'volume':
+        elif request.service == 'volume':
             name = body['volume'].get('name', '')
 
         name = name.split('@')
         if len(name) == 2:
-            request['headers']['MM-SERVICE-PROVIDER'] = name[1]
+            request.headers['MM-SERVICE-PROVIDER'] = name[1]

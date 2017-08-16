@@ -34,9 +34,10 @@ def load_extensions():
 def get_matched_extensions(request):
     """Return list of matched extensions for request
 
-    :type request: Dict[]
+    :type request: mixmatch.proxy.RequestDetails
     :rtype: List[mixmatch.extend.base.Extension]
     """
+
     def _match(e):
         return e.obj if e.obj.matches(request) else None
 
