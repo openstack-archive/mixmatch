@@ -67,6 +67,8 @@ function configure_mixmatch {
     iniset $GLANCE_CONF oslo_messaging_notifications driver messaging
     iniset $CINDER_CONF oslo_messaging_notifications topics notifications
 
+    mixmatch-manage db_sync
+
     sudo cp $MIXMATCH_DIR/httpd/mixmatch-uwsgi.conf $(apache_site_config_for mixmatch)
     enable_apache_site mixmatch
     restart_apache_server
