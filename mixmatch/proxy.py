@@ -374,7 +374,6 @@ def proxy(path):
 
 def main():
     config.configure()
-    model.create_tables()
     extend.load_extensions()
 
 
