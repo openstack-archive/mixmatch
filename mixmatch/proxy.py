@@ -94,6 +94,10 @@ class RequestDetails(object):
         self.token = headers.get('X-AUTH-TOKEN', None)
         self.headers = dict(headers)
         self.path = orig_path
+        self.args = dict(request.args)
+        # NOTE(jfreud): if chunked transfer, body must be accessed through
+        # utilities found in mixmatch.session
+        self.body = request.data
 
 
 class RequestHandler(object):
@@ -187,13 +191,13 @@ class RequestHandler(object):
             'method': self.details.method,
             'url': url,
             'headers': headers,
-            'params': self._prepare_args(request.args)
+            'params': self._prepare_args(self.details.args)
         }
         if self.chunked:
             resp = self.session.request(data=chunked_reader(),
                                         **request_kwargs)
         else:
-            resp = self.session.request(data=request.data,
+            resp = self.session.request(data=self.details.body,
                                         stream=self.stream,
                                         **request_kwargs)
         LOG.info(format_for_log(title='Request from proxy',
@@ -265,7 +269,7 @@ class RequestHandler(object):
                                    self.details.action[0],
                                    self.details.service,
                                    version=self.details.version,
-                                   params=dict(request.args),
+                                   params=self.details.args,
                                    path=request.base_url,
                                    strip_details=self.strip_details),
                 200,
@@ -304,13 +308,12 @@ class RequestHandler(object):
         return headers
 
     @staticmethod
-    def _prepare_args(user_args):
+    def _prepare_args(args):
         """Prepare the GET arguments by removing the limit and marker.
 
         This is because the id of the marker will only be present in one of
         the service providers.
         """
-        args = dict(user_args)
         if CONF.aggregation:
             args.pop('limit', None)
             args.pop('marker', None)

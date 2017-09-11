@@ -13,7 +13,6 @@
 #   under the License.
 
 from mixmatch.extend import base
-from mixmatch.session import request as mm_request
 
 from oslo_serialization import jsonutils
 
@@ -35,7 +34,7 @@ class NameRouting(base.Extension):
         if self._is_targeted(request.headers):
             return
 
-        body = jsonutils.loads(mm_request.data)
+        body = jsonutils.loads(request.body)
         if request.service == 'image':
             if request.version == 'v1':
                 name = request.headers.get('X-IMAGE-META-NAME', '')
