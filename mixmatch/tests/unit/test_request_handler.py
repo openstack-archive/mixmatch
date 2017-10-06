@@ -31,30 +31,28 @@ class TestRequestHandler(BaseTest):
 
     def test_prepare_headers(self):
         user_headers = {
-            'x-auth-token': 'auth token',
-            'x-service-token': 'service token',
             'X-AUTH-TOKEN': 'AUTH TOKEN',
             'X-SERVICE-TOKEN': 'SERVICE TOKEN',
 
-            'x-tra cheese': 'extra cheese',
-            'x-goth-token': 'x-auth-token',
+            'X-TRA CHEESE': 'extra cheese',
+            'X-GOTH-TOKEN': 'x-auth-token',
             'X-MEN': 'X MEN',
 
-            'y-men': 'y men',
-            'extra cheese': 'x-tra cheese',
-            'y-auth-token': 'x-auth-token',
-            'xauth-token': 'x-auth-token',
-            'start-x': 'startx',
+            'Y-MEN': 'y men',
+            'EXTRA CHEESE': 'x-tra cheese',
+            'Y-AUTH-TOKEN': 'x-auth-token',
+            'XAUTH-TOKEN': 'x-auth-token',
+            'START-X': 'startx',
 
-            'OpenStack-API-Version': 'volume 3.0'
+            'OPENSTACK-API-VERSION': 'volume 3.0'
         }
         expected_headers = {
-            'x-tra cheese': 'extra cheese',
-            'x-goth-token': 'x-auth-token',
+            'X-TRA CHEESE': 'extra cheese',
+            'X-GOTH-TOKEN': 'x-auth-token',
             'X-MEN': 'X MEN',
-            'Accept': '',
-            'Content-Type': '',
-            'OpenStack-API-Version': 'volume 3.0'
+            'ACCEPT': '',
+            'CONTENT-TYPE': '',
+            'OPENSTACK-API-VERSION': 'volume 3.0'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertEqual(expected_headers, headers)
@@ -62,11 +60,9 @@ class TestRequestHandler(BaseTest):
     def test_strip_tokens_from_logs(self):
         token = uuid.uuid4()
         headers = {
-            'x-auth-token': token,
             'X-AUTH-TOKEN': token,
-            'not a token': 'not a token',
-            'X-Service-Token': token,
-            'x-service-token': token
+            'NOT A TOKEN': 'not a token',
+            'X-SERVICE-TOKEN': token,
         }
         stripped_headers = proxy.strip_tokens_from_headers(headers)
         self.assertFalse(token in stripped_headers.values())
