@@ -29,27 +29,56 @@ LOG = config.LOG
 MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
+class _TargetedSession(session.Session):
+    def __init__(self, sp, *args, **kwargs):
+        super(_TargetedSession, self).__init__(*args, **kwargs)
+        self.sp = sp
+
+    def get_auth_headers(self, auth=None, **kwargs):
+        headers = super(_TargetedSession, self).get_auth_headers()
+        headers["MM-SERVICE-PROVIDER"] = self.sp
+        return headers
+
+
 @MEMOIZE_SESSION
-def get_client():
-    """Return a Keystone client capable of validating tokens."""
-    LOG.info("Getting Admin Client")
-    service_auth = identity.Password(
-        auth_url=CONF.auth.auth_url,
-        username=CONF.auth.username,
-        password=CONF.auth.password,
-        project_name=CONF.auth.project_name,
-        project_domain_id=CONF.auth.project_domain_id,
-        user_domain_id=CONF.auth.user_domain_id
-    )
-    local_session = session.Session(auth=service_auth)
-    return v3.client.Client(session=local_session)
+def get_admin_session(sp=None):
+    """Return a Keystone session using admin service credentials."""
+    LOG.info("Getting Admin Session")
+    if sp == "cloud2":
+        service_auth = identity.Password(
+            auth_url="http://10.19.97.9/identity",
+            username="admin",
+            password="nomoresecret",
+            project_name="admin",
+            project_domain_id="default",
+            user_domain_id="default"
+        )
+        return _TargetedSession(sp, auth=service_auth)
+    else:
+        service_auth = identity.Password(
+            auth_url=CONF.auth.auth_url,
+            username=CONF.auth.username,
+            password=CONF.auth.password,
+            project_name=CONF.auth.project_name,
+            project_domain_id=CONF.auth.project_domain_id,
+            user_domain_id=CONF.auth.user_domain_id
+        )
+        return session.Session(auth=service_auth)
+
+
+@MEMOIZE_SESSION
+def get_client(session):
+    """Return a client object given a session object."""
+    LOG.debug("Getting client for %s" % session)
+    return v3.client.Client(session=session)
 
 
 @MEMOIZE_SESSION
 def get_local_auth(user_token):
     """Return a Keystone session for the local cluster."""
     LOG.debug("Getting session for %s" % user_token)
-    client = get_client()
+    admin_session = get_admin_session()
+    client = get_client(admin_session)
     token = v3.tokens.TokenManager(client)
 
     try:

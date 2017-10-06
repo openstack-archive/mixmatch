@@ -18,6 +18,7 @@ import requests
 from urllib3.util import retry
 import flask
 from flask import abort
+import functools
 
 from mixmatch import config
 from mixmatch.config import LOG, CONF, service_providers
@@ -113,8 +114,12 @@ class RequestHandler(object):
             CONF.service_providers
         )
 
+        # TODO(jfreud): more sophisticated/ordered invocation of extensions
         for extension in self.extensions:
-            extension.handle_request(self.details)
+            out = extension.handle_request(self.details)
+            if out is not None:
+                self._forward = functools.partial(self._finalize, out)
+                return
 
         if not self.details.version:
             if CONF.aggregation:
