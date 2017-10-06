@@ -49,7 +49,7 @@ def safe_get(a, i, default=None):
     """Return the i-th element if it exists, or default."""
     try:
         return a[i]
-    except IndexError:
+    except (IndexError, KeyError):
         return default
 
 

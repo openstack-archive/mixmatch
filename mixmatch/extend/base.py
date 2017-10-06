@@ -37,3 +37,12 @@ class Extension(object):
 
     def handle_response(self, response):
         pass
+
+
+class FinalResponse(object):
+    stream = False
+
+    def __init__(self, text, code, headers):
+        self.text = text
+        self.code = code
+        self.headers = headers
