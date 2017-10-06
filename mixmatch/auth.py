@@ -29,8 +29,19 @@ LOG = config.LOG
 MEMOIZE_SESSION = config.auth.MEMOIZE
 
 
+class _TargetedSession(session.Session):
+    def __init__(self, sp, *args, **kwargs):
+        super(_TargetedSession, self).__init__(*args, **kwargs)
+        self.sp = sp
+
+    def get_auth_headers(self, auth=None, **kwargs):
+        headers = super(_TargetedSession, self).get_auth_headers()
+        headers["MM-SERVICE-PROVIDER"] = self.sp
+        return headers
+
+
 @MEMOIZE_SESSION
-def get_client():
+def get_client(sp=None):
     """Return a Keystone client capable of validating tokens."""
     LOG.info("Getting Admin Client")
     service_auth = identity.Password(
@@ -41,7 +52,10 @@ def get_client():
         project_domain_id=CONF.auth.project_domain_id,
         user_domain_id=CONF.auth.user_domain_id
     )
-    local_session = session.Session(auth=service_auth)
+    if sp is None:
+        local_session = session.Session(auth=service_auth)
+    else:
+        local_session = _TargetedSession(sp, auth=service_auth)
     return v3.client.Client(session=local_session)
 
 
