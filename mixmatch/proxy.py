@@ -57,7 +57,7 @@ def is_json_response(response):
 
 
 def is_token_header_key(string):
-    return string.lower() in ['x-auth-token', 'x-service-token']
+    return string in ['X-AUTH-TOKEN', 'X-SERVICE-TOKEN']
 
 
 def strip_tokens_from_headers(headers):
@@ -92,7 +92,7 @@ class RequestDetails(object):
         self.resource_type = utils.safe_pop(local_path)  # this
         self.resource_id = utils.pop_if_uuid(local_path)  # and this
         self.token = headers.get('X-AUTH-TOKEN', None)
-        self.headers = dict(headers)
+        self.headers = {k.upper(): v for k, v in dict(headers).items()}
         self.path = orig_path
         self.args = dict(request.args)
         # NOTE(jfreud): if chunked transfer, body must be accessed through
@@ -219,7 +219,7 @@ class RequestHandler(object):
         final_response = flask.Response(
             text,
             response.status_code,
-            headers=self._prepare_headers(response.headers)
+            headers=self._prepare_headers(response.headers, fix_case=True)
         )
         LOG.info(format_for_log(title='Response from proxy',
                                 status_code=final_response.status_code,
@@ -295,15 +295,20 @@ class RequestHandler(object):
         return self._forward()
 
     @staticmethod
-    def _prepare_headers(user_headers):
+    def _prepare_headers(user_headers, fix_case=False):
+        # NOTE(jfreud): because this function may be called with either request
+        # headers or response headers, sometimes the header keys may not be
+        # already capitalized
+        if fix_case:
+            user_headers = {k.upper(): v for k, v in
+                            dict(user_headers).items()}
         headers = dict()
-        headers['Accept'] = user_headers.get('Accept', '')
-        headers['Content-Type'] = user_headers.get('Content-Type', '')
-        accepted_headers = ['openstack-api-version']
+        headers['ACCEPT'] = user_headers.get('ACCEPT', '')
+        headers['CONTENT-TYPE'] = user_headers.get('CONTENT-TYPE', '')
+        accepted_headers = ['OPENSTACK-API-VERSION']
         for key, value in user_headers.items():
-            k = key.lower()
-            if ((k.startswith('x-') and not is_token_header_key(key)) or
-                    k in accepted_headers):
+            if ((key.startswith('X-') and not is_token_header_key(key)) or
+                    key in accepted_headers):
                 headers[key] = value
         return headers
 
@@ -321,7 +326,7 @@ class RequestHandler(object):
 
     @utils.CachedProperty
     def chunked(self):
-        encoding = self.details.headers.get('Transfer-Encoding', '')
+        encoding = self.details.headers.get('TRANSFER-ENCODING', '')
         return encoding.lower() == 'chunked'
 
     @utils.CachedProperty
