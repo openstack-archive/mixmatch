@@ -19,6 +19,7 @@ Operators Guide
     installation
     identity
     volumes
+    network-fed
 
 * `Release Notes <https://mixmatch.readthedocs.org/projects/releasenotes>`_
 
