@@ -1,0 +1,23 @@
+- project:
+    name: openstack/mixmatch
+    templates:
+      - merge-check
+      - check-requirements
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - publish-to-pypi
+    check:
+      jobs:
+        - mixmatch-dsvm-functional:
+            voting: false
+
+- job:
+    name: mixmatch-dsvm-functional
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/mixmatch-dsvm-functional/run
+    post-run: playbooks/legacy/mixmatch-dsvm-functional/post
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/mixmatch
+
