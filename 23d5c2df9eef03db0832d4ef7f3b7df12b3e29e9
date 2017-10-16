@@ -1,0 +1,8 @@
+Code-Review+2: Kristi Nikolla <knikolla@bu.edu>
+Workflow+1: Kristi Nikolla <knikolla@bu.edu>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Mon, 16 Oct 2017 20:00:10 +0000
+Reviewed-on: https://review.openstack.org/511756
+Project: openstack/mixmatch
+Branch: refs/heads/master
