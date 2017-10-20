@@ -98,6 +98,7 @@ class RequestDetails(object):
         # NOTE(jfreud): if chunked transfer, body must be accessed through
         # utilities found in mixmatch.session
         self.body = request.data
+        self.environ = request.environ
 
 
 class RequestHandler(object):
