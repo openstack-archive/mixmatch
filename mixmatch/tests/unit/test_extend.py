@@ -1,4 +1,4 @@
-#   Copyright 2016 Massachusetts Open Cloud
+#   Copyright 2017 Massachusetts Open Cloud
 #
 #   Licensed under the Apache License, Version 2.0 (the "License"); you may
 #   not use this file except in compliance with the License. You may obtain
@@ -11,31 +11,60 @@
 #   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #   License for the specific language governing permissions and limitations
 #   under the License.
+
 from testtools import testcase
-from mixmatch.extend.base import Route
+
+from mixmatch.extend import base
+
+
+class FakeRequest:
+    def __init__(self, path, method):
+        self.path = path
+        self.full_path = path
+        self.environ = {'REQUEST_METHOD': method}
 
 
 class TestRoutes(testcase.TestCase):
     def setUp(self):
         super(TestRoutes, self).setUp()
+        self.ext = base.Extension()
 
-    def test_match_action_True(self):
-        testRouteT = Route(None, None, None, [123, 'test'])
-        self.assertEqual(testRouteT._match_action([123, 'test']), True)
+    def test_no_routes_matches(self):
+        self.ext.ROUTES = []
+        self.assertTrue(self.ext.matches(FakeRequest('service/version', 'GET')))
 
-    def test_match_action_False(self):
-        testRouteF = Route(None, None, None, [123, 'test'])
-        self.assertEqual(testRouteF._match_action([12, 'test']), False)
+    def test_simple_routes(self):
+        self.ext.ROUTES = [('service', [])]
+        self.assertTrue(self.ext.matches(FakeRequest('service', 'GET')))
+        self.assertTrue(self.ext.matches(FakeRequest('service/', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('not-service', 'GET')))
 
-    def test_match_action_Different_Length(self):
-        routeLen3 = Route(None, None, None, [123, 'test', None])
-        routeLen2 = Route(None, None, None, [123, 'test'])
-        self.assertEqual(routeLen3._match_action([123, 'test']), False)
-        self.assertEqual(routeLen2._match_action([123, 'test', None]), False)
+        self.ext.ROUTES = [('service', []), ('not-service', [])]
+        self.assertTrue(self.ext.matches(FakeRequest('service', 'GET')))
+        self.assertTrue(self.ext.matches(FakeRequest('not-service', 'GET')))
 
-    def test_match_action_None(self):
-        routeNone = Route(None, None, None, None)
-        testRoute = Route(None, None, None, [123])
-        self.assertEqual(routeNone._match_action([123]), True)
-        self.assertEqual(testRoute._match_action(None), False)
-        self.assertEqual(routeNone._match_action(None), True)
+        self.ext.ROUTES = [('service', ['GET'])]
+        self.assertTrue(self.ext.matches(FakeRequest('service', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service', 'POST')))
+
+        self.ext.ROUTES = [('service', ['GET', 'POST'])]
+        self.assertTrue(self.ext.matches(FakeRequest('service', 'GET')))
+        self.assertTrue(self.ext.matches(FakeRequest('service', 'POST')))
+
+    def test_wildcard_routes(self):
+        self.ext.ROUTES = [('service/{version}', [])]
+        self.assertTrue(self.ext.matches(FakeRequest('service/v1', 'GET')))
+        self.assertTrue(self.ext.matches(FakeRequest('service/v2', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service/', 'GET')))
+
+        self.ext.ROUTES = [('service/{version}/resource', [])]
+        self.assertTrue(self.ext.matches(FakeRequest('service/v1/resource', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service/v1', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service/v1/', 'GET')))
+
+        self.ext.ROUTES = [('service/{version}/resource/{resource_id}', [])]
+        self.assertTrue(self.ext.matches(FakeRequest('service/v1/resource/123', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service/v1/resource/', 'GET')))
+        self.assertFalse(self.ext.matches(FakeRequest('service/v1/resource', 'GET')))
+
