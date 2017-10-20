@@ -12,61 +12,33 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+from routes import mapper
+
 
 class Extension(object):
     ROUTES = []
     OPTS = []
 
     def matches(self, request):
-        for route in self.ROUTES:
-            if route.match(request):
-                return True
-        return False
+        # Note(knikolla): If the extension doesn't define any routes
+        # always match and let the extension handle it.
+        if not self.ROUTES:
+            return True
+
+        route_map = mapper.Mapper()
+        for (path, methods) in self.ROUTES:
+            conditions = None if not methods else {'method': methods}
+
+            route_map.connect(path.strip('/'),
+                              action=self,
+                              conditions=conditions)
+
+        match = route_map.match(url=request.path.strip('/'),
+                                environ=request.environ)
+        return True if match else False
 
     def handle_request(self, request):
         pass
 
     def handle_response(self, response):
         pass
-
-
-class Route(object):
-    def __init__(self, service=None, version=None, method=None, action=None):
-        self.service = service
-        self.version = version
-        self.method = method
-        self.action = action
-
-    def _match_service(self, service):
-        if self.service:
-            return self.service == service
-        return True
-
-    def _match_version(self, version):
-        if self.version:
-            return self.version == version
-        return True
-
-    def _match_method(self, method):
-        if self.method:
-            return self.method == method
-        return True
-
-    def _match_action(self, action):
-        if self.action is None:
-            return True
-        elif action is None:
-            return False
-        elif len(self.action) != len(action):
-            return False
-        else:
-            for i in range(len(self.action)):
-                if self.action[i] != action[i]:
-                    return False
-            return True
-
-    def match(self, request):
-        return (self._match_service(request.service) and
-                self._match_version(request.version) and
-                self._match_method(request.method) and
-                self._match_action(request.action))

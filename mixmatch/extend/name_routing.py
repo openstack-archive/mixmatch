@@ -20,10 +20,8 @@ from oslo_serialization import jsonutils
 class NameRouting(base.Extension):
 
     ROUTES = [
-        base.Route(service='volume', version=None,
-                   action=['volumes'], method='POST'),
-        base.Route(service='image', version=None,
-                   action=['images'], method='POST'),
+        ('/volume/{version}/{project_id}/volumes', ['POST']),
+        ('/image/{version}/images', ['POST'])
     ]
 
     @staticmethod
