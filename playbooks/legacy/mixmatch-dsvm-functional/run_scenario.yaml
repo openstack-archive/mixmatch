@@ -41,7 +41,7 @@
 
           function post_test_hook {
               # Configure and run functional tests
-              $BASE/new/mixmatch/mixmatch/tests/functional/hooks/dsvm_hook.sh
+              $BASE/new/mixmatch/mixmatch/tests/functional/hooks/dsvm_hook.sh scenario
           }
           export -f post_test_hook
 

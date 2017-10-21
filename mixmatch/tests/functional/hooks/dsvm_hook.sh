@@ -35,8 +35,19 @@ if [ -d .testrepository ]; then
     sudo rm -r .testrepository
 fi
 
+if [ $1 = "scenario" ]; then
+    tests="tempest.scenario"
+elif [ $1 = "candi" ]; then
+    tests="'(^tempest.api.compute|^tempest.api.image)'"
+elif [ $1 = "nandv" ]; then
+    tests="'(^tempest.api.network|^tempest.api.volume)'"
+else
+    exit 1
+fi
+
+
 sudo chown -R $USER:stack $BASE/new/tempest
 sudo chown -R $USER:stack /opt/stack/data/tempest
 
-ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.api.network|^tempest.scenario)' \
-    --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
+ostestr -r $tests \
+    --serial --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
