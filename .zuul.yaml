@@ -3,14 +3,14 @@
     check:
       jobs:
         - mixmatch-dsvm-functional:
-            voting: false
+            voting: true
 
 - job:
     name: mixmatch-dsvm-functional
     parent: legacy-dsvm-base
     run: playbooks/legacy/mixmatch-dsvm-functional/run
     post-run: playbooks/legacy/mixmatch-dsvm-functional/post
-    timeout: 7800
+    timeout: 10800
     required-projects:
       - openstack-infra/devstack-gate
       - openstack/mixmatch

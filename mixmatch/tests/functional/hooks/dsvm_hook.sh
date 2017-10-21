@@ -39,4 +39,4 @@ sudo chown -R $USER:stack $BASE/new/tempest
 sudo chown -R $USER:stack /opt/stack/data/tempest
 
 ostestr -r '(^tempest.api.compute|^tempest.api.image|^tempest.api.volume|^tempest.api.network|^tempest.scenario)' \
-    --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
+    --serial --blacklist-file $BASE/new/mixmatch/mixmatch/tests/functional/tempest_blacklist.txt
