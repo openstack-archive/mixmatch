@@ -2,16 +2,39 @@
     name: openstack/mixmatch
     check:
       jobs:
-        - mixmatch-dsvm-functional:
-            voting: false
+        - mixmatch-dsvm-func-scenario:
+            voting: true
+        - mixmatch-dsvm-func-compute-image:
+            voting: true
+        - mixmatch-dsvm-func-network-volume:
+            voting: true
 
 - job:
-    name: mixmatch-dsvm-functional
+    name: mixmatch-dsvm-func-scenario
     parent: legacy-dsvm-base
-    run: playbooks/legacy/mixmatch-dsvm-functional/run
+    run: playbooks/legacy/mixmatch-dsvm-functional/run_scenario
     post-run: playbooks/legacy/mixmatch-dsvm-functional/post
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
       - openstack/mixmatch
 
+- job:
+    name: mixmatch-dsvm-func-compute-image
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/mixmatch-dsvm-functional/run_compute_and_image
+    post-run: playbooks/legacy/mixmatch-dsvm-functional/post
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/mixmatch
+
+- job:
+    name: mixmatch-dsvm-func-network-volume
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/mixmatch-dsvm-functional/run_network_and_volume
+    post-run: playbooks/legacy/mixmatch-dsvm-functional/post
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/mixmatch
