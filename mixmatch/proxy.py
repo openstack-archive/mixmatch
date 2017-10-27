@@ -40,16 +40,11 @@ def stream_response(response):
 
 def get_service(a):
     """Determine service type based on path."""
-    # NOTE(knikolla): Workaround to fix glance requests that do not
-    # contain image as the first part of the path.
-    if a[0] in ['v1', 'v2']:
-        return 'image'
+    service = a.pop(0)
+    if service in ['image', 'volume', 'network']:
+        return service
     else:
-        service = a.pop(0)
-        if service in ['image', 'volume', 'network']:
-            return service
-        else:
-            abort(404)
+        abort(404)
 
 
 def is_json_response(response):
