@@ -8,8 +8,8 @@
 - job:
     name: mixmatch-dsvm-functional
     parent: legacy-dsvm-base
-    run: playbooks/legacy/mixmatch-dsvm-functional/run
-    post-run: playbooks/legacy/mixmatch-dsvm-functional/post
+    run: playbooks/legacy/mixmatch-dsvm-functional/run.yaml
+    post-run: playbooks/legacy/mixmatch-dsvm-functional/post.yaml
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
