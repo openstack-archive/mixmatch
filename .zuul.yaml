@@ -8,6 +8,9 @@
 - job:
     name: mixmatch-dsvm-functional
     parent: legacy-dsvm-base
+    vars:
+      test_results_dir: "$BASE/new/tempest"
+      tox_envdir: "ostestr"
     run: playbooks/legacy/mixmatch-dsvm-functional/run.yaml
     post-run: playbooks/legacy/mixmatch-dsvm-functional/post.yaml
     timeout: 7800
