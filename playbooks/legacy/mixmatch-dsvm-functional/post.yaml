@@ -1,4 +1,6 @@
 - hosts: primary
+  roles:
+    - process-test-results
   tasks:
 
     - name: Copy files from {{ ansible_user_dir }}/workspace/ on node
