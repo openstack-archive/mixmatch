@@ -28,6 +28,14 @@ register_mixmatch
 sudo systemctl restart devstack@n-*
 sudo systemctl restart devstack@c-*
 
+# Rudimentary API test-thing
+curl $MIXMATCH_URL; echo; echo; echo
+curl $MIXMATCH_URL/proxied; echo; echo; echo
+curl $MIXMATCH_URL/proxied/volume; echo; echo; echo
+curl $MIXMATCH_URL/fedops; echo; echo; echo
+USER_TOKEN=$( openstack token issue -f value -c id 2>/dev/null )
+curl -H "X-Auth-Token: $USER_TOKEN" http://localhost:8000/fedops; echo; echo; echo
+
 # Run tempest API and scenario tests
 cd $BASE/new/tempest
 

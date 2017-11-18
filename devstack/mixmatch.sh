@@ -26,6 +26,7 @@ function configure_mixmatch {
     sudo mkdir -p /etc/mixmatch
     sudo chown $STACK_USER:$STACK_USER /etc/mixmatch
     cp $MIXMATCH_DIR/etc/mixmatch.conf.sample $MIXMATCH_CONF
+    cp $MIXMATCH_DIR/etc/api-paste.ini $MIXMATCH_CONF_DIR
 
     iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
     iniset $MIXMATCH_CONF DEFAULT service_providers default
@@ -37,6 +38,14 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF auth project_name admin
     iniset $MIXMATCH_CONF auth project_domain_id default
     iniset $MIXMATCH_CONF auth password $ADMIN_PASSWORD
+
+    iniset $MIXMATCH_CONF keystone_authtoken auth_plugin password
+    iniset $MIXMATCH_CONF keystone_authtoken auth_url "$KEYSTONE_AUTH_URI/v3"
+    iniset $MIXMATCH_CONF keystone_authtoken project_name admin
+    iniset $MIXMATCH_CONF keystone_authtoken username admin
+    iniset $MIXMATCH_CONF keystone_authtoken password "$ADMIN_PASSWORD"
+    iniset $MIXMATCH_CONF keystone_authtoken user_domain_name "$SERVICE_DOMAIN_NAME"
+    iniset $MIXMATCH_CONF keystone_authtoken project_domain_name "$SERVICE_DOMAIN_NAME"
 
     iniset $MIXMATCH_CONF sp_default sp_name default
     iniset $MIXMATCH_CONF sp_default auth_url "$KEYSTONE_AUTH_URI/v3"
@@ -93,36 +102,36 @@ function register_mixmatch {
         get_or_create_endpoint \
             "image" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/image" \
-            "$MIXMATCH_URL/image" \
-            "$MIXMATCH_URL/image"
+            "$MIXMATCH_URL/proxied/image" \
+            "$MIXMATCH_URL/proxied/image" \
+            "$MIXMATCH_URL/proxied/image"
 
         get_or_create_endpoint \
             "volume" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s"
+            "$MIXMATCH_URL/proxied/volume/v1/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v1/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v1/\$(project_id)s"
 
         get_or_create_endpoint \
             "volumev2" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v2/\$(project_id)s"
+            "$MIXMATCH_URL/proxied/volume/v2/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v2/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v2/\$(project_id)s"
 
         get_or_create_endpoint \
             "volumev3" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v3/\$(project_id)s"
+            "$MIXMATCH_URL/proxied/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/proxied/volume/v3/\$(project_id)s"
 
         get_or_create_endpoint \
             "network" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network" \
-            "$MIXMATCH_URL/network"
+            "$MIXMATCH_URL/proxied/network" \
+            "$MIXMATCH_URL/proxied/network" \
+            "$MIXMATCH_URL/proxied/network"
     fi
 }
