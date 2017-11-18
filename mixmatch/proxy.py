@@ -19,9 +19,9 @@ from urllib3.util import retry
 import flask
 from flask import abort
 
-from mixmatch import config
 from mixmatch.config import LOG, CONF, service_providers
 from mixmatch.session import app
+from mixmatch.session import mm_proxy
 from mixmatch.session import chunked_reader
 from mixmatch.session import request
 from mixmatch import auth
@@ -374,18 +374,12 @@ class RequestHandler(object):
             self.strip_details = False
 
 
-@app.route('/', defaults={'path': ''}, methods=METHODS_ACCEPTED)
-@app.route('/<path:path>', methods=METHODS_ACCEPTED)
+@mm_proxy.route('', defaults={'path': ''}, methods=METHODS_ACCEPTED)
+@mm_proxy.route('/<path:path>', methods=METHODS_ACCEPTED)
 def proxy(path):
     k2k_request = RequestHandler(request.method, path, request.headers)
     return k2k_request.forward()
 
 
-def main():
-    config.configure()
-    extend.load_extensions()
-
-
-if __name__ == "__main__":
-    main()
-    app.run(port=5001, threaded=True)
+def register_routes():
+    app.register_blueprint(mm_proxy, url_prefix="/proxied")
