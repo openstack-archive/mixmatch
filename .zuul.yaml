@@ -4,6 +4,10 @@
         - mixmatch-dsvm-functional:
             voting: false
 
+        - openstack-tox-lower-constraints
+    gate:
+      jobs:
+        - openstack-tox-lower-constraints
 - job:
     name: mixmatch-dsvm-functional
     parent: legacy-dsvm-base
