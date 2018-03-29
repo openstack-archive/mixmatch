@@ -1,18 +1,16 @@
-# Usage example:
-
-# docker build -t mixmatch .
-
-# sudo docker run \
-# --interactive --tty \
-# --volume /etc/mixmatch/mixmatch.conf:/etc/mixmatch/mixmatch.conf \
-# --publish 5001:5001 mixmatch
-
-# Make sure that all localhost/127.0.0.1 references in the config are replaced
-# with the IP of the idp and that it is configured correctly otherwise
-
-FROM python:3-onbuild
-
+# Build:
+#    sudo docker build -t mixmatch .
+# Run the container:
+#    sudo docker run -d -t mixmatch
+FROM ubuntu:16.04
+RUN apt-get update
+RUN apt-get -y install python
+RUN apt-get -y install python-pip
+RUN apt-get -y install git
 RUN pip install uwsgi
-
+WORKDIR /usr/app/src/
+RUN git clone https://github.com/openstack/mixmatch.git
+RUN pip install -r /usr/app/src/mixmatch/requirements.txt
+RUN pip install /usr/app/src/mixmatch
 EXPOSE 5001
-CMD ["bash", "/usr/src/app/run_proxy.sh"]
+CMD /usr/local/bin/uwsgi --ini /usr/app/src/mixmatch/httpd/mixmatch-uwsgi.ini
