@@ -25,7 +25,21 @@ class TestRequestDetails(testcase.TestCase):
                           "Transfer-Encoding": "chunked"}
         with proxy.app.test_request_context():
             rd = proxy.RequestDetails("GET", "image/v2/images", normal_headers)
-        expected = {"MM-SERVICE-PROVIDER": "default",
+        expected = {"MM-PROXY-IP-LIST": 'localhost',
+                    "MM-SERVICE-PROVIDER": "default",
+                    "X-AUTH-TOKEN": "tok",
+                    "TRANSFER-ENCODING": "chunked"}
+        self.assertEqual(expected, rd.headers)
+
+    def test_proxy_list_append(self):
+        normal_headers = {"Mm-Service-Provider": "default",
+                          "X-Auth-Token": "tok",
+                          "Transfer-Encoding": "chunked",
+                          "MM-PROXY-IP-LIST": "1.1.1.1"}
+        with proxy.app.test_request_context():
+            rd = proxy.RequestDetails("GET", "image/v2/images", normal_headers)
+        expected = {"MM-PROXY-IP-LIST": "1.1.1.1,localhost",
+                    "MM-SERVICE-PROVIDER": "default",
                     "X-AUTH-TOKEN": "tok",
                     "TRANSFER-ENCODING": "chunked"}
         self.assertEqual(expected, rd.headers)

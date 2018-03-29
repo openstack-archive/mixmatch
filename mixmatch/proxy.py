@@ -29,6 +29,7 @@ from mixmatch import extend
 from mixmatch import model
 from mixmatch import services
 from mixmatch import utils
+from urlparse import urlparse, urlunparse
 
 METHODS_ACCEPTED = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH']
 RESOURCES_AGGREGATE = ['images', 'volumes', 'snapshots']
@@ -94,6 +95,19 @@ class RequestDetails(object):
         # utilities found in mixmatch.session
         self.body = request.data
         self.environ = request.environ
+
+        # NOTE(lohithkn): get the ip address of this proxy
+        # check if there is a better way of doing this?
+        self.proxy_ip = utils.proxy_ip(CONF.auth.auth_url)
+
+        mm_proxy_list = self.headers.get('MM-PROXY-IP-LIST', None)
+        if mm_proxy_list is not None:
+            mm_proxy_list = mm_proxy_list + ',' + self.proxy_ip
+        else:
+            mm_proxy_list = self.proxy_ip
+
+        self.headers['MM-PROXY-IP-LIST'] = mm_proxy_list
+        self.mm_proxy_list = [x for x in mm_proxy_list.split(",")]
 
 
 class RequestHandler(object):
@@ -245,7 +259,7 @@ class RequestHandler(object):
                         return self._finalize(r)
                 else:
                     errors[r.status_code].append(r)
-            else:
+            elif self.not_a_proxy(sp):
                 for p in auth.get_projects_at_sp(sp, self.details.token):
                     r = self._do_request_on(sp, p)
                     if 200 <= r.status_code < 300:
@@ -284,24 +298,39 @@ class RequestHandler(object):
         return flask.Response("Something strange happened.\n", 500)
 
     def _list_api_versions(self):
+        proxy_url = self.replace_netloc(request.base_url, self.details.proxy_ip)
         return services.list_api_versions(self.details.service,
-                                          request.base_url)
+                                          proxy_url)
 
     def forward(self):
         return self._forward()
+
+    def not_a_proxy(self, sp):
+        msgbus = service_providers.get(CONF, sp).messagebus
+        return (not msgbus) or (msgbus.split('@')[1] not in self.details.mm_proxy_list)
+
+    @staticmethod
+    def replace_netloc(url, proxy_ip):
+        parsed = urlparse(url)
+        parsed_list = list(parsed[:])
+        parsed_list[1] = proxy_ip
+        return urlunparse(parsed_list)
 
     @staticmethod
     def _prepare_headers(user_headers, fix_case=False):
         # NOTE(jfreud): because this function may be called with either request
         # headers or response headers, sometimes the header keys may not be
         # already capitalized
+        headers = dict()
         if fix_case:
             user_headers = {k.upper(): v for k, v in
                             dict(user_headers).items()}
-        headers = dict()
+            accepted_headers = ['OPENSTACK-API-VERSION']
+        else:
+            accepted_headers = ['OPENSTACK-API-VERSION', 'MM-PROXY-IP-LIST']
+
         headers['ACCEPT'] = user_headers.get('ACCEPT', '')
         headers['CONTENT-TYPE'] = user_headers.get('CONTENT-TYPE', '')
-        accepted_headers = ['OPENSTACK-API-VERSION']
         for key, value in user_headers.items():
             if ((key.startswith('X-') and not is_token_header_key(key)) or
                     key in accepted_headers):

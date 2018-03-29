@@ -55,10 +55,12 @@ class BaseTest(testcase.TestCase):
             aggregation=True)
         self.config_fixture.load_raw_values(
             group='sp_default',
+	    messagebus='rabbit://rabbituser:rabbitpassword@127.0.0.1',
             image_endpoint='http://images.local',
             volume_endpoint='http://volumes.local')
         self.config_fixture.load_raw_values(
             group='sp_remote1',
+	    messagebus='rabbit://rabbituser:rabbitpassword@10.10.10.10',
             image_endpoint='http://images.remote1',
             volume_endpoint='http://volumes.remote1')
         config.post_config()
