@@ -43,7 +43,7 @@ class TestRequestHandler(BaseTest):
             'Y-AUTH-TOKEN': 'x-auth-token',
             'XAUTH-TOKEN': 'x-auth-token',
             'START-X': 'startx',
-
+            'MM-PXOXY-IP-LIST':'1.1.1.1,2.2.2.2',
             'OPENSTACK-API-VERSION': 'volume 3.0'
         }
         expected_headers = {
@@ -52,6 +52,7 @@ class TestRequestHandler(BaseTest):
             'X-MEN': 'X MEN',
             'ACCEPT': '',
             'CONTENT-TYPE': '',
+            'MM-PXOXY-IP-LIST':'1.1.1.1,2.2.2.2',
             'OPENSTACK-API-VERSION': 'volume 3.0'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
@@ -61,14 +62,17 @@ class TestRequestHandler(BaseTest):
         user_headers = {
             'X-Auth-Token': 'AUTH TOKEN',
             'X-Service-Token': 'SERVICE TOKEN',
-            'Openstack-Api-Version': 'volume 3.0'
+            'Openstack-Api-Version': 'volume 3.0',
+            'MM-PXOXY-IP-LIST':'1.1.1.1,2.2.2.2'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertTrue('OPENSTACK-API-VERSION' not in headers.keys() and
                         'Openstack-Api-Version' not in headers.keys())
+        self.assertTrue('MM-PXOXY-IP-LIST' in headers.keys())
         headers = proxy.RequestHandler._prepare_headers(user_headers, True)
         self.assertTrue('OPENSTACK-API-VERSION' in headers.keys() and
                         'Openstack-Api-Version' not in headers.keys())
+        self.assertTrue('MM-PXOXY-IP-LIST' not in headers.keys())
 
     def test_strip_tokens_from_logs(self):
         token = uuid.uuid4()
