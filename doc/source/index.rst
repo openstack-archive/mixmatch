@@ -27,7 +27,7 @@ Contributors Guide
 
 ..  toctree::
     :maxdepth: 2
-   
+
    reference
 
 ..  toctree::

@@ -19,7 +19,7 @@ The recommended way is to run the proxy using uwsgi and apache through the
 
     sudo apt install uwsgi uwsgi-plugin-python libapache2-mod-proxy-uwsgi
     uwsgi mixmatch/httpd/mixmatch-uwsgi.ini
-    sudo cp mixmatch/httpd/mixmatach-uwsgi.ini /etc/apache2/sites-available/mixmatch.conf
+    sudo cp mixmatch/httpd/mixmatch-uwsgi.conf /etc/apache2/sites-available/mixmatch.conf
     sudo a2ensite mixmatch
 
 
