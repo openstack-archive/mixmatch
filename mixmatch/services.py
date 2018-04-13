@@ -236,3 +236,37 @@ def _remove_details(volumes, version):
         volumes[i] = {key: volumes[i][key] for key in keys[version]}
 
     return volumes
+
+
+def _prepare_href(href, url_root, version, project_id):
+    uuid = href.split('/')[-1]
+    new_href = '%svolume/%s/%s/volumes/%s' \
+               % (url_root, version, project_id, uuid)
+    return new_href
+
+
+def _localize_href(response, url_root, version, project_id):
+    if type(response) is not dict:
+        return
+    for key, val in response.items():
+        if key == "href":
+            response[key] = _prepare_href(val, url_root, version, project_id)
+        elif type(response[key]) is dict:
+            _localize_href(response[key], url_root, version, project_id)
+        elif type(response[key]) is list:
+            for e in response[key]:
+                _localize_href(e, url_root, version, project_id)
+
+
+def update_href(resp, url_root, service_type, version, project_id):
+    if service_type != "volume":
+        return
+    try:
+        body = jsonutils.loads(resp.text)
+    except ValueError:
+        return
+
+    _localize_href(body, url_root, version, project_id)
+    # NOTE(lohith): resp.content is immutable, in order to update response,
+    # use the private attribute resp._content
+    resp._content = jsonutils.dump_as_bytes(body)
