@@ -108,6 +108,15 @@ class RequestHandler(object):
             CONF.service_providers
         )
 
+        if 'MM-PROXY-LIST' in self.details.headers:
+            proxy_csv = self.details.headers.get('MM-PROXY-LIST', None)
+            if proxy_csv:
+                proxy_list = proxy_csv.split(',')
+                self.enabled_sps = filter(
+                    lambda sp: (sp not in proxy_list), self.enabled_sps)
+
+        self.append_proxy(self.details.headers)
+
         for extension in self.extensions:
             extension.handle_request(self.details)
 
@@ -301,7 +310,7 @@ class RequestHandler(object):
         headers = dict()
         headers['ACCEPT'] = user_headers.get('ACCEPT', '')
         headers['CONTENT-TYPE'] = user_headers.get('CONTENT-TYPE', '')
-        accepted_headers = ['OPENSTACK-API-VERSION']
+        accepted_headers = ['OPENSTACK-API-VERSION', 'MM-PROXY-LIST']
         for key, value in user_headers.items():
             if ((key.startswith('X-') and not is_token_header_key(key)) or
                     key in accepted_headers):
@@ -319,6 +328,16 @@ class RequestHandler(object):
             args.pop('limit', None)
             args.pop('marker', None)
         return args
+
+    @staticmethod
+    def append_proxy(headers):
+        proxy_list = headers.get('MM-PROXY-LIST', None)
+        default_sp_name = service_providers.get(CONF, 'default').sp_name
+        if proxy_list:
+            proxy_list = proxy_list + ',' + default_sp_name
+        else:
+            proxy_list = default_sp_name
+        headers['MM-PROXY-LIST'] = proxy_list
 
     @utils.CachedProperty
     def chunked(self):

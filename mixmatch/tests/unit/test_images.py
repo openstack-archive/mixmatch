@@ -183,6 +183,42 @@ class TestImages(base.BaseTest):
         self.assertEqual(response.get_data(as_text=True),
                          image_data)
 
+    def test_get_image_skip_proxy(self):
+        self.config_fixture.load_raw_values(search_by_broadcast=True)
+        image_id = uuid.uuid4().hex
+        image_data = uuid.uuid4().hex
+
+        self.requests_fixture.get(
+            self._construct_url(image_id=image_id, sp='default'),
+            status_code=404,
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        self.requests_fixture.get(
+            self._construct_url(image_id=image_id, sp='remote1'),
+            text=image_data,
+            status_code=200,
+            request_headers=self.remote_auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'}
+        )
+        response = self.app.get(
+            self._construct_url(image_id),
+            headers=self.auth.get_headers()
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(as_text=True),
+                         image_data)
+
+        # Add 'remote1' to MM-PROXY-LIST
+        # request should not go to remote1 and we should get 404 as the
+        # status_code (from 'default')
+        request_header = self.auth.get_headers()
+        request_header['MM-PROXY-LIST'] = 'remote1'
+        response = self.app.get(
+            self._construct_url(image_id),
+            headers=request_header)
+        self.assertEqual(response.status_code, 404)
+
     def test_get_image_search_nexists(self):
         self.config_fixture.load_raw_values(search_by_broadcast=True)
         image_id = uuid.uuid4().hex
