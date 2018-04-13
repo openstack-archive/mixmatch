@@ -66,7 +66,7 @@ class BaseTest(testcase.TestCase):
 
     def load_auth_fixtures(self):
         self.auth = FakeSession(token=uuid.uuid4().hex,
-                                project=uuid.uuid4().hex)
+                                project="79579219f37b481aa3aad19776f843bc")
         self.remote_auth = (FakeSession(token=uuid.uuid4().hex,
                                         project=uuid.uuid4().hex))
 
