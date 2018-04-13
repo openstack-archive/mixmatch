@@ -178,10 +178,11 @@ class RequestHandler(object):
     def _do_request_on(self, sp, project_id=None):
         headers = self._prepare_headers(self.details.headers)
 
+        local_project_id = None
         if self.details.token:
-            if sp == 'default':
-                auth_session = auth.get_local_auth(self.details.token)
-            else:
+            auth_session = auth.get_local_auth(self.details.token)
+            local_project_id = auth_session.get_project_id()
+            if sp != 'default':
                 auth_session = auth.get_sp_auth(sp,
                                                 self.details.token,
                                                 project_id)
@@ -211,6 +212,15 @@ class RequestHandler(object):
             resp = self.session.request(data=self.details.body,
                                         stream=self.stream,
                                         **request_kwargs)
+
+        services.update_href(
+            resp,
+            request.url_root,
+            self.details.service,
+            self.details.version,
+            local_project_id
+        )
+
         LOG.info(format_for_log(title='Request from proxy',
                                 method=self.details.method,
                                 url=url,
