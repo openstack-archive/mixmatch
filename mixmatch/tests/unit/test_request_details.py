@@ -22,10 +22,12 @@ class TestRequestDetails(testcase.TestCase):
     def test_capitalized_headers(self):
         normal_headers = {"Mm-Service-Provider": "default",
                           "X-Auth-Token": "tok",
-                          "Transfer-Encoding": "chunked"}
+                          "Transfer-Encoding": "chunked",
+                          "mM-Proxy-List": 'default'}
         with proxy.app.test_request_context():
             rd = proxy.RequestDetails("GET", "image/v2/images", normal_headers)
         expected = {"MM-SERVICE-PROVIDER": "default",
                     "X-AUTH-TOKEN": "tok",
-                    "TRANSFER-ENCODING": "chunked"}
+                    "TRANSFER-ENCODING": "chunked",
+                    "MM-PROXY-LIST": 'default'}
         self.assertEqual(expected, rd.headers)
