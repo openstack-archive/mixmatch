@@ -19,6 +19,7 @@ from urllib3.util import retry
 import flask
 from flask import abort
 import functools
+from oslo_serialization import jsonutils
 
 from mixmatch import config
 from mixmatch.config import LOG, CONF, service_providers
@@ -224,6 +225,17 @@ class RequestHandler(object):
         if self.stream and not is_json_response(response):
             text = flask.stream_with_context(
                 stream_response(response))
+        elif is_json_response(response):
+            try:
+                body = jsonutils.loads(response.text)
+                # TODO(knikolla): This may be a great place to hook extensions
+                services.update_links(body,
+                                      CONF.url or request.url_root,
+                                      self.details)
+                text = jsonutils.dumps(body)
+            except ValueError:
+                # NOTE(knikolla): Our unit tests don't do valid JSON.
+                text = response.text
         else:
             text = response.text
 

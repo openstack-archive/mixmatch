@@ -107,6 +107,22 @@ class TestVolumesV2(base.BaseTest):
 
         return url
 
+    def _remove_links(self, body):
+        if isinstance(body, list):
+            for i in body:
+                self._remove_links(i)
+        if isinstance(body, dict):
+            if 'links' in body:
+                del(body['links'])
+            for _, v in body.items():
+                self._remove_links(v)
+
+    def assertEqual(self, expected, observed, message=''):
+        # TODO(knikolla): Make this a separate function
+        self._remove_links(expected)
+        self._remove_links(observed)
+        super(TestVolumesV2, self).assertEqual(expected, observed, message)
+
     def test_create_volume(self):
         volume_id = uuid.uuid4().hex
         self.requests_fixture.post(

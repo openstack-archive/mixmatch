@@ -30,6 +30,7 @@ function configure_mixmatch {
     iniset $MIXMATCH_CONF database connection "sqlite:////tmp/mixmatch.db"
     iniset $MIXMATCH_CONF DEFAULT service_providers default
     iniset $MIXMATCH_CONF DEFAULT aggregation False
+    iniset $MIXMATCH_CONF DEFAULT url "$MIXMATCH_URL"
 
     iniset $MIXMATCH_CONF auth auth_url "$KEYSTONE_AUTH_URI/v3"
     iniset $MIXMATCH_CONF auth username admin

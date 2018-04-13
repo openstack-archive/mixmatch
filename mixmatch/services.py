@@ -23,6 +23,7 @@ from mixmatch import utils
 from oslo_serialization import jsonutils
 
 CONF = config.CONF
+LOG = config.LOG
 
 
 def construct_url(service_provider, service_type,
@@ -236,3 +237,33 @@ def _remove_details(volumes, version):
         volumes[i] = {key: volumes[i][key] for key in keys[version]}
 
     return volumes
+
+
+def _update_links(key, details, url_root, resource):
+    def _get_path():
+        href = os.path.join(*[url_root, details.service, details.version])
+        if details.project_in_path:
+            href = os.path.join(*[href, details.project_id])
+
+        href = os.path.join(*[href, key])
+        if resource:
+            href = os.path.join(*[href, resource['id']])
+
+        return href
+
+    for link in resource.get('links', []):
+        link['href'] = _get_path()
+
+
+def update_links(response, url_root, details):
+    # NOTE(knikolla): Currently only volume has links in response
+    if details.service not in ['volume']:
+        return
+
+    for k, v in response.items():
+        if isinstance(v, list):
+            for resource in v:
+                if isinstance(resource, dict):
+                    _update_links(k, details, url_root, resource)
+        else:
+            _update_links(k, details, url_root, v)
