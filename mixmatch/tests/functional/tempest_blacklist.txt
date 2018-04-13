@@ -1,3 +1,0 @@
-# Fixed by turning pagination on (or patching to rewrite urls even with pagination disabled)
-tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_pagination
-tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_details_pagination

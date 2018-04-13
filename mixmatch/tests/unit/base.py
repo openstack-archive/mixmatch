@@ -52,7 +52,9 @@ class BaseTest(testcase.TestCase):
         # set config values
         self.config_fixture.load_raw_values(
             service_providers='default, remote1',
-            aggregation=True)
+            aggregation=True,
+            url='http://localhost/resource'
+        )
         self.config_fixture.load_raw_values(
             group='sp_default',
             image_endpoint='http://images.local',
