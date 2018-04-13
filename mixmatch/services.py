@@ -236,3 +236,37 @@ def _remove_details(volumes, version):
         volumes[i] = {key: volumes[i][key] for key in keys[version]}
 
     return volumes
+
+
+def prepare_href(href, proxy_url, project_id):
+    # NOTE(lohith): Volume response contains href which has format
+    # http://<ip:port>/<version>/<remote_project_id>/volumes/<uuid>
+    # or http://<ip:port>/<remote_project_id>/volumes/<uuid>
+    # or http://kaizen.massopen.cloud/openstack/.../<remote_project_id>
+    # /volumes/<uuid>
+    uuid = href.split('/')[-1]
+    return '%s://%s/%s/volumes/%s' \
+           % (proxy_url[0], proxy_url[1], project_id, uuid)
+
+
+def _update_href(response, proxy_url, project_id):
+    if type(response) is not dict:
+        return
+    for key, val in response.items():
+        if key == "href":
+            response[key] = prepare_href(val, proxy_url, project_id)
+        elif type(response[key]) is dict:
+            _update_href(response[key], proxy_url, project_id)
+        elif type(response[key]) is list:
+            for e in response[key]:
+                _update_href(e, proxy_url, project_id)
+
+
+def update_href(resp, proxy_url, project_id):
+    try:
+        body = json.loads(resp.text)
+    except ValueError:
+        return
+
+    _update_href(body, proxy_url, project_id)
+    resp._content = jsonutils.dump_as_bytes(body)
