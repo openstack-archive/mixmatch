@@ -236,3 +236,35 @@ def _remove_details(volumes, version):
         volumes[i] = {key: volumes[i][key] for key in keys[version]}
 
     return volumes
+
+
+def prepare_href(href, url_root, version, project_id):
+    uuid = href.split('/')[-1]
+    new_href = '%svolume/%s/%s/volumes/%s' \
+               % (url_root, version, project_id, uuid)
+    return new_href
+
+
+def _update_href(response, url_root, version, project_id):
+    if type(response) is not dict:
+        return
+    for key, val in response.items():
+        if key == "href":
+            response[key] = prepare_href(val, url_root, version, project_id)
+        elif type(response[key]) is dict:
+            _update_href(response[key], url_root, version, project_id)
+        elif type(response[key]) is list:
+            for e in response[key]:
+                _update_href(e, url_root, version, project_id)
+
+
+def update_href(resp, url_root, service_type, version, project_id):
+    if service_type != "volume":
+        return
+    try:
+        body = json.loads(resp.text)
+    except ValueError:
+        return
+
+    _update_href(body, url_root, version, project_id)
+    resp._content = jsonutils.dump_as_bytes(body)

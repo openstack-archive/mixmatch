@@ -18,11 +18,11 @@
       "links": [
         {
           "rel": "self",
-          "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
         },
         {
           "rel": "bookmark",
-          "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/927f62d4-140c-40b3-ba47-07575db8a26b"
         }
       ],
       "attachments": [],
@@ -54,11 +54,11 @@
       "links": [
         {
           "rel": "self",
-          "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
         },
         {
           "rel": "bookmark",
-          "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/0f1cef9e-cea0-4237-be35-5873670aa771"
         }
       ],
       "attachments": [],
@@ -90,11 +90,11 @@
       "links": [
         {
           "rel": "self",
-          "href": "http://localhost:8776/v2/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
         },
         {
           "rel": "bookmark",
-          "href": "http://localhost:8776/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
+          "href": "http://localhost/volume/v2/79579219f37b481aa3aad19776f843bc/volumes/a8da5976-f8ff-4a13-8e92-24f3cf7ac06d"
         }
       ],
       "attachments": [],
