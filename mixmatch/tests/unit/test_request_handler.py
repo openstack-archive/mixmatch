@@ -44,7 +44,8 @@ class TestRequestHandler(BaseTest):
             'XAUTH-TOKEN': 'x-auth-token',
             'START-X': 'startx',
 
-            'OPENSTACK-API-VERSION': 'volume 3.0'
+            'OPENSTACK-API-VERSION': 'volume 3.0',
+            'MM-PROXY-LIST': 'sp1'
         }
         expected_headers = {
             'X-TRA CHEESE': 'extra cheese',
@@ -52,7 +53,8 @@ class TestRequestHandler(BaseTest):
             'X-MEN': 'X MEN',
             'ACCEPT': '',
             'CONTENT-TYPE': '',
-            'OPENSTACK-API-VERSION': 'volume 3.0'
+            'OPENSTACK-API-VERSION': 'volume 3.0',
+            'MM-PROXY-LIST': 'sp1'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertEqual(expected_headers, headers)
@@ -69,6 +71,34 @@ class TestRequestHandler(BaseTest):
         headers = proxy.RequestHandler._prepare_headers(user_headers, True)
         self.assertTrue('OPENSTACK-API-VERSION' in headers.keys() and
                         'Openstack-Api-Version' not in headers.keys())
+
+    def test_prepare_headers_allow_proxy_list(self):
+        user_headers = {
+            'X-Auth-Token': 'AUTH TOKEN',
+            'X-Service-Token': 'SERVICE TOKEN',
+            'Openstack-Api-Version': 'volume 3.0',
+            'MM-PROXY-LIST': 'sp1'
+        }
+        headers = proxy.RequestHandler._prepare_headers(user_headers)
+        self.assertTrue('MM-PROXY-LIST' in headers.keys())
+        headers = proxy.RequestHandler._prepare_headers(user_headers, True)
+        self.assertTrue('MM-PROXY-LIST' in headers.keys())
+
+    def test_append_proxy_to_list(self):
+        user_headers = {
+            'X-Auth-Token': 'AUTH TOKEN',
+            'X-Service-Token': 'SERVICE TOKEN',
+            'Openstack-Api-Version': 'volume 3.0',
+            'MM-PROXY-LIST': 'sp1'
+        }
+        expected = {
+            'X-Auth-Token': 'AUTH TOKEN',
+            'X-Service-Token': 'SERVICE TOKEN',
+            'Openstack-Api-Version': 'volume 3.0',
+            'MM-PROXY-LIST': 'sp1,default'
+        }
+        proxy.RequestHandler.append_proxy(user_headers)
+        self.assertEqual(expected, user_headers)
 
     def test_strip_tokens_from_logs(self):
         token = uuid.uuid4()
