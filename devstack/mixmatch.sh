@@ -85,7 +85,7 @@ function register_mixmatch {
     if [ "$REGISTER_MIXMATCH" == "true" ]; then
         # Update the endpoints
         openstack endpoint delete `get_endpoint_ids image`
-        openstack endpoint delete `get_endpoint_ids volume`
+        openstack endpoint delete `get_endpoint_ids block-storage`
         openstack endpoint delete `get_endpoint_ids volumev2`
         openstack endpoint delete `get_endpoint_ids volumev3`
         openstack endpoint delete `get_endpoint_ids network`
@@ -98,11 +98,11 @@ function register_mixmatch {
             "$MIXMATCH_URL/image"
 
         get_or_create_endpoint \
-            "volume" \
+            "block-storage" \
             "$REGION_NAME" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s" \
-            "$MIXMATCH_URL/volume/v1/\$(project_id)s"
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s" \
+            "$MIXMATCH_URL/volume/v3/\$(project_id)s"
 
         get_or_create_endpoint \
             "volumev2" \
