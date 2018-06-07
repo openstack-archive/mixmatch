@@ -392,6 +392,22 @@ class TestVolumesV2(base.BaseTest):
         self.assertEqual(response.get_data(as_text=True),
                          fake_response)
 
+    def test_unversioned_call_no_action_no_aggregation_token(self):
+        self.config_fixture.load_raw_values(aggregation=False)
+        fake_response = uuid.uuid4().hex
+
+        self.requests_fixture.get(
+            self._construct_url(sp='default'),
+            text=fake_response,
+            status_code=200,
+            request_headers=self.auth.get_headers(),
+            headers={'CONTENT-TYPE': 'application/json'})
+
+        response = self.app.get('volume', headers=self.auth.get_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(as_text=True),
+                         fake_response)
+
     def test_volume_versioned_calls_no_action(self):
         response = self.app.get(
             '/volume/v2',

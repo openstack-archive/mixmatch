@@ -84,6 +84,7 @@ class RequestDetails(object):
         self.service = get_service(local_path)
         self.version = utils.safe_pop(local_path)
         self.project_id = utils.pop_if_uuid(local_path)
+        self.project_in_path = True if self.project_id else False
         self.action = local_path[:]  # NOTE(knikolla): This includes
         self.resource_type = utils.safe_pop(local_path)  # this
         self.resource_id = utils.pop_if_uuid(local_path)  # and this
@@ -194,7 +195,7 @@ class RequestHandler(object):
             self.details.service,
             self.details.version,
             self.details.action,
-            project_id=project_id
+            project_id=project_id if self.details.project_in_path else None
         )
 
         request_kwargs = {
