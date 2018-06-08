@@ -98,8 +98,12 @@ def get_projects_at_sp(service_provider, user_token):
     """Perform K2K auth, and return the projects that can be scoped to."""
     conf = config.service_providers.get(CONF, service_provider)
     unscoped_session = get_unscoped_sp_auth(service_provider, user_token)
-    r = json.loads(str(unscoped_session.get(
-        conf.auth_url + "/OS-FEDERATION/projects").text))
+    try:
+        r = json.loads(str(unscoped_session.get(
+            conf.auth_url + "/OS-FEDERATION/projects").text))
+    except http.ServiceUnavailable:
+        LOG.info("Keystone service is Unavailable on SP %s", service_provider)
+        return None
     return [project[u'id'] for project in r[u'projects']]
 
 

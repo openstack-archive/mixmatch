@@ -119,6 +119,16 @@ class RequestHandler(object):
 
         self.append_proxy(self.details.headers)
 
+        # https://bugs.launchpad.net/mixmatch/+bug/1706109
+        # Filter service providers where keystone service is not running
+        # get_projects_at_sp(sp,token) returns None if the keystone
+        # service is not running on the given sp.
+        self.enabled_sps = filter(
+            lambda sp: (sp == 'default' or
+                        auth.get_projects_at_sp(sp, self.details.token)),
+            self.enabled_sps
+        )
+
         # TODO(jfreud): more sophisticated/ordered invocation of extensions
         for extension in self.extensions:
             out = extension.handle_request(self.details)
