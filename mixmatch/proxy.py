@@ -324,12 +324,13 @@ class RequestHandler(object):
         return headers
 
     @staticmethod
-    def _prepare_args(args):
+    def _prepare_args(request_args):
         """Prepare the GET arguments by removing the limit and marker.
 
         This is because the id of the marker will only be present in one of
         the service providers.
         """
+        args = dict(request_args)
         if CONF.aggregation:
             args.pop('limit', None)
             args.pop('marker', None)
