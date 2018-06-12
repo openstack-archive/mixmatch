@@ -1,22 +1,20 @@
-tempest.api.image.admin.v2.test_images.BasicAdminOperationsImagesTest.test_admin_deactivate_reactivate_image
-tempest.api.image.v2.test_images_metadefs_namespaces.MetadataNamespacesTest.test_basic_metadata_definition_namespaces
-tempest.api.volume.admin.v3.test_user_messages.UserMessagesTest.test_delete_message
-tempest.api.volume.admin.v3.test_user_messages.UserMessagesTest.test_list_messages
-tempest.api.volume.admin.v3.test_user_messages.UserMessagesTest.test_show_message
-tempest.api.volume.v2.test_volumes_list.VolumesV2ListTestJSON.test_volume_list_details_pagination
-tempest.api.volume.v2.test_volumes_list.VolumesV2ListTestJSON.test_volume_list_pagination
+tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_deactivate_reactivate_image
+tempest.api.image.v2.test_images_metadefs_namespaces.MetadataNamespacesTest.test_basic_metadata_definition_namespaces # passed
+tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_delete_message
+tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_list_messages
+tempest.api.volume.admin.test_user_messages.UserMessagesTest.test_show_message
 
 # Failed only in gerrit due to connection reset
-tempest.api.image.v2.test_images_metadefs_namespace_tags.MetadataNamespaceTagsTest.test_create_update_delete_tag
+tempest.api.image.v2.test_images_metadefs_namespace_tags.MetadataNamespaceTagsTest.test_create_update_delete_tag # recheck
 
 # Fixed by turning pagination on (or patching to rewrite urls even with pagination disabled)
-tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_pagination
-tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_details_pagination
+tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_pagination # FAIL
+tempest.api.volume.test_volumes_list.VolumesListTestJSON.test_volume_list_details_pagination # FAIL
 
 # These fail with Object not found
-tempest.api.volume.test_volumes_snapshots.VolumesSnapshotTestJSON.test_snapshot_create_with_volume_in_use
-tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_deactivate_reactivate_image
+tempest.api.volume.test_volumes_snapshots.VolumesSnapshotTestJSON.test_snapshot_create_delete_with_volume_in_use
+tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_deactivate_reactivate_image # passed
 
 # TODO(knikolla): Investigate these failures
-tempest.api.object_storage.test_container_sync_middleware.ContainerSyncMiddlewareTest
-tempest.api.compute.images.test_images_oneserver.ImagesOneServerTestJSON.test_create_image_specify_multibyte_character_image_name
+tempest.api.object_storage.test_container_sync_middleware.ContainerSyncMiddlewareTest # passed
+tempest.api.compute.images.test_images_oneserver.ImagesOneServerTestJSON.test_create_image_specify_multibyte_character_image_name # passed
