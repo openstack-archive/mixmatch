@@ -1,0 +1,8 @@
+Code-Review+2: Jeremy Freudberg <jeremyfreudberg@gmail.com>
+Workflow+1: Kristi Nikolla <kristi@nikolla.me>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Mon, 18 Jun 2018 19:25:42 +0000
+Reviewed-on: https://review.openstack.org/575861
+Project: openstack/mixmatch
+Branch: refs/heads/master
