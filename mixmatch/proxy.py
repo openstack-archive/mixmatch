@@ -64,10 +64,10 @@ def strip_tokens_from_headers(headers):
 def format_for_log(title=None, method=None, url=None, headers=None,
                    status_code=None):
     return ''.join([
-        '{}:\n'.format(title) if title else '',
-        'Method: {}\n'.format(method) if method else '',
-        'URL: {}\n'.format(url) if url else '',
-        'Headers: {}\n'.format(
+        '{}: '.format(title) if title else '',
+        'Method: {}, '.format(method) if method else '',
+        'URL: {}, '.format(url) if url else '',
+        'Headers: {}, '.format(
             strip_tokens_from_headers(headers)) if headers else '',
         'Status Code: {}\n'.format(status_code) if status_code else ''
     ])
