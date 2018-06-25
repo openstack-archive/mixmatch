@@ -17,6 +17,7 @@ import os
 import operator
 from six.moves.urllib import parse
 
+from mixmatch import auth
 from mixmatch import config
 from mixmatch import utils
 
@@ -30,18 +31,30 @@ def construct_url(service_provider, service_type,
     """Construct the full URL for an Openstack API call."""
     conf = config.service_providers.get(CONF, service_provider)
 
+    if service_type == 'identity':
+        url = conf.auth_url
+        if url == None:
+            url = auth.get_endpoint_at_sp(service_provider,service_type,version)
+        if version:
+            url = '%s/%s' % (url, version)
     if service_type == 'image':
         url = conf.image_endpoint
+        if url == None:
+            url = auth.get_endpoint_at_sp(service_provider,service_type,version)
         if version:
             url = '%s/%s' % (url, version)
     elif service_type == 'volume':
         url = conf.volume_endpoint
+        if url == None:
+            url = auth.get_endpoint_at_sp(service_provider,service_type,version)
         if version:
             url = '%s/%s' % (url, version)
         if project_id:
             url = '%s/%s' % (url, project_id)
     elif service_type == 'network':
         url = conf.network_endpoint
+        if url == None:
+            url = auth.get_endpoint_at_sp(service_provider,service_type,version)
         if version:
             url = '%s/%s' % (url, version)
 
