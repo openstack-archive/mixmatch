@@ -15,10 +15,12 @@
 import json
 import os
 import operator
+import requests
 from six.moves.urllib import parse
 
 from mixmatch import config
 from mixmatch import utils
+from mixmatch import auth
 
 from oslo_serialization import jsonutils
 
@@ -164,9 +166,14 @@ def list_api_versions(service_type, url):
                     'version': ''
                 })
 
+            api_info = requests.get(
+                construct_url('default', 'volume', version),
+                headers={'x-auth-token':
+                             auth.get_admin_session().get_token()})
+
             info.update({
                 'id': version,
-                'updated': '2014-06-28T12:20:21Z',  # FIXME
+                'updated': api_info.json()['versions'][0]['updated'], # FIXME
                 'links': [
                     {'href': 'http://docs.openstack.org/',
                      'type': 'text/html',
