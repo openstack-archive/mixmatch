@@ -175,6 +175,15 @@ class TestRequestHandler(BaseTest):
         actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, {'images': []})
 
+        response_specific = self.app.get(
+            '/image/v2/images',
+            headers={'X-AUTH-TOKEN': 'remote-tok',
+                     'CONTENT-TYPE': 'application/json',
+                     'MM-PROVIDER-SERVICE': 'remote1',
+                     'MM-PROJECT-ID': REMOTE_PROJECT_ID})
+        actual_specific = json.loads(response_specific.get_data(as_text=True))
+        self.assertEqual(actual_specific, {'images': []})
+
     def test_is_json_response(self):
         response = requests.models.Response()
         response.headers['Content-Type'] = 'application/json'
