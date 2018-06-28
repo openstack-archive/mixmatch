@@ -164,9 +164,14 @@ def list_api_versions(service_type, url):
                     'version': ''
                 })
 
+            if version == 'v3.0':
+                cinder_api_update = '2017-09-19T20:18:14Z'
+            else:
+                cinder_api_update = '2017-02-25T12:00:00Z'
+
             info.update({
                 'id': version,
-                'updated': '2014-06-28T12:20:21Z',  # FIXME
+                'updated': cinder_api_update,  # FIXME
                 'links': [
                     {'href': 'http://docs.openstack.org/',
                      'type': 'text/html',

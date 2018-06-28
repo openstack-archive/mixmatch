@@ -27,7 +27,7 @@ class TestVolumesV3(base.BaseTest):
         # TODO(knikolla): load_auth_fixtures() should be done in the base
         # class, but may conflict with the other tests which haven't been
         # migrated to these fixtures.
-        self.load_auth_fixtures()
+        # self.load_auth_fixtures()
 
     def _construct_url(self, auth=None, target=None, sp=None,
                        resource_type='volumes'):
@@ -92,7 +92,7 @@ class TestVolumesV2(base.BaseTest):
         # TODO(knikolla): load_auth_fixtures() should be done in the base
         # class, but may conflict with the other tests which haven't been
         # migrated to these fixtures.
-        self.load_auth_fixtures()
+        # self.load_auth_fixtures()
 
     def _construct_url(self, auth=None, target=None, sp=None):
         if not sp:
