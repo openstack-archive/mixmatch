@@ -166,7 +166,7 @@ def list_api_versions(service_type, url):
 
             info.update({
                 'id': version,
-                'updated': '2014-06-28T12:20:21Z',  # FIXME
+                'updated': '2017-09-19T20:18:14Z',  # FIXME
                 'links': [
                     {'href': 'http://docs.openstack.org/',
                      'type': 'text/html',

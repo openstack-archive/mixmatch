@@ -316,7 +316,7 @@ class RequestHandler(object):
         headers = dict()
         headers['ACCEPT'] = user_headers.get('ACCEPT', '')
         headers['CONTENT-TYPE'] = user_headers.get('CONTENT-TYPE', '')
-        accepted_headers = ['OPENSTACK-API-VERSION', 'MM-PROXY-LIST']
+        accepted_headers = ['OPENSTACK-API-VERSION', 'MM-PROXY-LIST', 'MM-SERVICE-PROVIDER']
         for key, value in user_headers.items():
             if ((key.startswith('X-') and not is_token_header_key(key)) or
                     key in accepted_headers):
