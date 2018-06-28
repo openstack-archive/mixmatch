@@ -27,7 +27,7 @@ class TestImages(base.BaseTest):
         # TODO(ericjuma): load_auth_fixtures() should be done in the base
         # class, but may conflict with the other tests which haven't been
         # migrated to these fixtures.
-        self.load_auth_fixtures()
+        #self.load_auth_fixtures()
 
     def _construct_url(self, image_id='', sp=None):
         if not sp:

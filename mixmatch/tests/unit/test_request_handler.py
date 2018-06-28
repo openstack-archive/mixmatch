@@ -45,7 +45,8 @@ class TestRequestHandler(BaseTest):
             'START-X': 'startx',
 
             'OPENSTACK-API-VERSION': 'volume 3.0',
-            'MM-PROXY-LIST': 'sp1'
+            'MM-PROXY-LIST': 'sp1',
+            'MM-SERVICE-PROVIDER': 'remote1'
         }
         expected_headers = {
             'X-TRA CHEESE': 'extra cheese',
@@ -54,7 +55,8 @@ class TestRequestHandler(BaseTest):
             'ACCEPT': '',
             'CONTENT-TYPE': '',
             'OPENSTACK-API-VERSION': 'volume 3.0',
-            'MM-PROXY-LIST': 'sp1'
+            'MM-PROXY-LIST': 'sp1',
+            'MM-SERVICE-PROVIDER': 'remote1'
         }
         headers = proxy.RequestHandler._prepare_headers(user_headers)
         self.assertEqual(expected_headers, headers)
@@ -174,6 +176,15 @@ class TestRequestHandler(BaseTest):
                      'CONTENT-TYPE': 'application/json'})
         actual = json.loads(response.get_data(as_text=True))
         self.assertEqual(actual, {'images': []})
+
+        response_specific = self.app.get(
+            '/image/v2/images',
+            headers={'X-AUTH-TOKEN': 'remote-tok',
+                     'CONTENT-TYPE': 'application/json',
+                     'MM-PROVIDER-SERVICE': 'remote1',
+                     'MM-PROJECT-ID': REMOTE_PROJECT_ID})
+        actual_specific = json.loads(response_specific.get_data(as_text=True))
+        self.assertEqual(actual_specific, {'images': []})
 
     def test_is_json_response(self):
         response = requests.models.Response()
