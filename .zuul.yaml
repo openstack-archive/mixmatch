@@ -1,7 +1,15 @@
 - project:
     check:
       jobs:
-        - mixmatch-dsvm-functional:
+        - mixmatch-dsvm-functional-compute:
+            voting: false
+        - mixmatch-dsvm-functional-image:
+            voting: false
+        - mixmatch-dsvm-functional-volume:
+            voting: false
+        - mixmatch-dsvm-functional-network:
+            voting: false
+        - mixmatch-dsvm-functional-scenario:
             voting: false
 
         - openstack-tox-lower-constraints
@@ -9,7 +17,7 @@
       jobs:
         - openstack-tox-lower-constraints
 - job:
-    name: mixmatch-dsvm-functional
+    name: mixmatch-dsvm-functional-base
     parent: legacy-dsvm-base
     run: playbooks/legacy/mixmatch-dsvm-functional/run.yaml
     post-run: playbooks/legacy/mixmatch-dsvm-functional/post.yaml
@@ -18,3 +26,14 @@
       - openstack-infra/devstack-gate
       - openstack/mixmatch
 
+- job:
+    name: mixmatch-dsvm-functional-compute
+    parent: mixmatch-dsvm-functional-base
+    vars:
+      tempest_regex: "^tempest.api.compute"
+
+- job:
+    name: mixmatch-dsvm-functional-image-volume-network-scenario
+    parent: mixmatch-dsvm-functional-base
+    vars:
+      tempest_regex: "(^tempest.api.image|^tempest.api.volume|^tempest.api.network|^tempest.scenario)"
