@@ -41,6 +41,7 @@
 
           function post_test_hook {
               # Configure and run functional tests
+              export TEMPEST_REGEX='{{ tempest_regex }}'
               $BASE/new/mixmatch/mixmatch/tests/functional/hooks/dsvm_hook.sh
           }
           export -f post_test_hook
