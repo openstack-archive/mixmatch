@@ -24,10 +24,6 @@ from mixmatch.tests.unit import samples
 class TestVolumesV3(base.BaseTest):
     def setUp(self):
         super(TestVolumesV3, self).setUp()
-        # TODO(knikolla): load_auth_fixtures() should be done in the base
-        # class, but may conflict with the other tests which haven't been
-        # migrated to these fixtures.
-        self.load_auth_fixtures()
 
     def _construct_url(self, auth=None, target=None, sp=None,
                        resource_type='volumes'):
