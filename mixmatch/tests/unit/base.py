@@ -64,6 +64,8 @@ class BaseTest(testcase.TestCase):
         config.post_config()
         extend.load_extensions()
 
+        self.load_auth_fixtures()
+
     def load_auth_fixtures(self):
         self.auth = FakeSession(token=uuid.uuid4().hex,
                                 project=uuid.uuid4().hex)
