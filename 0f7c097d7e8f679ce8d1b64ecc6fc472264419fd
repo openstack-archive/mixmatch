@@ -1,0 +1,9 @@
+Code-Review+2: Kristi Nikolla <kristi@nikolla.me>
+Code-Review+1: wu.chunyang <wu.chunyang@99cloud.net>
+Workflow+1: Kristi Nikolla <kristi@nikolla.me>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Fri, 06 Jul 2018 00:05:07 +0000
+Reviewed-on: https://review.openstack.org/570415
+Project: openstack/mixmatch
+Branch: refs/heads/master
