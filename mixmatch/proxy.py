@@ -42,7 +42,7 @@ def stream_response(response):
 def get_service(a):
     """Determine service type based on path."""
     service = a.pop(0)
-    if service in ['image', 'volume', 'network']:
+    if service in ['compute', 'image', 'volume', 'network']:
         return service
     else:
         abort(404)
@@ -316,7 +316,8 @@ class RequestHandler(object):
         headers = dict()
         headers['ACCEPT'] = user_headers.get('ACCEPT', '')
         headers['CONTENT-TYPE'] = user_headers.get('CONTENT-TYPE', '')
-        accepted_headers = ['OPENSTACK-API-VERSION', 'MM-PROXY-LIST']
+        accepted_headers = ['OPENSTACK-API-VERSION',
+                            'MM-PROXY-LIST', 'LOCATION']
         for key, value in user_headers.items():
             if ((key.startswith('X-') and not is_token_header_key(key)) or
                     key in accepted_headers):

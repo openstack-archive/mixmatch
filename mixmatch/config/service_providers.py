@@ -38,6 +38,10 @@ SP_OPTS = [
                default=None,
                help="Volume Endpoint for Service Provider"),
 
+    cfg.URIOpt('compute_endpoint',
+               default=None,
+               help="Compute Endpoint for Service Provider"),
+
     cfg.StrOpt('network_endpoint',
                default=None,
                help='Network Endpoint for Service Provider'),
