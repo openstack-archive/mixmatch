@@ -69,6 +69,6 @@ The above ruleset will map the remote user to a user and group, such
 that:
 
 - Username of the local user is the same as the remote user
-- Group the user is assigned to is named the same way as the the remote
+- Group the user is assigned to is named the same way as the remote
   project (group must be created ahead of time and granted the appropriate
   permissions.)
