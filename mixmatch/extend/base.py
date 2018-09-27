@@ -15,7 +15,7 @@
 from routes import mapper
 
 
-class Extension(object):
+class BaseHook(object):
     ROUTES = []
     OPTS = []
 
@@ -32,12 +32,21 @@ class Extension(object):
                                 environ=request.environ)
         return bool(match)
 
+
+class Extension(BaseHook):
     def handle_request(self, request):
         pass
 
     def handle_response(self, response):
         pass
 
+
+class RuleEngineHook(BaseHook):
+    def apply_rule(self, request):
+        pass
+
+    def _load_rule_definition(**kwargs):
+        return NotImplemented
 
 class FinalResponse(object):
     stream = False

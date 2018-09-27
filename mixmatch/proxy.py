@@ -103,6 +103,7 @@ class RequestHandler(object):
     def __init__(self, method, path, headers):
         self.details = RequestDetails(method, path, headers)
         self.extensions = extend.get_matched_extensions(self.details)
+        self.rule_engine_hooks = extend.get_matched_rule_engine_hooks(self.details)
         self._set_strip_details(self.details)
         self.enabled_sps = filter(
             lambda sp: (self.details.service in
@@ -166,6 +167,15 @@ class RequestHandler(object):
             # Which we already know the location of, use that SP.
             self.service_provider = mapping.resource_sp
             self.project_id = mapping.project_id
+            self._forward = self._targeted_forward
+        elif self.details.method == 'POST':
+            self.service_provider = (
+                self.rule_engine_hooks[0].apply_rule(self.details)
+            )
+            self.project_id = auth.get_projects_at_sp(
+                self.service_provider,
+                self.details.token
+            )[0]
             self._forward = self._targeted_forward
         else:
             self._forward = self._forward

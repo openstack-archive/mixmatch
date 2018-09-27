@@ -20,13 +20,19 @@ CONF = config.CONF
 LOG = config.LOG
 
 EXTENSION_MANAGER = None  # type: extension.ExtensionManager
-
+RULE_ENGINE_HOOK_MANAGER = None # type: extension.ExtensionManager
 
 def load_extensions():
     global EXTENSION_MANAGER
+    global RULE_ENGINE_HOOK_MANAGER
 
     EXTENSION_MANAGER = extension.ExtensionManager(
         namespace='mixmatch.extend',
+        invoke_on_load=True
+    )
+
+    RULE_ENGINE_HOOK_MANAGER = extension.ExtensionManager(
+        namespace='mixmatch.rule_engine',
         invoke_on_load=True
     )
 
@@ -42,4 +48,17 @@ def get_matched_extensions(request):
         return e.obj if e.obj.matches(request) else None
 
     result = EXTENSION_MANAGER.map(_match)
+    return filter(bool, result)
+
+def get_matched_rule_engine_hooks(request):
+    """Return list of matched rule engine hooks for request
+
+    :type request: mixmatch.proxy.RequestDetails
+    :rtype: List[mixmatch.extend.base.RuleEngineHook]
+    """
+
+    def _match(e):
+        return e.obj if e.obj.matches(request) else None
+
+    result = RULE_ENGINE_HOOK_MANAGER.map(_match)
     return filter(bool, result)
