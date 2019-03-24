@@ -22,7 +22,7 @@ Clone Devstack from git (#1) and copy the sample configuration file from the
 samples folder to the root folder (#2). Next, open the newly copied
 `local.conf` file with your editor of choice (in our case `vi` #3).::
 
-    git clone git://git.openstack.org/openstack-dev/devstack #1
+    git clone https://git.openstack.org/openstack-dev/devstack #1
     cd devstack
     cp samples/local.conf . #2
     vi local.conf #3
@@ -32,7 +32,7 @@ configuration of different additional components depending on need. Mixmatch
 provides one such Devstack plugin, so let's go ahead an enable it by adding
 the following line at the end of `local.conf`. ::
 
-    enable_plugin mixmatch git://git.openstack.org/openstack/mixmatch
+    enable_plugin mixmatch https://git.openstack.org/openstack/mixmatch
     REGISTER_MIXMATCH=true
 
 Finally, run `stack.sh`. (We recommend doing so inside a screen in case of
